@@ -244,6 +244,70 @@ if(BUILD_PNG)
                                        ${SPARTA_DEFAULT_CXX_COMPILE_FLAGS})
 endif()
 
+# AD (Sacado forward-mode automatic differentiation): sfloat = SFad.
+# Header-only SFad, so Sacado::Sacado just adds an include path + libsacado.
+if(SPARTA_ENABLE_AD)
+  find_package(Sacado REQUIRED)
+  list(APPEND TARGET_SPARTA_BUILD_TPLS Sacado::Sacado)
+  set(SPARTA_DEFAULT_CXX_COMPILE_FLAGS
+      -DSPARTA_AD -DSPARTA_AD_NDIR=${SPARTA_AD_NDIR}
+      ${SPARTA_DEFAULT_CXX_COMPILE_FLAGS})
+
+  # AD needs at least C++17. Kokkos already forces C++20 (cmake/CMakeLists.txt),
+  # so this only lifts the AD-without-Kokkos build off the C++11 default.
+  if(CMAKE_CXX_STANDARD LESS 17)
+    set(CMAKE_CXX_STANDARD 17)
+  endif()
+
+  # -------- One-Kokkos guard (AD + Kokkos) --------
+  # Sacado's Kokkos and SPARTA's Kokkos MUST be the exact same version, or C++
+  # ODR is violated (two definitions of Kokkos::View etc.) -> silent wrong
+  # results, especially on GPU. SFad is header-only, so it binds to whichever
+  # Kokkos is on the include path; the AD+Kokkos build must therefore use ONE
+  # Kokkos (USE_EXTERNAL_KOKKOS + Kokkos_ROOT = the Trilinos install Sacado was
+  # built against), never the unmanaged in-tree lib/kokkos.
+  if(PKG_KOKKOS)
+    if(NOT USE_EXTERNAL_KOKKOS)
+      message(FATAL_ERROR
+        "SPARTA_ENABLE_AD + PKG_KOKKOS requires USE_EXTERNAL_KOKKOS=ON pointing "
+        "(via Kokkos_ROOT) at the SAME Kokkos that Sacado was built against. "
+        "The in-tree lib/kokkos is a separate, version-unmanaged Kokkos build; "
+        "linking it alongside Sacado's Kokkos is an ODR violation.")
+    endif()
+
+    # SPARTA's expected Kokkos version, parsed from lib/kokkos.
+    file(STRINGS "${SPARTA_TPL_DIR}/kokkos/CMakeLists.txt" _spa_kv
+         REGEX "set\\(Kokkos_VERSION_(MAJOR|MINOR|PATCH)")
+    string(REGEX MATCH "MAJOR ([0-9]+)" _m "${_spa_kv}")
+    set(_spa_maj "${CMAKE_MATCH_1}")
+    string(REGEX MATCH "MINOR ([0-9]+)" _m "${_spa_kv}")
+    set(_spa_min "${CMAKE_MATCH_1}")
+    string(REGEX MATCH "PATCH ([0-9]+)" _m "${_spa_kv}")
+    set(_spa_pat "${CMAKE_MATCH_1}")
+    set(SPARTA_KOKKOS_EXPECTED "${_spa_maj}.${_spa_min}.${_spa_pat}")
+
+    # Kokkos_VERSION is set by the find_package(Kokkos CONFIG) that the
+    # USE_EXTERNAL_KOKKOS path already ran above.
+    if(DEFINED Kokkos_VERSION AND SPARTA_KOKKOS_EXPECTED MATCHES "^[0-9]+\\.[0-9]+\\.[0-9]+$")
+      if(NOT Kokkos_VERSION VERSION_EQUAL SPARTA_KOKKOS_EXPECTED)
+        message(FATAL_ERROR
+          "AD+Kokkos version mismatch: external Kokkos (Sacado's) is "
+          "${Kokkos_VERSION} but SPARTA lib/kokkos expects "
+          "${SPARTA_KOKKOS_EXPECTED}. Point Sacado/Kokkos at the Trilinos "
+          "release whose bundled Kokkos == ${SPARTA_KOKKOS_EXPECTED} "
+          "(e.g. trilinos-release-17-0-0 ships Kokkos 5.0.2). "
+          "Rule: match Sacado to Kokkos -- bump Sacado, never downgrade Kokkos.")
+      endif()
+    else()
+      message(WARNING
+        "AD+Kokkos: could not determine both Kokkos versions to verify they "
+        "match (SPARTA expects '${SPARTA_KOKKOS_EXPECTED}', external Kokkos_VERSION "
+        "='${Kokkos_VERSION}'). Ensure they are identical to avoid an ODR "
+        "violation.")
+    endif()
+  endif()
+endif()
+
 if(PKG_PYTHON)
 
   set(TARGET_SPARTA_PKG_PYTHON pkg_python)
