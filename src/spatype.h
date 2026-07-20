@@ -154,4 +154,7 @@ typedef int bigint;
 #include "spawindows.h"
 #endif
 
+// project-wide scalar type for the physics core (AD seam)
+#include "sfloat.h"
+
 #endif
