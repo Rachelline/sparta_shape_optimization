@@ -335,6 +335,18 @@ if(BUILD_MPI)
   set_property(
     TARGET ${TARGET_SPARTA_BUILD_MPI}
     PROPERTY INTERFACE_COMPILE_OPTIONS ${SPARTA_DEFAULT_CXX_COMPILE_FLAGS})
+
+  # -DSPARTA_AD above reaches every package target (FFT, PYTHON, KOKKOS, ...)
+  # because they all link TARGET_SPARTA_BUILD_MPI to pick up shared compile
+  # options. sfloat.h's AD branch needs Sacado's headers wherever that flag
+  # is visible, so the include path has to ride along on the same target --
+  # attaching Sacado::Sacado only to the main sparta lib (src/CMakeLists.txt)
+  # is not enough; package targets never link the main lib itself.
+  if(SPARTA_ENABLE_AD)
+    set_property(
+      TARGET ${TARGET_SPARTA_BUILD_MPI}
+      APPEND PROPERTY INTERFACE_INCLUDE_DIRECTORIES ${SACADO_INCLUDE_DIRS})
+  endif()
 endif()
 
 if(SPARTA_CTEST_CONFIGS)
