@@ -5,7 +5,7 @@ on:
 #    branches: [ master ]
   pull_request:
     branches: [ master ]
-
+  workflow_dispatch: 
 # Define jobs: mpi, mpi-stubs-fft, mpi-stubs-kokkos-exact-fft, and bigbig
 # Each jobs runs on ubuntu-22.04 and uses the cmake build system
 # All jobs except for bigbig run ctest. The mpi-stubs-kokkos-exact-fft job runs
