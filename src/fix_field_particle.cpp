@@ -1,3 +1,4 @@
+/* AD-CONVERTED: double->sfloat by tools/ad_convert.py (see sfloat.h) */
 /* ----------------------------------------------------------------------
    SPARTA - Stochastic PArallel Rarefied-gas Time-accurate Analyzer
    http://sparta.github.io
@@ -129,7 +130,7 @@ void FixFieldParticle::init()
   }
 
   bigint nbytes = (bigint) particle->nlocal * size_per_particle_cols;
-  if (nbytes) memset(&array_particle[0][0],0,nbytes*sizeof(double));
+  if (nbytes) memset(&array_particle[0][0],0,nbytes*sizeof(sfloat));
 }
 
 /* ---------------------------------------------------------------------- */

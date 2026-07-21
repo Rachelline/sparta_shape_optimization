@@ -1,3 +1,4 @@
+/* AD-CONVERTED: double->sfloat by tools/ad_convert.py (see sfloat.h) */
 /* ----------------------------------------------------------------------
    SPARTA - Stochastic PArallel Rarefied-gas Time-accurate Analyzer
    http://sparta.github.io
@@ -132,7 +133,7 @@ void ReadISurf::command(int narg, char **arg)
   if (screen && me == 0) fprintf(screen,"Reading isurf file ...\n");
 
   MPI_Barrier(world);
-  double time1 = MPI_Wtime();
+  sfloat time1 = MPI_Wtime();
 
   if (dim == 2) {
     memory->create(cvalues,grid->nlocal,4,"readisurf:cvalues");
@@ -169,7 +170,7 @@ void ReadISurf::command(int narg, char **arg)
   // if fix ablate is never re-invoked, can just delete it
 
   MPI_Barrier(world);
-  double time2 = MPI_Wtime();
+  sfloat time2 = MPI_Wtime();
 
   char *sgroupID = NULL;
   if (sgrouparg) sgroupID = arg[sgrouparg];
@@ -180,11 +181,11 @@ void ReadISurf::command(int narg, char **arg)
   if (ablate->nevery == 0) modify->delete_fix(ablateID);
 
   MPI_Barrier(world);
-  double time3 = MPI_Wtime();
+  sfloat time3 = MPI_Wtime();
 
   // stats
 
-  double time_total = time3-time1;
+  sfloat time_total = time3-time1;
 
   if (comm->me == 0) {
     if (screen) {
@@ -238,7 +239,7 @@ void ReadISurf::create_hash(int count)
 
 /* ----------------------------------------------------------------------
    read/store all grid corner point values
-   file stores corner point values as 1-byte integers or double precision FP
+   file stores corner point values as 1-byte integers or sfloat precision FP
    serial read:
      proc 0 reads 1 CHUNK of values at a time, bcasts to other procs
      each proc call assign_corners() on the chunk
@@ -253,7 +254,7 @@ void ReadISurf::read_corners_serial(char *gridfile)
   FILE *fp;
 
   uint8_t *ibuf = NULL;
-  double *dbuf = NULL;
+  sfloat *dbuf = NULL;
 
   if (precision == INT) memory->create(ibuf,CHUNK,"readisurf:ibuf");
   else if (precision == DOUBLE) memory->create(dbuf,CHUNK,"readisurf:dbuf");
@@ -299,8 +300,8 @@ void ReadISurf::read_corners_serial(char *gridfile)
       if (me == 0) tmp = fread(ibuf,sizeof(uint8_t),nchunk,fp);
       MPI_Bcast(ibuf,nchunk,MPI_CHAR,0,world);
     } else if (precision == DOUBLE) {
-      if (me == 0) tmp = fread(dbuf,sizeof(double),nchunk,fp);
-      MPI_Bcast(dbuf,nchunk,MPI_DOUBLE,0,world);
+      if (me == 0) tmp = fread(dbuf,sizeof(sfloat),nchunk,fp);
+      MPI_Bcast(dbuf,nchunk,MPI_SFLOAT,0,world);
     }
 
     assign_corners(nchunk,nread,ibuf,dbuf);
@@ -327,7 +328,7 @@ void ReadISurf::read_corners_serial(char *gridfile)
    check that corner point values = 0 on boundary of grid block
 ------------------------------------------------------------------------- */
 
-void ReadISurf::assign_corners(int n, bigint offset, uint8_t *ibuf, double *dbuf)
+void ReadISurf::assign_corners(int n, bigint offset, uint8_t *ibuf, sfloat *dbuf)
 {
   int icell,ncorner,zeroflag;
   int pix,piy,piz;
@@ -485,7 +486,7 @@ void ReadISurf::assign_types(int n, bigint offset, uint8_t *buf)
 
 /* ----------------------------------------------------------------------
    read/store all grid corner point values
-   file stores corner point values as 1-byte integers or double precision FP
+   file stores corner point values as 1-byte integers or sfloat precision FP
    parallel read:
      each proc assigned N/P portion of corner point values
      each proc seeks into binary file, reads its portion directly
@@ -548,7 +549,7 @@ void ReadISurf::read_corners_parallel(char *gridfile)
   else offset = offsetextra + (me-procextra) * nper;
 
   uint8_t *ibuf = NULL;
-  double *dbuf = NULL;
+  sfloat *dbuf = NULL;
 
   if (precision == INT) memory->create(ibuf,nvalues,"readisurf:ibuf");
   else if (precision == DOUBLE) memory->create(dbuf,nvalues,"readisurf:dbuf");
@@ -558,8 +559,8 @@ void ReadISurf::read_corners_parallel(char *gridfile)
     fseek(fp,offset*sizeof(uint8_t)+dim*sizeof(int),SEEK_SET);
     tmp = fread(ibuf,sizeof(uint8_t),nvalues,fp);
   } else if (precision == DOUBLE) {
-    fseek(fp,offset*sizeof(double)+dim*sizeof(int),SEEK_SET);
-    tmp = fread(dbuf,sizeof(double),nvalues,fp);
+    fseek(fp,offset*sizeof(sfloat)+dim*sizeof(int),SEEK_SET);
+    tmp = fread(dbuf,sizeof(sfloat),nvalues,fp);
   }
   fclose(fp);
 
@@ -741,7 +742,7 @@ int ReadISurf::rendezvous_corners(int n, char *inbuf, int &flag,
   bigint offset = rptr->offset_rvous;
   int nvalues = rptr->nvalues_rvous;
   uint8_t *ibuf = rptr->ibuf_rvous;
-  double *dbuf = rptr->dbuf_rvous;
+  sfloat *dbuf = rptr->dbuf_rvous;
   int precision = rptr->precision;
 
   SendDatum *sdatum = (SendDatum *) inbuf;
@@ -806,7 +807,7 @@ void ReadISurf::process_args(int narg, char **arg)
     } else if (strcmp(arg[iarg],"precision") == 0)  {
       if (iarg+2 > narg) error->all(FLERR,"Invalid read_isurf command");
       if (strcmp(arg[iarg+1],"int") == 0) precision = INT;
-      else if (strcmp(arg[iarg+1],"double") == 0) precision = DOUBLE;
+      else if (strcmp(arg[iarg+1],"sfloat") == 0) precision = DOUBLE;
       else error->all(FLERR,"Invalid read_isurf command");
       iarg += 2;
     } else if (strcmp(arg[iarg],"read") == 0)  {

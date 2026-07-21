@@ -1,3 +1,4 @@
+/* AD-CONVERTED: double->sfloat by tools/ad_convert.py (see sfloat.h) */
 /* ----------------------------------------------------------------------
    SPARTA - Stochastic PArallel Rarefied-gas Time-accurate Analyzer
    http://sparta.github.io
@@ -84,9 +85,9 @@ RegCylinder::RegCylinder(SPARTA *sparta, int narg, char **arg) :
    inside = 0 if x,y,z is outside and not on surface
 ------------------------------------------------------------------------- */
 
-int RegCylinder::inside(double *x)
+int RegCylinder::inside(sfloat *x)
 {
-  double del1,del2,dist;
+  sfloat del1,del2,dist;
   int inside;
 
   if (axis == 'x') {

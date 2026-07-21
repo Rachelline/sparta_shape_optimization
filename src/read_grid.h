@@ -1,3 +1,4 @@
+/* AD-CONVERTED: double->sfloat by tools/ad_convert.py (see sfloat.h) */
 /* ----------------------------------------------------------------------
    SPARTA - Stochastic PArallel Rarefied-gas Time-accurate Analyzer
    http://sparta.github.io
@@ -43,7 +44,7 @@ class ReadGrid : protected Pointers {
   char **name_custom;
   int *type_custom,*size_custom,*ghost_custom;
   int nclocal,ncmax;
-  double **cvalues;
+  sfloat **cvalues;
 
   bigint ncell;
   int nlevels;
@@ -58,7 +59,7 @@ class ReadGrid : protected Pointers {
 
   void read_cells();
   void create_cells(int, char *);
-  void add_custom(double *);
+  void add_custom(sfloat *);
   void create_custom();
 
   void open(char *);

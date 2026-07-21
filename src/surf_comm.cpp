@@ -1,3 +1,4 @@
+/* AD-CONVERTED: double->sfloat by tools/ad_convert.py (see sfloat.h) */
 /* ----------------------------------------------------------------------
    SPARTA - Stochastic PArallel Rarefied-gas Time-accurate Analyzer
    http://sparta.github.io
@@ -50,7 +51,7 @@ enum{INT,DOUBLE};                      // several files
 ------------------------------------------------------------------------- */
 
 void Surf::redistribute_surfs(int n, Line *newlines, Tri *newtris,
-			      int nc, int *index_custom, double **cvalues,
+			      int nc, int *index_custom, sfloat **cvalues,
 			      bigint nsurf_new, bigint nsurf_old)
 {
   int dim = domain->dimension;
@@ -201,7 +202,7 @@ void Surf::redistribute_surfs(int n, Line *newlines, Tri *newtris,
 
   in_rvous = NULL;
   if (n) in_rvous = (char *) &cvalues[0][0];
-  nbytes = (1+nvalues_custom) * sizeof(double);
+  nbytes = (1+nvalues_custom) * sizeof(sfloat);
 
   nout = comm->rendezvous(1,n,in_rvous,nbytes,
 			  0,proclist,rendezvous_redistribute_custom,
@@ -297,8 +298,8 @@ int Surf::rendezvous_redistribute_custom(int n, char *inbuf, int &flag,
   int *ewhich = sptr->ewhich;
   int **eivec = sptr->eivec;
   int ***eiarray = sptr->eiarray;
-  double **edvec = sptr->edvec;
-  double ***edarray = sptr->edarray;
+  sfloat **edvec = sptr->edvec;
+  sfloat ***edarray = sptr->edarray;
 
   // Surf class variables peculiar to this rendevous operation
 
@@ -308,7 +309,7 @@ int Surf::rendezvous_redistribute_custom(int n, char *inbuf, int &flag,
   // loop over received sets of custom values
   // copy each value into appropriate locataion in custom vec or array
 
-  double *in_custom = (double *) inbuf;
+  sfloat *in_custom = (sfloat *) inbuf;
 
   int i,j,k,m;
   int index,type,size;
@@ -349,7 +350,7 @@ int Surf::rendezvous_redistribute_custom(int n, char *inbuf, int &flag,
 
     } else {
       if (size == 0) {
-	double *dvector = edvec[ewhich[index]];
+	sfloat *dvector = edvec[ewhich[index]];
 
 	m = 0;
 	for (i = 0; i < n; i++) {
@@ -360,7 +361,7 @@ int Surf::rendezvous_redistribute_custom(int n, char *inbuf, int &flag,
 	}
 	
       } else {
-	double **darray = edarray[ewhich[index]];
+	sfloat **darray = edarray[ewhich[index]];
 
 	m = 0;
 	for (i = 0; i < n; i++) {
@@ -593,14 +594,14 @@ void Surf::spread_own2local_reduce(int n, int type, void *in, void *out)
     memory->destroy(myvec);
 
   } else {
-    double *ivec = (double *) in;
-    double *ovec = (double *) out;
+    sfloat *ivec = (sfloat *) in;
+    sfloat *ovec = (sfloat *) out;
 
-    double *myvec;
+    sfloat *myvec;
     bigint bcount = (bigint) nlocal * n;
     if (bcount > MAXSMALLINT)
       error->all(FLERR,"Overflow in spread_own2local_reduce");
-    bigint bbytes = (bigint) nlocal * n * sizeof(double);
+    bigint bbytes = (bigint) nlocal * n * sizeof(sfloat);
 
     memory->create(myvec,nlocal*n,"surf/spread:myvec");
     memset(myvec,0,bbytes);
@@ -619,7 +620,7 @@ void Surf::spread_own2local_reduce(int n, int type, void *in, void *out)
       }
     }
 
-    MPI_Allreduce(myvec,ovec,n*nlocal,MPI_DOUBLE,MPI_SUM,world);
+    MPI_Allreduce(myvec,ovec,n*nlocal,MPI_SFLOAT,MPI_SUM,world);
 
     memory->destroy(myvec);
   }
@@ -671,7 +672,7 @@ void Surf::spread_own2local_rendezvous(int n, int type, void *in, void *out)
 
   int outbytes;
   if (type == INT) outbytes = (n+1) * sizeof(int);
-  else outbytes = (n+1) * sizeof(double);
+  else outbytes = (n+1) * sizeof(sfloat);
   char *buf;
 
   int nreturn = comm->rendezvous(1,nall,(char *) inbuf,3*sizeof(int),
@@ -685,14 +686,14 @@ void Surf::spread_own2local_rendezvous(int n, int type, void *in, void *out)
   // copy per-surf values into out
 
   int *ibuf,*ioutbuf;
-  double *dbuf,*doutbuf;
+  sfloat *dbuf,*doutbuf;
 
   if (type == INT) {
     ibuf = (int *) buf;
     ioutbuf = (int *) out;
   } else if (type == DOUBLE) {
-    dbuf = (double *) buf;
-    doutbuf = (double *) out;
+    dbuf = (sfloat *) buf;
+    doutbuf = (sfloat *) out;
   }
 
   m = 0;
@@ -735,14 +736,14 @@ int Surf::rendezvous_own2local(int n, char *inbuf,
 {
   int j,k,m,idata;
   int *ibuf,*iout;
-  double *dbuf,*dout;
+  sfloat *dbuf,*dout;
 
   Surf *sptr = (Surf *) ptr;
   Memory *memory = sptr->memory;
   int type = sptr->spread_type;
   int size = sptr->spread_size;
   if (type == INT) ibuf = (int *) sptr->spread_data;
-  else if (type == DOUBLE) dbuf = (double *) sptr->spread_data;
+  else if (type == DOUBLE) dbuf = (sfloat *) sptr->spread_data;
 
   // allocate proclist & iout/dout, based on n, type, size
 
@@ -826,7 +827,7 @@ void Surf::assign_unique()
 
   if (!urandom) {
     urandom = new RanKnuth(update->ranmaster->uniform());
-    double seed = update->ranmaster->uniform();
+    sfloat seed = update->ranmaster->uniform();
     urandom->reset(seed,me,100);
   }
 
@@ -981,7 +982,7 @@ void Surf::spread_local2own(int n, int type, void *in, void *out)
 {
   int i,j,k,idata;
   int *iinput,*ibuf;
-  double *dinput,*dbuf;
+  sfloat *dinput,*dbuf;
 
   // allocate memory for rvous input
 
@@ -994,7 +995,7 @@ void Surf::spread_local2own(int n, int type, void *in, void *out)
     iinput = (int *) in;
     memory->create(ibuf,(n+1)*nunique,"spread/local2own:ibuf");
   } else if (type == DOUBLE) {
-    dinput = (double *) in;
+    dinput = (sfloat *) in;
     memory->create(dbuf,(n+1)*nunique,"spread/local2own:dbuf");
   }
 
@@ -1042,7 +1043,7 @@ void Surf::spread_local2own(int n, int type, void *in, void *out)
     inbytes = (n+1) * sizeof(int);
   } else if (type == DOUBLE) {
     in_rvous = (char *) dbuf;
-    inbytes = (n+1) * sizeof(double);
+    inbytes = (n+1) * sizeof(sfloat);
   }
 
   char *buf;
@@ -1066,7 +1067,7 @@ int Surf::rendezvous_local2own(int n, char *inbuf,
 {
   int j,m,idata;
   int *ibuf,*iout;
-  double *dbuf,*dout;
+  sfloat *dbuf,*dout;
 
   Surf *sptr = (Surf *) ptr;
   int type = sptr->spread_type;
@@ -1076,8 +1077,8 @@ int Surf::rendezvous_local2own(int n, char *inbuf,
     ibuf = (int *) inbuf;
     iout = (int *) sptr->spread_data;
   } else if (type == DOUBLE) {
-    dbuf = (double *) inbuf;
-    dout = (double *) sptr->spread_data;
+    dbuf = (sfloat *) inbuf;
+    dout = (sfloat *) sptr->spread_data;
   }
 
   // loop over received datums, copy values to out

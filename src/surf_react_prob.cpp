@@ -1,3 +1,4 @@
+/* AD-CONVERTED: double->sfloat by tools/ad_convert.py (see sfloat.h) */
 /* ----------------------------------------------------------------------
    SPARTA - Stochastic PArallel Rarefied-gas Time-accurate Analyzer
    http://sparta.github.io
@@ -69,7 +70,7 @@ SurfReactProb::SurfReactProb(SPARTA *sparta, int narg, char **arg) :
   // initialize RNG
 
   random = new RanKnuth(update->ranmaster->uniform());
-  double seed = update->ranmaster->uniform();
+  sfloat seed = update->ranmaster->uniform();
   random->reset(seed,comm->me,100);
 }
 
@@ -115,7 +116,7 @@ void SurfReactProb::init()
    if dissociation, add particle and return ptr JP
 ------------------------------------------------------------------------- */
 
-int SurfReactProb::react(Particle::OnePart *&ip, int, double *,
+int SurfReactProb::react(Particle::OnePart *&ip, int, sfloat *,
                          Particle::OnePart *&jp, int &)
 {
   int n = reactions[ip->ispecies].n;
@@ -125,8 +126,8 @@ int SurfReactProb::react(Particle::OnePart *&ip, int, double *,
 
   // probablity to compare to reaction probability
 
-  double react_prob = 0.0;
-  double random_prob = random->uniform();
+  sfloat react_prob = 0.0;
+  sfloat random_prob = random->uniform();
 
   // loop over possible reactions for this species
   // if dissociation performs a realloc:
@@ -146,11 +147,11 @@ int SurfReactProb::react(Particle::OnePart *&ip, int, double *,
       switch (r->type) {
       case DISSOCIATION:
         {
-          double x[3],v[3];
+          sfloat x[3],v[3];
           ip->ispecies = r->products[0];
           int id = MAXSMALLINT*random->uniform();
-          memcpy(x,ip->x,3*sizeof(double));
-          memcpy(v,ip->v,3*sizeof(double));
+          memcpy(x,ip->x,3*sizeof(sfloat));
+          memcpy(v,ip->v,3*sizeof(sfloat));
           Particle::OnePart *particles = particle->particles;
           int reallocflag =
             particle->add_particle(id,r->products[1],ip->icell,x,v,0.0,0.0);
@@ -186,7 +187,7 @@ char *SurfReactProb::reactionID(int m)
 
 /* ---------------------------------------------------------------------- */
 
-double SurfReactProb::reaction_coeff(int m)
+sfloat SurfReactProb::reaction_coeff(int m)
 {
   return rlist[m].coeff[1];
 }
@@ -279,7 +280,7 @@ void SurfReactProb::init_reactions()
 
   // check that summed reaction probabilities for each species <= 1.0
 
-  double sum;
+  sfloat sum;
   for (int i = 0; i < nspecies; i++) {
     sum = 0.0;
     for (int j = 0; j < reactions[i].n; j++)
@@ -337,7 +338,7 @@ void SurfReactProb::readfile(char *fname)
         r->id_products = new char*[MAXPRODUCT];
         r->reactants = new int[MAXREACTANT];
         r->products = new int[MAXPRODUCT];
-        r->coeff = new double[MAXCOEFF];
+        r->coeff = new sfloat[MAXCOEFF];
         r->id = NULL;
       }
     }

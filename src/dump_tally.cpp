@@ -1,3 +1,4 @@
+/* AD-CONVERTED: double->sfloat by tools/ad_convert.py (see sfloat.h) */
 /* ----------------------------------------------------------------------
    SPARTA - Stochastic PArallel Rarefied-gas Time-accurate Analyzer
    http://sparta.sandia.gov
@@ -198,12 +199,12 @@ void DumpTally::header_binary(bigint ndump)
   fwrite(&update->ntimestep,sizeof(bigint),1,fp);
   fwrite(&ndump,sizeof(bigint),1,fp);
   fwrite(domain->bflag,6*sizeof(int),1,fp);
-  fwrite(&boxxlo,sizeof(double),1,fp);
-  fwrite(&boxxhi,sizeof(double),1,fp);
-  fwrite(&boxylo,sizeof(double),1,fp);
-  fwrite(&boxyhi,sizeof(double),1,fp);
-  fwrite(&boxzlo,sizeof(double),1,fp);
-  fwrite(&boxzhi,sizeof(double),1,fp);
+  fwrite(&boxxlo,sizeof(sfloat),1,fp);
+  fwrite(&boxxhi,sizeof(sfloat),1,fp);
+  fwrite(&boxylo,sizeof(sfloat),1,fp);
+  fwrite(&boxyhi,sizeof(sfloat),1,fp);
+  fwrite(&boxzlo,sizeof(sfloat),1,fp);
+  fwrite(&boxzhi,sizeof(sfloat),1,fp);
   fwrite(&nfield,sizeof(int),1,fp);
   if (multiproc) fwrite(&nclusterprocs,sizeof(int),1,fp);
   else fwrite(&nprocs,sizeof(int),1,fp);
@@ -265,30 +266,30 @@ void DumpTally::pack()
 
 /* ---------------------------------------------------------------------- */
 
-void DumpTally::write_data(int n, double *mybuf)
+void DumpTally::write_data(int n, sfloat *mybuf)
 {
   (this->*write_choice)(n,mybuf);
 }
 
 /* ---------------------------------------------------------------------- */
 
-void DumpTally::write_binary(int n, double *mybuf)
+void DumpTally::write_binary(int n, sfloat *mybuf)
 {
   n *= size_one;
   fwrite(&n,sizeof(int),1,fp);
-  fwrite(mybuf,sizeof(double),n,fp);
+  fwrite(mybuf,sizeof(sfloat),n,fp);
 }
 
 /* ---------------------------------------------------------------------- */
 
-void DumpTally::write_string(int n, double *mybuf)
+void DumpTally::write_string(int n, sfloat *mybuf)
 {
   fwrite(mybuf,sizeof(char),n,fp);
 }
 
 /* ---------------------------------------------------------------------- */
 
-void DumpTally::write_text(int n, double *mybuf)
+void DumpTally::write_text(int n, sfloat *mybuf)
 {
   int i,j;
 
@@ -399,14 +400,14 @@ void DumpTally::pack_compute(int n)
   Compute *c = compute[field2index[n]];
 
   if (index == 0) {
-    double *vector = c->vector_tally;
+    sfloat *vector = c->vector_tally;
     for (int i = 0; i < ntally; i++) {
       buf[n] = vector[i];
       n += size_one;
     }
   } else {
     index--;
-    double **array = c->array_tally;
+    sfloat **array = c->array_tally;
     for (int i = 0; i < ntally; i++) {
       buf[n] = array[i][index];
       n += size_one;

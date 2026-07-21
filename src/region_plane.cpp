@@ -1,3 +1,4 @@
+/* AD-CONVERTED: double->sfloat by tools/ad_convert.py (see sfloat.h) */
 /* ----------------------------------------------------------------------
    SPARTA - Stochastic PArallel Rarefied-gas Time-accurate Analyzer
    http://sparta.github.io
@@ -37,7 +38,7 @@ RegPlane::RegPlane(SPARTA *sparta, int narg, char **arg) :
 
   // enforce unit normal
 
-  double rsq = normal[0]*normal[0] + normal[1]*normal[1] + normal[2]*normal[2];
+  sfloat rsq = normal[0]*normal[0] + normal[1]*normal[1] + normal[2]*normal[2];
   if (rsq == 0.0) error->all(FLERR,"Illegal region plane command");
   normal[0] /= sqrt(rsq);
   normal[1] /= sqrt(rsq);
@@ -54,9 +55,9 @@ RegPlane::RegPlane(SPARTA *sparta, int narg, char **arg) :
    x,y,z is inside if (x-xp) dot normal >= 0
 ------------------------------------------------------------------------- */
 
-int RegPlane::inside(double *x)
+int RegPlane::inside(sfloat *x)
 {
-  double dot = (x[0]-xp)*normal[0] + (x[1]-yp)*normal[1] + (x[2]-zp)*normal[2];
+  sfloat dot = (x[0]-xp)*normal[0] + (x[1]-yp)*normal[1] + (x[2]-zp)*normal[2];
 
   if (dot >= 0.0) return 1;
   return 0;

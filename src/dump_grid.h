@@ -1,3 +1,4 @@
+/* AD-CONVERTED: double->sfloat by tools/ad_convert.py (see sfloat.h) */
 /* ----------------------------------------------------------------------
    SPARTA - Stochastic PArallel Rarefied-gas Time-accurate Analyzer
    http://sparta.github.io
@@ -55,7 +56,7 @@ class DumpGrid : public Dump {
   int nvariable;             // # of Variables used by dump
   char **id_variable;        // their names
   int *variable;             // list of indices for the Variables
-  double **vbuf;             // local storage for variable evaluation
+  sfloat **vbuf;             // local storage for variable evaluation
   int maxgrid;               // max length of per-grid variable vectors
 
   int ncustom;               // # of grid Custom attributes used by dump
@@ -71,7 +72,7 @@ class DumpGrid : public Dump {
   void write_header(bigint);
   int count();
   void pack();
-  void write_data(int, double *);
+  void write_data(int, sfloat *);
 
   int parse_fields(int, char **);
   int add_custom(char *);
@@ -85,11 +86,11 @@ class DumpGrid : public Dump {
   void header_binary(bigint);
   void header_item(bigint);
 
-  typedef void (DumpGrid::*FnPtrData)(int, double *);
+  typedef void (DumpGrid::*FnPtrData)(int, sfloat *);
   FnPtrData write_choice;              // ptr to write data functions
-  void write_binary(int, double *);
-  void write_string(int, double *);
-  void write_text(int, double *);
+  void write_binary(int, sfloat *);
+  void write_string(int, sfloat *);
+  void write_text(int, sfloat *);
 
   // customize by adding a method prototype
 

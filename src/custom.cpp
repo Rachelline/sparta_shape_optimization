@@ -1,3 +1,4 @@
+/* AD-CONVERTED: double->sfloat by tools/ad_convert.py (see sfloat.h) */
 /* ----------------------------------------------------------------------
    SPARTA - Stochastic PArallel Rarefied-gas Time-accurate Analyzer
    http://sparta.github.io
@@ -679,8 +680,8 @@ bigint Custom::action_set(int vstyle, int vindex,
 {
   bigint count = 0;
 
-  double scalar = 0.0;
-  double *vector = NULL;
+  sfloat scalar = 0.0;
+  sfloat *vector = NULL;
 
   Variable *variable = input->variable;
 
@@ -733,7 +734,7 @@ bigint Custom::action_set(int vstyle, int vindex,
 
 bigint Custom::set_particle(Mixture *mixture, Region *region,
                             int cindex, int ctype, int csize, int ccol,
-                            double scalar, double *vector)
+                            sfloat scalar, sfloat *vector)
 {
   Particle::OnePart *particles = particle->particles;
   int *species2species = mixture->species2species;
@@ -791,7 +792,7 @@ bigint Custom::set_particle(Mixture *mixture, Region *region,
 
   } else if (ctype == DOUBLE) {
     if (csize == 0) {
-      double *cvector = particle->edvec[particle->ewhich[cindex]];
+      sfloat *cvector = particle->edvec[particle->ewhich[cindex]];
       if (vector) {
 	for (int i = 0 ; i < nlocal; i++) {
 	  if (choose[i]) cvector[i] = vector[i];
@@ -803,7 +804,7 @@ bigint Custom::set_particle(Mixture *mixture, Region *region,
       }
 
     } else {
-      double **carray = particle->edarray[particle->ewhich[cindex]];
+      sfloat **carray = particle->edarray[particle->ewhich[cindex]];
       ccol--;
       if (vector) {
 	for (int i = 0 ; i < nlocal; i++) {
@@ -830,7 +831,7 @@ bigint Custom::set_particle(Mixture *mixture, Region *region,
 
 bigint Custom::set_grid(int groupbit, Region *region,
                         int cindex, int ctype, int csize, int ccol,
-                        double scalar, double *vector)
+                        sfloat scalar, sfloat *vector)
 {
   Grid::ChildCell *cells = grid->cells;
   Grid::ChildInfo *cinfo = grid->cinfo;
@@ -844,7 +845,7 @@ bigint Custom::set_grid(int groupbit, Region *region,
   memset(choose,0,nglocal*sizeof(int));
 
   int flag;
-  double point[3];
+  sfloat point[3];
 
   bigint count = 0;
   for (int i = 0; i < nglocal; i++) {
@@ -896,7 +897,7 @@ bigint Custom::set_grid(int groupbit, Region *region,
 
   } else if (ctype == DOUBLE) {
     if (csize == 0) {
-      double *cvector = grid->edvec[grid->ewhich[cindex]];
+      sfloat *cvector = grid->edvec[grid->ewhich[cindex]];
       if (vector) {
 	for (int i = 0 ; i < nglocal; i++) {
 	  if (choose[i]) cvector[i] = vector[i];
@@ -908,7 +909,7 @@ bigint Custom::set_grid(int groupbit, Region *region,
       }
 
     } else {
-      double **carray = grid->edarray[grid->ewhich[cindex]];
+      sfloat **carray = grid->edarray[grid->ewhich[cindex]];
       ccol--;
       if (vector) {
 	for (int i = 0 ; i < nglocal; i++) {
@@ -935,7 +936,7 @@ bigint Custom::set_grid(int groupbit, Region *region,
 
 bigint Custom::set_surf(int groupbit, Region *region,
                         int cindex, int ctype, int csize, int ccol,
-                        double scalar, double *vector)
+                        sfloat scalar, sfloat *vector)
 {
   int dim = domain->dimension;
   int distributed = surf->distributed;
@@ -964,7 +965,7 @@ bigint Custom::set_surf(int groupbit, Region *region,
   memset(choose,0,nsown*sizeof(int));
 
   int flag;
-  double point[3];
+  sfloat point[3];
 
   int m = 0;
 
@@ -1030,7 +1031,7 @@ bigint Custom::set_surf(int groupbit, Region *region,
 
   } else if (ctype == DOUBLE) {
     if (csize == 0) {
-      double *cvector = surf->edvec[surf->ewhich[cindex]];
+      sfloat *cvector = surf->edvec[surf->ewhich[cindex]];
       if (vector) {
 	for (int i = 0 ; i < nsown; i++) {
 	  if (choose[i]) cvector[i] = vector[i];
@@ -1042,7 +1043,7 @@ bigint Custom::set_surf(int groupbit, Region *region,
       }
 
     } else {
-      double **carray = surf->edarray[surf->ewhich[cindex]];
+      sfloat **carray = surf->edarray[surf->ewhich[cindex]];
       ccol--;
       if (vector) {
 	for (int i = 0 ; i < nsown; i++) {
@@ -1081,9 +1082,9 @@ bigint Custom::read_file(int mode, int colcount,
   // only one will be active for each value in input line
 
   int **ivec = new int*[colcount];
-  double **dvec = new double*[colcount];
+  sfloat **dvec = new sfloat*[colcount];
   int ***iarray = new int**[colcount];
-  double ***darray = new double**[colcount];
+  sfloat ***darray = new sfloat**[colcount];
 
   for (int j = 0; j < colcount; j++) {
     if (ctype[j] == INT) {
@@ -1130,7 +1131,7 @@ bigint Custom::read_file(int mode, int colcount,
   // read file
 
   MPI_Barrier(world);
-  double time1 = MPI_Wtime();
+  sfloat time1 = MPI_Wtime();
 
   // NOTE: support compressed files like read_grid ?
 
@@ -1324,8 +1325,8 @@ void Custom::read_coarse_files(char *fname, int numfile, int colcount)
   // storage for coarse grid points I read in
 
   int ncoarse_me = 0;
-  double **xyz_coarse_me = NULL;
-  double **values_coarse_me = NULL;
+  sfloat **xyz_coarse_me = NULL;
+  sfloat **values_coarse_me = NULL;
 
   for (int iproc = comm->me; iproc < numfile; iproc += comm->nprocs) {
 
@@ -1406,8 +1407,8 @@ void Custom::read_coarse_files(char *fname, int numfile, int colcount)
 
   // check that each coarse point is inside or on simulation box
 
-  double *boxlo = domain->boxlo;
-  double *boxhi = domain->boxhi;
+  sfloat *boxlo = domain->boxlo;
+  sfloat *boxhi = domain->boxhi;
   int count = 0;
   int flag;
 
@@ -1450,11 +1451,11 @@ void Custom::read_coarse_files(char *fname, int numfile, int colcount)
   for (int i = 1; i < nprocs; i++) displs[i] = displs[i-1] + recvcounts[i-1];
 
   if (ncoarse_me)
-    MPI_Allgatherv(xyz_coarse_me[0],nper,MPI_DOUBLE,
-                   xyz_coarse[0],recvcounts,displs,MPI_DOUBLE,world);
+    MPI_Allgatherv(xyz_coarse_me[0],nper,MPI_SFLOAT,
+                   xyz_coarse[0],recvcounts,displs,MPI_SFLOAT,world);
   else
-    MPI_Allgatherv(NULL,nper,MPI_DOUBLE,
-                   xyz_coarse[0],recvcounts,displs,MPI_DOUBLE,world);
+    MPI_Allgatherv(NULL,nper,MPI_SFLOAT,
+                   xyz_coarse[0],recvcounts,displs,MPI_SFLOAT,world);
 
   nper = colcount * ncoarse_me;
 
@@ -1463,11 +1464,11 @@ void Custom::read_coarse_files(char *fname, int numfile, int colcount)
   for (int i = 1; i < nprocs; i++) displs[i] = displs[i-1] + recvcounts[i-1];
 
   if (ncoarse_me)
-    MPI_Allgatherv(values_coarse_me[0],nper,MPI_DOUBLE,
-                   values_coarse[0],recvcounts,displs,MPI_DOUBLE,world);
+    MPI_Allgatherv(values_coarse_me[0],nper,MPI_SFLOAT,
+                   values_coarse[0],recvcounts,displs,MPI_SFLOAT,world);
   else
-    MPI_Allgatherv(NULL,nper,MPI_DOUBLE,
-                   values_coarse[0],recvcounts,displs,MPI_DOUBLE,world);
+    MPI_Allgatherv(NULL,nper,MPI_SFLOAT,
+                   values_coarse[0],recvcounts,displs,MPI_SFLOAT,world);
 
   // clean up
 
@@ -1514,11 +1515,11 @@ bigint Custom::coarse_tree_neighbor_assign(int external, int colcount,
 
   Grid::ChildCell *cells = grid->cells;
   int nglocal = grid->nlocal;
-  double ctr[3];
-  double distsq;
+  sfloat ctr[3];
+  sfloat distsq;
 
   int *closest;
-  double *closest_distsq;
+  sfloat *closest_distsq;
   memory->create(closest,nglocal,"KDTree:closest");
   memory->create(closest_distsq,nglocal,"KDTree:closest_distsq");
 
@@ -1541,9 +1542,9 @@ bigint Custom::coarse_tree_neighbor_assign(int external, int colcount,
   // only one will be active for each value in input line
 
   int **ivec = new int*[colcount];
-  double **dvec = new double*[colcount];
+  sfloat **dvec = new sfloat*[colcount];
   int ***iarray = new int**[colcount];
-  double ***darray = new double**[colcount];
+  sfloat ***darray = new sfloat**[colcount];
 
   for (int j = 0; j < colcount; j++) {
     if (ctype[j] == INT) {
@@ -1578,9 +1579,9 @@ bigint Custom::coarse_tree_neighbor_assign(int external, int colcount,
   //   plist = indices of neighbor coarse points
 
   int ncount;
-  double cut,cutsq;
+  sfloat cut,cutsq;
   int plist[MAXTIE];
-  double dlist[MAXTIE];
+  sfloat dlist[MAXTIE];
 
   for (int i = 0; i < nglocal; i++) {
     if (cells[i].nsplit <= 0) continue;
@@ -1682,7 +1683,7 @@ enum{BRANCH,LEAF};
 
 /* ---------------------------------------------------------------------- */
 
-KDTree::KDTree(SPARTA *sparta, int dimension, int n, double **coords) :
+KDTree::KDTree(SPARTA *sparta, int dimension, int n, sfloat **coords) :
   Pointers(sparta)
 {
   dim = dimension;
@@ -1737,8 +1738,8 @@ void KDTree::create_tree(int iparent, int n, int *plist)
 
   // calculate bbox around list of points
 
-  double bboxlo[3] = {BIG,BIG,BIG};
-  double bboxhi[3] = {-BIG,-BIG,-BIG};
+  sfloat bboxlo[3] = {BIG,BIG,BIG};
+  sfloat bboxhi[3] = {-BIG,-BIG,-BIG};
 
   for (int i = 0; i < n; i++) {
     bboxlo[0] = MIN(bboxlo[0],points[plist[i]][0]);
@@ -1763,9 +1764,9 @@ void KDTree::create_tree(int iparent, int n, int *plist)
   // splitdim = which dim to split points in (minimum bbox edge)
   // split = splitting value in that dim
 
-  double xdelta = bboxhi[0] - bboxlo[0];
-  double ydelta = bboxhi[1] - bboxlo[1];
-  double zdelta = bboxhi[2] - bboxlo[2];
+  sfloat xdelta = bboxhi[0] - bboxlo[0];
+  sfloat ydelta = bboxhi[1] - bboxlo[1];
+  sfloat zdelta = bboxhi[2] - bboxlo[2];
 
   int splitdim;
   if (xdelta >= ydelta) splitdim = 0;
@@ -1775,7 +1776,7 @@ void KDTree::create_tree(int iparent, int n, int *plist)
     if (splitdim == 1 && zdelta > ydelta) splitdim = 2;
   }
 
-  double split = 0.5 * (bboxlo[splitdim] + bboxhi[splitdim]);
+  sfloat split = 0.5 * (bboxlo[splitdim] + bboxhi[splitdim]);
 
   tree[ntree].splitdim = splitdim;
   tree[ntree].split = split;
@@ -1825,13 +1826,13 @@ void KDTree::create_tree(int iparent, int n, int *plist)
        then no need to walk that branch
 ---------------------------------------------------------------------- */
 
-int KDTree::find_nearest(double *x, int inode, double &distsq)
+int KDTree::find_nearest(sfloat *x, int inode, sfloat &distsq)
 {
   int startnode = inode;
   inode = walk_to_leaf(inode,x);
   int ipoint = tree[inode].ipoint;
 
-  double dx,dy,dz;
+  sfloat dx,dy,dz;
   dx = x[0] - points[ipoint][0];
   dy = x[1] - points[ipoint][1];
   if (dim == 3) dz = x[2] - points[ipoint][2];
@@ -1839,14 +1840,14 @@ int KDTree::find_nearest(double *x, int inode, double &distsq)
   distsq = dx*dx + dy*dy + dz*dz;
 
   int ipoint_new;
-  double distsq_new;
+  sfloat distsq_new;
 
   while (inode != startnode) {
     int ichild = inode;
     inode = tree[inode].iparent;
     int splitdim = tree[inode].splitdim;
-    double split = tree[inode].split;
-    double delta = x[splitdim] - split;
+    sfloat split = tree[inode].split;
+    sfloat delta = x[splitdim] - split;
     if (delta*delta <= distsq) {
       if (tree[inode].left == ichild)
         ipoint_new = find_nearest(x,tree[inode].right,distsq_new);
@@ -1885,19 +1886,19 @@ int KDTree::find_nearest(double *x, int inode, double &distsq)
        then no need to walk that branch
 ---------------------------------------------------------------------- */
 
-void KDTree::find_within_cutoff(double *x, int inode, double cutsq,
-                                int &ncount, int *plist, double *dlist)
+void KDTree::find_within_cutoff(sfloat *x, int inode, sfloat cutsq,
+                                int &ncount, int *plist, sfloat *dlist)
 {
   int startnode = inode;
   inode = walk_to_leaf(inode,x);
   int ipoint = tree[inode].ipoint;
 
-  double dx,dy,dz;
+  sfloat dx,dy,dz;
   dx = x[0] - points[ipoint][0];
   dy = x[1] - points[ipoint][1];
   if (dim == 3) dz = x[2] - points[ipoint][2];
   else dz = 0.0;
-  double distsq = dx*dx + dy*dy + dz*dz;
+  sfloat distsq = dx*dx + dy*dy + dz*dz;
 
   if (distsq <= cutsq) {
     if (ncount == MAXTIE)
@@ -1911,8 +1912,8 @@ void KDTree::find_within_cutoff(double *x, int inode, double cutsq,
     int ichild = inode;
     inode = tree[inode].iparent;
     int splitdim = tree[inode].splitdim;
-    double split = tree[inode].split;
-    double delta = x[splitdim] - split;
+    sfloat split = tree[inode].split;
+    sfloat delta = x[splitdim] - split;
     if (delta*delta <= cutsq) {
       if (tree[inode].left == ichild)
         find_within_cutoff(x,tree[inode].right,cutsq,ncount,plist,dlist);
@@ -1926,7 +1927,7 @@ void KDTree::find_within_cutoff(double *x, int inode, double cutsq,
 
 /* ---------------------------------------------------------------------- */
 
-int KDTree::walk_to_leaf(int inode, double *x)
+int KDTree::walk_to_leaf(int inode, sfloat *x)
 {
   if (tree[inode].which == LEAF) {
     count_leaf++;
@@ -1935,7 +1936,7 @@ int KDTree::walk_to_leaf(int inode, double *x)
 
   count_node++;
   int splitdim = tree[inode].splitdim;
-  double split = tree[inode].split;
+  sfloat split = tree[inode].split;
   if (x[splitdim] <= split) inode = walk_to_leaf(tree[inode].left,x);
   else inode = walk_to_leaf(tree[inode].right,x);
   return inode;
@@ -1991,16 +1992,16 @@ void KDTree::stats_search()
 {
   int nsearch_all;
   MPI_Allreduce(&nsearch,&nsearch_all,1,MPI_INT,MPI_SUM,world);
-  double avedist_all;
-  MPI_Allreduce(&avedist,&avedist_all,1,MPI_DOUBLE,MPI_SUM,world);
+  sfloat avedist_all;
+  MPI_Allreduce(&avedist,&avedist_all,1,MPI_SFLOAT,MPI_SUM,world);
   avedist_all /= nsearch_all;
 
   int count_node_all;
   MPI_Allreduce(&count_node,&count_node_all,1,MPI_INT,MPI_SUM,world);
-  double avecount_node = (double) count_node_all / nsearch_all;
+  sfloat avecount_node = (sfloat) count_node_all / nsearch_all;
   int count_leaf_all;
   MPI_Allreduce(&count_leaf,&count_leaf_all,1,MPI_INT,MPI_SUM,world);
-  double avecount_leaf = (double) count_leaf_all / nsearch_all;
+  sfloat avecount_leaf = (sfloat) count_leaf_all / nsearch_all;
 
   if (comm->me == 0) {
     if (screen) {
@@ -2034,19 +2035,19 @@ void KDTree::stats_neighbor()
 
   int count_node_all;
   MPI_Allreduce(&count_node,&count_node_all,1,MPI_INT,MPI_SUM,world);
-  double avecount_node = (double) count_node_all / nsearch_all;
+  sfloat avecount_node = (sfloat) count_node_all / nsearch_all;
   int count_leaf_all;
   MPI_Allreduce(&count_leaf,&count_leaf_all,1,MPI_INT,MPI_SUM,world);
-  double avecount_leaf = (double) count_leaf_all / nsearch_all;
+  sfloat avecount_leaf = (sfloat) count_leaf_all / nsearch_all;
 
   if (comm->me == 0) {
     if (screen) {
-      fprintf(screen,"    %g = ave count of neighbor points\n",(double) nneigh_all/nsearch_all);
+      fprintf(screen,"    %g = ave count of neighbor points\n",(sfloat) nneigh_all/nsearch_all);
       fprintf(screen,"    %g = ave node count to find neighbor points\n",avecount_node);
       fprintf(screen,"    %g = ave leaf count to find neighbor points\n",avecount_leaf);
     }
     if (logfile) {
-      fprintf(logfile,"    %g = ave count of neighbor points\n",(double) nneigh_all/nsearch_all);
+      fprintf(logfile,"    %g = ave count of neighbor points\n",(sfloat) nneigh_all/nsearch_all);
       fprintf(logfile,"    %g = ave node count to find neighbor points\n",avecount_node);
       fprintf(logfile,"    %g = ave leaf count to find neighbor points\n",avecount_leaf);
     }

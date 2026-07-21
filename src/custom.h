@@ -1,3 +1,4 @@
+/* AD-CONVERTED: double->sfloat by tools/ad_convert.py (see sfloat.h) */
 /* ----------------------------------------------------------------------
    SPARTA - Stochastic PArallel Rarefied-gas Time-accurate Analyzer
    http://sparta.github.io
@@ -54,15 +55,15 @@ class Custom : protected Pointers {
   Action *actions;
 
   int ncoarse, filestyle;
-  double **xyz_coarse;
-  double **values_coarse;
+  sfloat **xyz_coarse;
+  sfloat **values_coarse;
 
   bigint action_set(int, int, int, int, int, int,
                     int, class Mixture *, class Region *);
   bigint set_particle(class Mixture *, class Region *,
-                      int, int, int, int, double, double *);
-  bigint set_grid(int, class Region *, int, int, int, int, double, double *);
-  bigint set_surf(int, class Region *, int, int, int, int, double, double *);
+                      int, int, int, int, sfloat, sfloat *);
+  bigint set_grid(int, class Region *, int, int, int, int, sfloat, sfloat *);
+  bigint set_surf(int, class Region *, int, int, int, int, sfloat, sfloat *);
   bigint read_file(int, int, int *, int *, int *, int *, char *);
   void read_coarse_files(char *, int, int);
   bigint coarse_tree_neighbor_assign(int, int, int *, int *, int *, int *);
@@ -73,22 +74,22 @@ class Custom : protected Pointers {
 
 class KDTree : protected Pointers {
  public:
-  KDTree(class SPARTA *, int, int, double **);
+  KDTree(class SPARTA *, int, int, sfloat **);
   virtual ~KDTree();
   void create_tree(int, int, int *);
-  int find_nearest(double *, int, double &);
-  void find_within_cutoff(double *, int, double, int &, int *, double *);
+  int find_nearest(sfloat *, int, sfloat &);
+  void find_within_cutoff(sfloat *, int, sfloat, int &, int *, sfloat *);
   void stats_tree();
   void stats_search();
   void stats_neighbor();
 
  private:
   int dim;
-  double **points;
+  sfloat **points;
   int npoints;
 
   int nsearch,nneigh;
-  double avedist;
+  sfloat avedist;
   int count_node,count_leaf;
 
   struct Node {
@@ -97,7 +98,7 @@ class KDTree : protected Pointers {
     int ipoint;      // index of LEAF point
     int left,right;  // indices of 2 child nodes of this branch node
     int splitdim;    // dimension (0,1,2) of branch node splitting
-    double split;    // coordinate of branch node splitting
+    sfloat split;    // coordinate of branch node splitting
   };
 
   Node *tree;
@@ -105,7 +106,7 @@ class KDTree : protected Pointers {
   int maxtree;
 
   int depthwalk(int, int, int);
-  int walk_to_leaf(int, double *);
+  int walk_to_leaf(int, sfloat *);
 };
 
 }

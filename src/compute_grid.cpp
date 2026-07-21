@@ -1,3 +1,4 @@
+/* AD-CONVERTED: double->sfloat by tools/ad_convert.py (see sfloat.h) */
 /* ----------------------------------------------------------------------
    SPARTA - Stochastic PArallel Rarefied-gas Time-accurate Analyzer
    http://sparta.github.io
@@ -223,8 +224,8 @@ void ComputeGrid::compute_per_grid()
   int nlocal = particle->nlocal;
 
   int i,j,k,m,ispecies,igroup,icell;
-  double mass;
-  double *v,*vec;
+  sfloat mass;
+  sfloat *v,*vec;
 
   // zero all accumulators - could do this with memset()
 
@@ -310,7 +311,7 @@ void ComputeGrid::compute_per_grid()
    also return cols = ptr to list of columns in tally for this index
 ------------------------------------------------------------------------- */
 
-int ComputeGrid::query_tally_grid(int index, double **&array, int *&cols)
+int ComputeGrid::query_tally_grid(int index, sfloat **&array, int *&cols)
 {
   index--;
   int ivalue = index % nvalue;
@@ -335,8 +336,8 @@ int ComputeGrid::query_tally_grid(int index, double **&array, int *&cols)
 ------------------------------------------------------------------------- */
 
 void ComputeGrid::post_process_grid(int index, int nsample,
-                                    double **etally, int *emap,
-                                    double *vec, int nstride)
+                                    sfloat **etally, int *emap,
+                                    sfloat *vec, int nstride)
 {
   index--;
   int ivalue = index % nvalue;
@@ -369,7 +370,7 @@ void ComputeGrid::post_process_grid(int index, int nsample,
 
   case MASS:
     {
-      double norm;
+      sfloat norm;
       int mass = emap[0];
       int count = emap[1];
       for (int icell = lo; icell < hi; icell++) {
@@ -383,11 +384,11 @@ void ComputeGrid::post_process_grid(int index, int nsample,
 
   case NRHO:
     {
-      double wt;
-      double fnum = update->fnum;
+      sfloat wt;
+      sfloat fnum = update->fnum;
       Grid::ChildInfo *cinfo = grid->cinfo;
 
-      double norm;
+      sfloat norm;
       int count = emap[0];
       for (int icell = lo; icell < hi; icell++) {
         norm = cinfo[icell].volume;
@@ -403,11 +404,11 @@ void ComputeGrid::post_process_grid(int index, int nsample,
 
   case MASSRHO:
     {
-      double wt;
-      double fnum = update->fnum;
+      sfloat wt;
+      sfloat fnum = update->fnum;
       Grid::ChildInfo *cinfo = grid->cinfo;
 
-      double norm;
+      sfloat norm;
       int mass = emap[0];
       for (int icell = lo; icell < hi; icell++) {
         norm = cinfo[icell].volume;
@@ -424,7 +425,7 @@ void ComputeGrid::post_process_grid(int index, int nsample,
   case NFRAC:
   case MASSFRAC:
     {
-      double norm;
+      sfloat norm;
       int count_or_mass = emap[0];
       int cell_count_or_mass = emap[1];
       for (int icell = lo; icell < hi; icell++) {
@@ -443,7 +444,7 @@ void ComputeGrid::post_process_grid(int index, int nsample,
   case VSQ:
   case WSQ:
     {
-      double norm;
+      sfloat norm;
       int velocity = emap[0];
       int mass = emap[1];
       for (int icell = lo; icell < hi; icell++) {
@@ -457,7 +458,7 @@ void ComputeGrid::post_process_grid(int index, int nsample,
 
   case KE:
     {
-      double norm;
+      sfloat norm;
       int mvsq = emap[0];
       int count = emap[1];
       for (int icell = lo; icell < hi; icell++) {
@@ -471,7 +472,7 @@ void ComputeGrid::post_process_grid(int index, int nsample,
 
   case TEMPERATURE:
     {
-      double norm;
+      sfloat norm;
       int mvsq = emap[0];
       int count = emap[1];
       for (int icell = lo; icell < hi; icell++) {
@@ -486,7 +487,7 @@ void ComputeGrid::post_process_grid(int index, int nsample,
   case EROT:
   case EVIB:
     {
-      double norm;
+      sfloat norm;
       int eng = emap[0];
       int count = emap[1];
       for (int icell = lo; icell < hi; icell++) {
@@ -501,7 +502,7 @@ void ComputeGrid::post_process_grid(int index, int nsample,
   case TROT:
   case TVIB:
     {
-      double norm;
+      sfloat norm;
       int eng = emap[0];
       int dof = emap[1];
       for (int icell = lo; icell < hi; icell++) {
@@ -517,11 +518,11 @@ void ComputeGrid::post_process_grid(int index, int nsample,
   case PYRHO:
   case PZRHO:
     {
-      double wt;
-      double fnum = update->fnum;
+      sfloat wt;
+      sfloat fnum = update->fnum;
       Grid::ChildInfo *cinfo = grid->cinfo;
 
-      double norm;
+      sfloat norm;
       int mom = emap[0];
       for (int icell = lo; icell < hi; icell++) {
         norm = cinfo[icell].volume;
@@ -537,11 +538,11 @@ void ComputeGrid::post_process_grid(int index, int nsample,
 
   case KERHO:
     {
-      double wt;
-      double fnum = update->fnum;
+      sfloat wt;
+      sfloat fnum = update->fnum;
       Grid::ChildInfo *cinfo = grid->cinfo;
 
-      double norm;
+      sfloat norm;
       int ke = emap[0];
       for (int icell = lo; icell < hi; icell++) {
         norm = cinfo[icell].volume;
@@ -636,7 +637,7 @@ void ComputeGrid::reallocate()
 bigint ComputeGrid::memory_usage()
 {
   bigint bytes;
-  bytes = nglocal * sizeof(double);
-  bytes = ntotal*nglocal * sizeof(double);
+  bytes = nglocal * sizeof(sfloat);
+  bytes = ntotal*nglocal * sizeof(sfloat);
   return bytes;
 }

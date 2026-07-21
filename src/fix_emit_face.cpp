@@ -1,3 +1,4 @@
+/* AD-CONVERTED: double->sfloat by tools/ad_convert.py (see sfloat.h) */
 /* ----------------------------------------------------------------------
    SPARTA - Stochastic PArallel Rarefied-gas Time-accurate Analyzer
    http://sparta.github.io
@@ -162,8 +163,8 @@ void FixEmitFace::init()
 
   // mixture soundspeed, used by subsonic PONLY as default cell property
 
-  double avegamma = 0.0;
-  double avemass = 0.0;
+  sfloat avegamma = 0.0;
+  sfloat avemass = 0.0;
 
   for (int m = 0; m < nspecies; m++) {
     int ispecies = particle->mixture[imix]->species[m];
@@ -183,7 +184,7 @@ void FixEmitFace::init()
 
   // cannot have inflow on yhi if axisymmetric
 
-  double *vstream = particle->mixture[imix]->vstream;
+  sfloat *vstream = particle->mixture[imix]->vstream;
 
   if (domain->axisymmetric && faces[YHI] && vstream[1] != 0.0)
     error->all(FLERR,"Cannot use fix emit on axisymmetric yhi "
@@ -192,7 +193,7 @@ void FixEmitFace::init()
   // warn if any inflow face does not have an inward normal
   //   in direction of streaming velocity
 
-  double normal[3];
+  sfloat normal[3];
   int flag = 0;
 
   for (int i = 0; i < 6; i++) {
@@ -200,7 +201,7 @@ void FixEmitFace::init()
     normal[0] = normal[1] = normal[2] = 0.0;
     if (i % 2 == 0) normal[i/2] = 1.0;
     else normal[i/2] = -1.0;
-    double indot = vstream[0]*normal[0] + vstream[1]*normal[1] +
+    sfloat indot = vstream[0]*normal[0] + vstream[1]*normal[1] +
       vstream[2]*normal[2];
     if (indot < 0.0) flag = 1;
   }
@@ -259,7 +260,7 @@ void FixEmitFace::create_task(int icell)
 {
   int i,j,n,iface,flag,isp,extflag;
   int *cflags;
-  double indot,area,ntargetsp;
+  sfloat indot,area,ntargetsp;
 
   Surf::Line *lines = surf->lines;
   Surf::Tri *tris = surf->tris;
@@ -267,9 +268,9 @@ void FixEmitFace::create_task(int icell)
   Grid::ChildCell *cells = grid->cells;
   Grid::ChildInfo *cinfo = grid->cinfo;
 
-  double nrho = particle->mixture[imix]->nrho;
-  double *vstream = particle->mixture[imix]->vstream;
-  double *vscale = particle->mixture[imix]->vscale;
+  sfloat nrho = particle->mixture[imix]->nrho;
+  sfloat *vstream = particle->mixture[imix]->vstream;
+  sfloat *vscale = particle->mixture[imix]->vscale;
 
   // corners[i][j] = J corner points of face I of a grid cell
   // works for 2d quads and 3d hexes
@@ -475,11 +476,11 @@ void FixEmitFace::perform_task()
 void FixEmitFace::perform_task_onepass()
 {
   int pcell,ninsert,nactual,isp,ispecies,ndim,pdim,qdim,id;
-  double indot,scosine,rn,ntarget,vr;
-  double beta_un,normalized_distbn_fn,theta,erot,evib;
-  double temp_thermal,temp_rot,temp_vib;
-  double x[3],v[3];
-  double *lo,*hi,*normal,*vstream,*vscale;
+  sfloat indot,scosine,rn,ntarget,vr;
+  sfloat beta_un,normalized_distbn_fn,theta,erot,evib;
+  sfloat temp_thermal,temp_rot,temp_vib;
+  sfloat x[3],v[3];
+  sfloat *lo,*hi,*normal,*vstream,*vscale;
   Particle::OnePart *p;
 
   dt = update->dt;
@@ -492,7 +493,7 @@ void FixEmitFace::perform_task_onepass()
 
   // if modulate variable set, evaluate it as prefactor for this timestep
 
-  double prefactor = 1.0;
+  sfloat prefactor = 1.0;
   if (modvar) {
     prefactor = input->variable->compute_equal(imodvar);
     if (prefactor < 0.0) error->all(FLERR,"Fix emit/face modulation < 0.0");
@@ -506,7 +507,7 @@ void FixEmitFace::perform_task_onepass()
   //       first stage: normal dimension (ndim)
   //       second stage: parallel dimensions (pdim,qdim)
 
-  // double while loop until randomized particle velocity meets 2 criteria
+  // sfloat while loop until randomized particle velocity meets 2 criteria
   // inner do-while loop:
   //   v = vstream-component + vthermal is into simulation box
   //   see Bird 1994, p 425
@@ -654,11 +655,11 @@ void FixEmitFace::perform_task_onepass()
 void FixEmitFace::perform_task_twopass()
 {
   int pcell,ninsert,nactual,isp,ispecies,ndim,pdim,qdim,id;
-  double indot,scosine,rn,ntarget,vr;
-  double beta_un,normalized_distbn_fn,theta,erot,evib;
-  double temp_thermal,temp_rot,temp_vib;
-  double x[3],v[3];
-  double *lo,*hi,*normal,*vstream,*vscale;
+  sfloat indot,scosine,rn,ntarget,vr;
+  sfloat beta_un,normalized_distbn_fn,theta,erot,evib;
+  sfloat temp_thermal,temp_rot,temp_vib;
+  sfloat x[3],v[3];
+  sfloat *lo,*hi,*normal,*vstream,*vscale;
   Particle::OnePart *p;
 
   dt = update->dt;
@@ -671,7 +672,7 @@ void FixEmitFace::perform_task_twopass()
 
   // if modulate variable set, evaluate it as prefactor for this timestep
 
-  double prefactor = 1.0;
+  sfloat prefactor = 1.0;
   if (modvar) {
     prefactor = input->variable->compute_equal(imodvar);
     if (prefactor < 0.0) error->all(FLERR,"Fix emit/face modulation < 0.0");
@@ -685,7 +686,7 @@ void FixEmitFace::perform_task_twopass()
   //       first stage: normal dimension (ndim)
   //       second stage: parallel dimensions (pdim,qdim)
 
-  // double while loop until randomized particle velocity meets 2 criteria
+  // sfloat while loop until randomized particle velocity meets 2 criteria
   // inner do-while loop:
   //   v = vstream-component + vthermal is into simulation box
   //   see Bird 1994, p 425
@@ -852,7 +853,7 @@ void FixEmitFace::perform_task_twopass()
 
 int FixEmitFace::split(int icell, int iface)
 {
-  double x[3];
+  sfloat x[3];
 
   Grid::ChildCell *cells = grid->cells;
 
@@ -893,14 +894,14 @@ void FixEmitFace::subsonic_inflow()
   // recompute mixture vscale, since depends on temp_thermal
 
   int isp,icell;
-  double mass,indot,area,nrho,temp_thermal,vscale,ntargetsp;
-  double *vstream,*normal;
+  sfloat mass,indot,area,nrho,temp_thermal,vscale,ntargetsp;
+  sfloat *vstream,*normal;
 
   Particle::Species *species = particle->species;
   Grid::ChildInfo *cinfo = grid->cinfo;
   int *mspecies = particle->mixture[imix]->species;
-  double fnum = update->fnum;
-  double boltz = update->boltz;
+  sfloat fnum = update->fnum;
+  sfloat boltz = update->boltz;
 
   for (int i = 0; i < ntask; i++) {
     vstream = tasks[i].vstream;
@@ -993,20 +994,20 @@ void FixEmitFace::subsonic_sort()
 void FixEmitFace::subsonic_grid()
 {
   int m,ip,np,icell,ispecies,ndim;
-  double mass,masstot,gamma,ke,sign;
-  double nrho_cell,massrho_cell,temp_thermal_cell,press_cell;
-  double mass_cell,gamma_cell,soundspeed_cell;
-  double mv[4];
-  double *v,*vstream,*vscale;
+  sfloat mass,masstot,gamma,ke,sign;
+  sfloat nrho_cell,massrho_cell,temp_thermal_cell,press_cell;
+  sfloat mass_cell,gamma_cell,soundspeed_cell;
+  sfloat mv[4];
+  sfloat *v,*vstream,*vscale;
 
   Grid::ChildInfo *cinfo = grid->cinfo;
   Particle::OnePart *particles = particle->particles;
   int *next = particle->next;
   Particle::Species *species = particle->species;
-  double boltz = update->boltz;
+  sfloat boltz = update->boltz;
 
   int temp_exceed_flag = 0;
-  double tempmax = 0.0;
+  sfloat tempmax = 0.0;
 
   for (int i = 0; i < ntask; i++) {
     icell = tasks[i].pcell;
@@ -1117,7 +1118,7 @@ void FixEmitFace::grow_task()
 
   if (perspecies) {
     for (int i = oldmax; i < ntaskmax; i++)
-      tasks[i].ntargetsp = new double[nspecies];
+      tasks[i].ntargetsp = new sfloat[nspecies];
   } else {
     for (int i = oldmax; i < ntaskmax; i++)
       tasks[i].ntargetsp = NULL;
@@ -1125,7 +1126,7 @@ void FixEmitFace::grow_task()
 
   if (subsonic_style == PONLY) {
     for (int i = oldmax; i < ntaskmax; i++)
-      tasks[i].vscale = new double[nspecies];
+      tasks[i].vscale = new sfloat[nspecies];
   } else {
     for (int i = oldmax; i < ntaskmax; i++)
       tasks[i].vscale = NULL;
@@ -1141,13 +1142,13 @@ void FixEmitFace::realloc_nspecies()
   if (perspecies) {
     for (int i = 0; i < ntask; i++) {
       delete [] tasks[i].ntargetsp;
-      tasks[i].ntargetsp = new double[nspecies];
+      tasks[i].ntargetsp = new sfloat[nspecies];
     }
   }
   if (subsonic_style == PONLY) {
     for (int i = 0; i < ntask; i++) {
       delete [] tasks[i].vscale;
-      tasks[i].vscale = new double[nspecies];
+      tasks[i].vscale = new sfloat[nspecies];
     }
   }
 }

@@ -1,3 +1,4 @@
+/* AD-CONVERTED: double->sfloat by tools/ad_convert.py (see sfloat.h) */
 /* ----------------------------------------------------------------------
    SPARTA - Stochastic PArallel Rarefied-gas Time-accurate Analyzer
    http://sparta.github.io
@@ -96,7 +97,7 @@ void WriteISurf::command(int narg, char **arg)
     if (strcmp(arg[iarg],"precision") == 0)  {
       if (iarg+2 > narg) error->all(FLERR,"Invalid write_isurf command");
       if (strcmp(arg[iarg+1],"int") == 0) precision = INT;
-      else if (strcmp(arg[iarg+1],"double") == 0) precision = DOUBLE;
+      else if (strcmp(arg[iarg+1],"sfloat") == 0) precision = DOUBLE;
       else error->all(FLERR,"Invalid write_isurf command");
       iarg += 2;
     } else error->all(FLERR,"Invalid write_isurf command");
@@ -107,14 +108,14 @@ void WriteISurf::command(int narg, char **arg)
   if (me == 0 && screen) fprintf(screen,"Writing isurf file ...\n");
 
   MPI_Barrier(world);
-  double time1 = MPI_Wtime();
+  sfloat time1 = MPI_Wtime();
 
   dbuf = dbufall = NULL;
 
   collect_values();
 
   MPI_Barrier(world);
-  double time2 = MPI_Wtime();
+  sfloat time2 = MPI_Wtime();
 
   // write file
 
@@ -139,11 +140,11 @@ void WriteISurf::command(int narg, char **arg)
   memory->destroy(dbufall);
 
   MPI_Barrier(world);
-  double time3 = MPI_Wtime();
+  sfloat time3 = MPI_Wtime();
 
   // stats
 
-  double time_total = time3-time1;
+  sfloat time_total = time3-time1;
 
   if (comm->me == 0) {
     if (screen) {
@@ -169,8 +170,8 @@ void WriteISurf::command(int narg, char **arg)
 
 void WriteISurf::collect_values()
 {
-  double *cornerlo = ablate->cornerlo;
-  double *xyzsize = ablate->xyzsize;
+  sfloat *cornerlo = ablate->cornerlo;
+  sfloat *xyzsize = ablate->xyzsize;
 
   bigint bncorner = bigint (nx+1) * (ny+1);
   if (dim == 3) bncorner *= (nz+1);
@@ -186,7 +187,7 @@ void WriteISurf::collect_values()
   int nglocal = grid->nlocal;
 
   int ix,iy,iz,index;
-  double **array_grid = ablate->array_grid;
+  sfloat **array_grid = ablate->array_grid;
 
   for (int icell = 0; icell < nglocal; icell++) {
     if (!(cinfo[icell].mask & groupbit)) continue;
@@ -227,7 +228,7 @@ void WriteISurf::collect_values()
   // MPI_Allreduce to sum dbuf across all procs
   // so that proc 0 has a copy to write to file
 
-  MPI_Allreduce(dbuf,dbufall,ncorner,MPI_DOUBLE,MPI_SUM,world);
+  MPI_Allreduce(dbuf,dbufall,ncorner,MPI_SFLOAT,MPI_SUM,world);
 }
 
 /* ----------------------------------------------------------------------
@@ -252,5 +253,5 @@ void WriteISurf::write_file(FILE *fp)
     memory->destroy(ibuf8);
   }
 
-  if (precision == DOUBLE) fwrite(dbufall,sizeof(double),ncorner,fp);
+  if (precision == DOUBLE) fwrite(dbufall,sizeof(sfloat),ncorner,fp);
 }

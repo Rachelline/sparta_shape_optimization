@@ -1,3 +1,4 @@
+/* AD-CONVERTED: double->sfloat by tools/ad_convert.py (see sfloat.h) */
 /* ----------------------------------------------------------------------
    SPARTA - Stochastic PArallel Rarefied-gas Time-accurate Analyzer
    http://sparta.github.io
@@ -200,17 +201,17 @@ void FixAdapt::end_of_step()
    return 0/1 for whether last adaptation changed grid
 ------------------------------------------------------------------------- */
 
-double FixAdapt::compute_scalar()
+sfloat FixAdapt::compute_scalar()
 {
-  return (double) last_adapt;
+  return (sfloat) last_adapt;
 }
 
 /* ----------------------------------------------------------------------
    return stats for last adaptation
 ------------------------------------------------------------------------- */
 
-double FixAdapt::compute_vector(int i)
+sfloat FixAdapt::compute_vector(int i)
 {
-  if (i == 0) return (double) nrefine;
-  return (double) ncoarsen;
+  if (i == 0) return (sfloat) nrefine;
+  return (sfloat) ncoarsen;
 }

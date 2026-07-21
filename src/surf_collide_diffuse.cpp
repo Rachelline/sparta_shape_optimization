@@ -1,3 +1,4 @@
+/* AD-CONVERTED: double->sfloat by tools/ad_convert.py (see sfloat.h) */
 /* ----------------------------------------------------------------------
    SPARTA - Stochastic PArallel Rarefied-gas Time-accurate Analyzer
    http://sparta.github.io
@@ -104,7 +105,7 @@ SurfCollideDiffuse::SurfCollideDiffuse(SPARTA *sparta, int narg, char **arg) :
   // initialize RNG
 
   random = new RanKnuth(update->ranmaster->uniform());
-  double seed = update->ranmaster->uniform();
+  sfloat seed = update->ranmaster->uniform();
   random->reset(seed,comm->me,100);
 }
 
@@ -138,8 +139,8 @@ void SurfCollideDiffuse::init()
 ------------------------------------------------------------------------- */
 
 Particle::OnePart *SurfCollideDiffuse::
-collide(Particle::OnePart *&ip, double &,
-        int isurf, double *norm, int isr, int &reaction)
+collide(Particle::OnePart *&ip, sfloat &,
+        int isurf, sfloat *norm, int isr, int &reaction)
 {
   nsingle++;
 
@@ -212,7 +213,7 @@ collide(Particle::OnePart *&ip, double &,
    resets particle(s) to post-collision outward velocity
 ------------------------------------------------------------------------- */
 
-void SurfCollideDiffuse::diffuse(Particle::OnePart *p, double *norm)
+void SurfCollideDiffuse::diffuse(Particle::OnePart *p, sfloat *norm)
 {
   // specular reflection
   // reflect incident v around norm
@@ -230,22 +231,22 @@ void SurfCollideDiffuse::diffuse(Particle::OnePart *p, double *norm)
   // tangent12 are both unit vectors
 
   } else {
-    double tangent1[3],tangent2[3];
+    sfloat tangent1[3],tangent2[3];
     Particle::Species *species = particle->species;
     int ispecies = p->ispecies;
 
-    double vrm = sqrt(2.0*update->boltz * tsurf / species[ispecies].mass);
-    double vperp = vrm * sqrt(-log(random->uniform()));
+    sfloat vrm = sqrt(2.0*update->boltz * tsurf / species[ispecies].mass);
+    sfloat vperp = vrm * sqrt(-log(random->uniform()));
 
-    double theta = MY_2PI * random->uniform();
-    double vtangent = vrm * sqrt(-log(random->uniform()));
-    double vtan1 = vtangent * sin(theta);
-    double vtan2 = vtangent * cos(theta);
+    sfloat theta = MY_2PI * random->uniform();
+    sfloat vtangent = vrm * sqrt(-log(random->uniform()));
+    sfloat vtan1 = vtangent * sin(theta);
+    sfloat vtan2 = vtangent * cos(theta);
 
-    double *v = p->v;
-    double dot = MathExtra::dot3(v,norm);
+    sfloat *v = p->v;
+    sfloat dot = MathExtra::dot3(v,norm);
 
-    double beta_un,normalized_distbn_fn;
+    sfloat beta_un,normalized_distbn_fn;
 
     tangent1[0] = v[0] - dot*norm[0];
     tangent1[1] = v[1] - dot*norm[1];
@@ -265,10 +266,10 @@ void SurfCollideDiffuse::diffuse(Particle::OnePart *p, double *norm)
     // only keep portion of vector tangential to surface element
 
     if (trflag) {
-      double vxdelta,vydelta,vzdelta;
+      sfloat vxdelta,vydelta,vzdelta;
       if (tflag) {
         vxdelta = vx; vydelta = vy; vzdelta = vz;
-        double dot = vxdelta*norm[0] + vydelta*norm[1] + vzdelta*norm[2];
+        sfloat dot = vxdelta*norm[0] + vydelta*norm[1] + vzdelta*norm[2];
 
         if (fabs(dot) > 0.001) {
           dot /= vrm;
@@ -285,11 +286,11 @@ void SurfCollideDiffuse::diffuse(Particle::OnePart *p, double *norm)
         }
 
       } else {
-        double *x = p->x;
+        sfloat *x = p->x;
         vxdelta = wy*(x[2]-pz) - wz*(x[1]-py);
         vydelta = wz*(x[0]-px) - wx*(x[2]-pz);
         vzdelta = wx*(x[1]-py) - wy*(x[0]-px);
-        double dot = vxdelta*norm[0] + vydelta*norm[1] + vzdelta*norm[2];
+        sfloat dot = vxdelta*norm[0] + vydelta*norm[1] + vzdelta*norm[2];
         vxdelta -= dot*norm[0];
         vydelta -= dot*norm[1];
         vzdelta -= dot*norm[2];
@@ -321,8 +322,8 @@ void SurfCollideDiffuse::diffuse(Particle::OnePart *p, double *norm)
    called by SurfReactAdsorb
 ------------------------------------------------------------------------- */
 
-void SurfCollideDiffuse::wrapper(Particle::OnePart *p, double *norm,
-                                 int *flags, double *coeffs)
+void SurfCollideDiffuse::wrapper(Particle::OnePart *p, sfloat *norm,
+                                 int *flags, sfloat *coeffs)
 {
   if (coeffs) {
     tsurf = coeffs[0];
@@ -336,7 +337,7 @@ void SurfCollideDiffuse::wrapper(Particle::OnePart *p, double *norm,
    return flags and coeffs for this SurfCollide instance to caller
 ------------------------------------------------------------------------- */
 
-void SurfCollideDiffuse::flags_and_coeffs(int *flags, double *coeffs)
+void SurfCollideDiffuse::flags_and_coeffs(int *flags, sfloat *coeffs)
 {
   if (tmode != NUMERIC)
     error->all(FLERR,"Surf_collide diffuse with non-numeric Tsurf "

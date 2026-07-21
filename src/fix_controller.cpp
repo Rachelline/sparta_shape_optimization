@@ -1,3 +1,4 @@
+/* AD-CONVERTED: double->sfloat by tools/ad_convert.py (see sfloat.h) */
 /* ----------------------------------------------------------------------
    SPARTA - Stochastic PArallel Rarefied-gas Time-accurate Analyzer
    http://sparta.github.io
@@ -195,7 +196,7 @@ void FixController::end_of_step()
 
   modify->clearstep_compute();
 
-  double current = 0.0;
+  sfloat current = 0.0;
 
   if (pvwhich == COMPUTE) {
 
@@ -261,7 +262,7 @@ void FixController::end_of_step()
    return 3 terms of PID controller at last invocation of end_of_step()
 ------------------------------------------------------------------------- */
 
-double FixController::compute_vector(int n)
+sfloat FixController::compute_vector(int n)
 {
   if (n == 0) return (-kp * alpha * tau * err);
   else if (n == 1) return (-ki * alpha * tau * tau * sumerr);

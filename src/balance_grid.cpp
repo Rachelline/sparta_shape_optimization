@@ -1,3 +1,4 @@
+/* AD-CONVERTED: double->sfloat by tools/ad_convert.py (see sfloat.h) */
 /* ----------------------------------------------------------------------
    SPARTA - Stochastic PArallel Rarefied-gas Time-accurate Analyzer
    http://sparta.github.io
@@ -166,7 +167,7 @@ void BalanceGrid::command(int narg, char **arg, int outflag)
   // style NONE performs no re-assignment
 
   MPI_Barrier(world);
-  double time1 = MPI_Wtime();
+  sfloat time1 = MPI_Wtime();
 
   Grid::ChildCell *cells = grid->cells;
   Grid::ChildInfo *cinfo = grid->cinfo;
@@ -262,7 +263,7 @@ void BalanceGrid::command(int narg, char **arg, int outflag)
   } else if (bstyle == RANDOM) {
     int newproc;
     RanKnuth *random = new RanKnuth(update->ranmaster->uniform());
-    double seed = update->ranmaster->uniform();
+    sfloat seed = update->ranmaster->uniform();
     random->reset(seed,comm->me,100);
 
     for (int icell = 0; icell < nglocal; icell++) {
@@ -292,10 +293,10 @@ void BalanceGrid::command(int narg, char **arg, int outflag)
   } else if (bstyle == BISECTION) {
     RCB *rcb = new RCB(sparta);
 
-    double **x;
+    sfloat **x;
     memory->create(x,nglocal,3,"balance_grid:x");
 
-    double *lo,*hi;
+    sfloat *lo,*hi;
 
     int nbalance = 0;
     for (int icell = 0; icell < nglocal; icell++) {
@@ -308,7 +309,7 @@ void BalanceGrid::command(int narg, char **arg, int outflag)
       nbalance++;
     }
 
-    double *wt = NULL;
+    sfloat *wt = NULL;
     if (rcbwt == PARTICLE) {
       particle->sort();
       memory->create(wt,nglocal,"balance_grid:wt");
@@ -367,7 +368,7 @@ void BalanceGrid::command(int narg, char **arg, int outflag)
   else if (bstyle != NONE) grid->clumped = 0;
 
   MPI_Barrier(world);
-  double time2 = MPI_Wtime();
+  sfloat time2 = MPI_Wtime();
 
   // sort particles
   // NOTE: not needed again if rcbwt = PARTICLE for bstyle = BISECTION ??
@@ -375,7 +376,7 @@ void BalanceGrid::command(int narg, char **arg, int outflag)
   particle->sort();
 
   MPI_Barrier(world);
-  double time3 = MPI_Wtime();
+  sfloat time3 = MPI_Wtime();
 
   // invoke init() so all grid cell info, including collide & fixes,
   //   is ready to migrate
@@ -399,7 +400,7 @@ void BalanceGrid::command(int narg, char **arg, int outflag)
   grid->hashfilled = 0;
 
   MPI_Barrier(world);
-  double time4 = MPI_Wtime();
+  sfloat time4 = MPI_Wtime();
 
   grid->setup_owned();
   grid->acquire_ghosts();
@@ -423,7 +424,7 @@ void BalanceGrid::command(int narg, char **arg, int outflag)
   if (update->first_update) grid->notify_changed();
 
   MPI_Barrier(world);
-  double time5 = MPI_Wtime();
+  sfloat time5 = MPI_Wtime();
 
   // DEBUG
 
@@ -453,7 +454,7 @@ void BalanceGrid::command(int narg, char **arg, int outflag)
   bigint count = nmigrate;
   bigint nmigrate_all;
   MPI_Allreduce(&count,&nmigrate_all,1,MPI_SPARTA_BIGINT,MPI_SUM,world);
-  double time_total = time5-time1;
+  sfloat time_total = time5-time1;
 
   if (comm->me == 0 && outflag) {
     if (screen) {
@@ -509,19 +510,19 @@ void BalanceGrid::procs2grid(int nx, int ny, int nz,
   // determine cross-sectional areas
   // area[0] = xy, area[1] = xz, area[2] = yz
 
-  double area[3];
+  sfloat area[3];
   area[0] = nx*ny;
   area[1] = nx*nz;
   area[2] = ny*nz;
 
-  double bestsurf = 2.0 * (area[0]+area[1]+area[2]);
+  sfloat bestsurf = 2.0 * (area[0]+area[1]+area[2]);
 
   // loop thru all possible factorizations of nprocs
   // only consider valid cases that match procgrid settings
   // surf = surface area of a proc sub-domain
 
   int ipx,ipy,ipz,valid;
-  double surf;
+  sfloat surf;
 
   ipx = 1;
   while (ipx <= nprocs) {
@@ -568,11 +569,11 @@ void BalanceGrid::procs2grid(int nx, int ny, int nz,
 
 /* -------------------------------------------------------------------- */
 
-void BalanceGrid::timer_cell_weights(double* &weight)
+void BalanceGrid::timer_cell_weights(sfloat* &weight)
 {
   // cost = CPU time for relevant timers since last invocation
 
-  double cost = -last;
+  sfloat cost = -last;
   cost += timer->array[TIME_MOVE];
   cost += timer->array[TIME_SORT];
   cost += timer->array[TIME_COLLIDE];
@@ -581,8 +582,8 @@ void BalanceGrid::timer_cell_weights(double* &weight)
   // localwt = weight assigned to each owned grid cell
   // just return if no time yet tallied
 
-  double maxcost;
-  MPI_Allreduce(&cost,&maxcost,1,MPI_DOUBLE,MPI_MAX,world);
+  sfloat maxcost;
+  MPI_Allreduce(&cost,&maxcost,1,MPI_SFLOAT,MPI_MAX,world);
   if (maxcost <= 0.0) {
     memory->destroy(weight);
     weight = NULL;
@@ -595,14 +596,14 @@ void BalanceGrid::timer_cell_weights(double* &weight)
   Grid::ChildInfo *cinfo = grid->cinfo;
   int nglocal = grid->nlocal;
 
-  double localwt_total = 0.0;
+  sfloat localwt_total = 0.0;
   if (nglocal) localwt_total = cost/nglocal;
   if (nglocal && localwt_total <= 0.0) error->one(FLERR,"Balance weight <= 0.0");
 
   if (!particle->sorted) particle->sort();
-  double wttotal = 0;
+  sfloat wttotal = 0;
   int nbalance = 0;
-  double* localwt;
+  sfloat* localwt;
   memory->create(localwt,nglocal,"imbalance_time:localwt");
   for (int icell = 0; icell < nglocal; icell++) {
     localwt[icell] = 0.0;

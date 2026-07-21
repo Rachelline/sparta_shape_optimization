@@ -1,3 +1,4 @@
+/* AD-CONVERTED: double->sfloat by tools/ad_convert.py (see sfloat.h) */
 /* ----------------------------------------------------------------------
    SPARTA - Stochastic PArallel Rarefied-gas Time-accurate Analyzer
    http://sparta.github.io
@@ -31,20 +32,20 @@ class ReactTCE : public ReactBird {
   ReactTCE(class SPARTA *, int, char **);
   void init();
   int attempt(Particle::OnePart *, Particle::OnePart *,
-              double, double, double, double &, int &);
+              sfloat, sfloat, sfloat, sfloat &, int &);
 
-  double newtonTvib(int nmode, double Evib,
-                      double VibTemp[],
-                      double Tvib0,
-                      double tol,
+  sfloat newtonTvib(int nmode, sfloat Evib,
+                      sfloat VibTemp[],
+                      sfloat Tvib0,
+                      sfloat tol,
                       int nmax);
 
-  double bird_dEvib(int nmode, double Tvib,
-                  double VibTemp[]);
+  sfloat bird_dEvib(int nmode, sfloat Tvib,
+                  sfloat VibTemp[]);
 
-  double bird_Evib(int nmode, double Tvib,
-                 double VibTemp[],
-                 double Evib);
+  sfloat bird_Evib(int nmode, sfloat Tvib,
+                 sfloat VibTemp[],
+                 sfloat Evib);
 };
 
 }

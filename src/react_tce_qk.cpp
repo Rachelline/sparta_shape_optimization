@@ -1,3 +1,4 @@
+/* AD-CONVERTED: double->sfloat by tools/ad_convert.py (see sfloat.h) */
 /* ----------------------------------------------------------------------
    SPARTA - Stochastic PArallel Rarefied-gas Time-accurate Analyzer
    http://sparta.github.io
@@ -56,12 +57,12 @@ void ReactTCEQK::init()
 /* ---------------------------------------------------------------------- */
 
 int ReactTCEQK::attempt(Particle::OnePart *ip, Particle::OnePart *jp,
-                        double pre_etrans, double pre_erot, double pre_evib,
-                        double &post_etotal, int &kspecies)
+                        sfloat pre_etrans, sfloat pre_erot, sfloat pre_evib,
+                        sfloat &post_etotal, int &kspecies)
 {
-  double pre_etotal;
-  double e_excess;
-  double ecc;
+  sfloat pre_etotal;
+  sfloat e_excess;
+  sfloat ecc;
   int reaction;
 
   int isp = ip->ispecies;
@@ -113,26 +114,26 @@ int ReactTCEQK::attempt(Particle::OnePart *ip, Particle::OnePart *jp,
 
 int ReactTCEQK::attempt_tce(Particle::OnePart *ip, Particle::OnePart *jp,
                             OneReaction *r,
-                            double pre_etrans, double pre_erot, double pre_evib,
-                            double &post_etotal, int &kspecies)
+                            sfloat pre_etrans, sfloat pre_erot, sfloat pre_evib,
+                            sfloat &post_etotal, int &kspecies)
 {
   Particle::Species *species = particle->species;
   int isp = ip->ispecies;
   int jsp = jp->ispecies;
 
-  double pre_ave_rotdof = (species[isp].rotdof + species[jsp].rotdof)/2.;
+  sfloat pre_ave_rotdof = (species[isp].rotdof + species[jsp].rotdof)/2.;
 
   // probablity to compare to reaction probability
 
-  double react_prob = 0.0;
-  double random_prob = random->uniform();
+  sfloat react_prob = 0.0;
+  sfloat random_prob = random->uniform();
 
-  double pre_etotal = pre_etrans + pre_erot + pre_evib;
+  sfloat pre_etotal = pre_etrans + pre_erot + pre_evib;
 
-  double ecc = pre_etrans;
+  sfloat ecc = pre_etrans;
   if (pre_ave_rotdof > 0.1) ecc += pre_erot*r->coeff[0]/pre_ave_rotdof;
 
-  double e_excess = ecc - r->coeff[1];
+  sfloat e_excess = ecc - r->coeff[1];
   if (e_excess <= 0.0) return 0;
 
   // compute probability of reaction
@@ -172,10 +173,10 @@ int ReactTCEQK::attempt_tce(Particle::OnePart *ip, Particle::OnePart *jp,
 
 int ReactTCEQK::attempt_qk(Particle::OnePart *ip, Particle::OnePart *jp,
                            OneReaction * r,
-                           double pre_etrans, double pre_erot, double pre_evib,
-                           double &post_etotal, int &kspecies)
+                           sfloat pre_etrans, sfloat pre_erot, sfloat pre_evib,
+                           sfloat &post_etotal, int &kspecies)
 {
-  double prob,evib,inverse_kT;
+  sfloat prob,evib,inverse_kT;
   int iv,ilevel,maxlev,limlev;
   int mspec,aspec;
 
@@ -183,21 +184,21 @@ int ReactTCEQK::attempt_qk(Particle::OnePart *ip, Particle::OnePart *jp,
   int isp = ip->ispecies;
   int jsp = jp->ispecies;
 
-  double pre_ave_rotdof = (species[isp].rotdof + species[jsp].rotdof)/2.0;
+  sfloat pre_ave_rotdof = (species[isp].rotdof + species[jsp].rotdof)/2.0;
 
-  double omega = collide->extract(isp,jsp,"omega");
+  sfloat omega = collide->extract(isp,jsp,"omega");
 
   // probablity to compare to reaction probability
 
-  double react_prob = 0.0;
-  double random_prob = random->uniform();
+  sfloat react_prob = 0.0;
+  sfloat random_prob = random->uniform();
 
-  double pre_etotal = pre_etrans + pre_erot + pre_evib;
+  sfloat pre_etotal = pre_etrans + pre_erot + pre_evib;
 
-  double ecc = pre_etrans;
+  sfloat ecc = pre_etrans;
   if (pre_ave_rotdof > 0.1) ecc += pre_erot*r->coeff[0]/pre_ave_rotdof;
 
-  double e_excess = ecc - r->coeff[1];
+  sfloat e_excess = ecc - r->coeff[1];
   if (e_excess <= 0.0) return 0;
 
   // compute probability of reaction
@@ -228,7 +229,7 @@ int ReactTCEQK::attempt_qk(Particle::OnePart *ip, Particle::OnePart *jp,
           prob = 0.0;
           do {
             iv =  static_cast<int> (random->uniform()*(maxlev+0.99999999));
-            evib = static_cast<double> (iv / inverse_kT);
+            evib = static_cast<sfloat> (iv / inverse_kT);
             if (evib < ecc) react_prob = pow(1.0-evib/ecc,1.5-omega);
           } while (random->uniform() < react_prob);
 
@@ -257,7 +258,7 @@ int ReactTCEQK::attempt_qk(Particle::OnePart *ip, Particle::OnePart *jp,
         maxlev = static_cast<int> (ecc * inverse_kT);
         do {
           iv = random->uniform()*(maxlev+0.99999999);
-          evib = static_cast<double>
+          evib = static_cast<sfloat>
             (iv * update->boltz*species[mspec].vibtemp[0]);
           if (evib < ecc) prob = pow(1.0-evib/ecc,1.5 - r->coeff[6]);
         } while (random->uniform() < prob);

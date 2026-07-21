@@ -1,3 +1,4 @@
+/* AD-CONVERTED: double->sfloat by tools/ad_convert.py (see sfloat.h) */
 /* ----------------------------------------------------------------------
    SPARTA - Stochastic PArallel Rarefied-gas Time-accurate Analyzer
    http://sparta.github.io
@@ -191,7 +192,7 @@ int utils::logical(const char *file, int line, const char *str, bool do_abort, S
    called by various commands to check validity of their arguments
 ------------------------------------------------------------------------- */
 
-double utils::numeric(const char *file, int line, const std::string &str, bool do_abort,
+sfloat utils::numeric(const char *file, int line, const std::string &str, bool do_abort,
                       SPARTA *sparta)
 {
   if (str.empty()) {
@@ -215,7 +216,7 @@ double utils::numeric(const char *file, int line, const std::string &str, bool d
       sparta->error->all(file, line, msg.c_str());
   }
 
-  double rv = 0;
+  sfloat rv = 0;
   char msg[128];
   sprintf(msg,"Floating point number %s in input script or data file is invalid", buf.c_str());
   try {
@@ -246,7 +247,7 @@ double utils::numeric(const char *file, int line, const std::string &str, bool d
    wrapper for numeric() that accepts a char pointer instead of a string
 ------------------------------------------------------------------------- */
 
-double utils::numeric(const char *file, int line, const char *str, bool do_abort, SPARTA *sparta)
+sfloat utils::numeric(const char *file, int line, const char *str, bool do_abort, SPARTA *sparta)
 {
   if (str)
     return numeric(file, line, std::string(str), do_abort, sparta);

@@ -1,3 +1,4 @@
+/* AD-CONVERTED: double->sfloat by tools/ad_convert.py (see sfloat.h) */
 /* ----------------------------------------------------------------------
    SPARTA - Stochastic PArallel Rarefied-gas Time-accurate Analyzer
    http://sparta.github.io
@@ -34,7 +35,7 @@ class DumpMovie : public DumpImage {
   virtual int modify_param(int, char **);
 
  protected:
-  double framerate;             // frame rate of animation
+  sfloat framerate;             // frame rate of animation
   int bitrate;                  // bitrate of video file in kbps
 };
 

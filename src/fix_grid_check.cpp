@@ -1,3 +1,4 @@
+/* AD-CONVERTED: double->sfloat by tools/ad_convert.py (see sfloat.h) */
 /* ----------------------------------------------------------------------
    SPARTA - Stochastic PArallel Rarefied-gas Time-accurate Analyzer
    http://sparta.github.io
@@ -101,7 +102,7 @@ void FixGridCheck::end_of_step()
   int nlocal = particle->nlocal;
 
   int icell;
-  double *x,*lo,*hi;
+  sfloat *x,*lo,*hi;
 
   // check if icell is a valid cell for owning particles
   // check for split cell is whether particle is inside parent cell
@@ -205,7 +206,7 @@ void FixGridCheck::end_of_step()
     if (cinfo[icell].volume == 0.0) continue;
 
     int pflag,splitcell;
-    double xcell[3];
+    sfloat xcell[3];
 
     // check that particle is outside surfs
     // if no xcell found, cannot check
@@ -286,10 +287,10 @@ void FixGridCheck::end_of_step()
    return cummulative total count of out-of-cell particles across all procs
 ------------------------------------------------------------------------- */
 
-double FixGridCheck::compute_scalar()
+sfloat FixGridCheck::compute_scalar()
 {
-  double one = ntotal;
-  double all;
-  MPI_Allreduce(&one,&all,1,MPI_DOUBLE,MPI_SUM,world);
+  sfloat one = ntotal;
+  sfloat all;
+  MPI_Allreduce(&one,&all,1,MPI_SFLOAT,MPI_SUM,world);
   return all;
 }

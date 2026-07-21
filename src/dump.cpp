@@ -1,3 +1,4 @@
+/* AD-CONVERTED: double->sfloat by tools/ad_convert.py (see sfloat.h) */
 /* ----------------------------------------------------------------------
    SPARTA - Stochastic PArallel Rarefied-gas Time-accurate Analyzer
    http://sparta.github.io
@@ -312,10 +313,10 @@ void Dump::write()
     if (filewriter) {
       for (int iproc = 0; iproc < nclusterprocs; iproc++) {
         if (iproc) {
-          MPI_Irecv(buf,maxbuf*size_one,MPI_DOUBLE,me+iproc,0,world,&request);
+          MPI_Irecv(buf,maxbuf*size_one,MPI_SFLOAT,me+iproc,0,world,&request);
           MPI_Send(&tmp,0,MPI_INT,me+iproc,0,world);
           MPI_Wait(&request,&status);
-          MPI_Get_count(&status,MPI_DOUBLE,&nlines);
+          MPI_Get_count(&status,MPI_SFLOAT,&nlines);
           nlines /= size_one;
         } else nlines = nme;
 
@@ -325,7 +326,7 @@ void Dump::write()
 
     } else {
       MPI_Recv(&tmp,0,MPI_INT,fileproc,0,world,&status);
-      MPI_Rsend(buf,nme*size_one,MPI_DOUBLE,fileproc,0,world);
+      MPI_Rsend(buf,nme*size_one,MPI_SFLOAT,fileproc,0,world);
     }
 
   // comm and output sbuf = one big string of formatted values per proc
@@ -340,7 +341,7 @@ void Dump::write()
           MPI_Get_count(&status,MPI_CHAR,&nchars);
         } else nchars = nsme;
 
-        write_data(nchars,(double *) sbuf);
+        write_data(nchars,(sfloat *) sbuf);
       }
       if (flush_flag) fflush(fp);
 
@@ -432,7 +433,7 @@ void Dump::openfile()
    return -1 if strlen exceeds an int, since used as arg in MPI calls in Dump
 ------------------------------------------------------------------------- */
 
-int Dump::convert_string(int n, double *mybuf)
+int Dump::convert_string(int n, sfloat *mybuf)
 {
   int i,j;
   char str[32];

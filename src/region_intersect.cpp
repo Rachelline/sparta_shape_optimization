@@ -1,3 +1,4 @@
+/* AD-CONVERTED: double->sfloat by tools/ad_convert.py (see sfloat.h) */
 /* ----------------------------------------------------------------------
    SPARTA - Stochastic PArallel Rarefied-gas Time-accurate Analyzer
    http://sparta.github.io
@@ -89,7 +90,7 @@ RegIntersect::~RegIntersect()
    else inside = 0
 ------------------------------------------------------------------------- */
 
-int RegIntersect::inside(double *x)
+int RegIntersect::inside(sfloat *x)
 {
   int ilist;
   Region **regions = domain->regions;

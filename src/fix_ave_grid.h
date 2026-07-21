@@ -1,3 +1,4 @@
+/* AD-CONVERTED: double->sfloat by tools/ad_convert.py (see sfloat.h) */
 /* ----------------------------------------------------------------------
    SPARTA - Stochastic PArallel Rarefied-gas Time-accurate Analyzer
    http://sparta.github.io
@@ -42,7 +43,7 @@ class FixAveGrid : public Fix {
   void copy_grid_one(int, int);
   void reset_grid_count(int);
   void add_grid_one();
-  double memory_usage();
+  sfloat memory_usage();
 
  protected:
   int tmax,flavor;
@@ -59,7 +60,7 @@ class FixAveGrid : public Fix {
   // for PERGRID tallies for implicit surf collisions on per-cell basis
 
   int ntotal;                // total # of columns in tally array
-  double **tally;            // array of tally quantities, cells by ntotal
+  sfloat **tally;            // array of tally quantities, cells by ntotal
                              // can be multiple tally quantities per value
 
                              // used when normalizing tallies
@@ -82,8 +83,8 @@ class FixAveGrid : public Fix {
   int ntallyID;            // # of cells I have tallies for
   int maxtallyID;          // # of tallies currently allocated
   surfint *tally2surf;     // tally2surf[I] = surf ID of Ith tally
-  double *vec_tally;       // tally values, maxtally in length
-  double **array_tally;
+  sfloat *vec_tally;       // tally values, maxtally in length
+  sfloat **array_tally;
 
   // hash for surf IDs
 

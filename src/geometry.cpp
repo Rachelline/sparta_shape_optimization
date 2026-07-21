@@ -1,3 +1,4 @@
+/* AD-CONVERTED: double->sfloat by tools/ad_convert.py (see sfloat.h) */
 /* ----------------------------------------------------------------------
    SPARTA - Stochastic PArallel Rarefied-gas Time-accurate Analyzer
    http://sparta.github.io
@@ -37,12 +38,12 @@ namespace Geometry {
    return 1 if intersection, else 0
 ------------------------------------------------------------------------- */
 
-int line_quad_intersect(double *v0, double *v1, double *norm,
-                        double *lo, double *hi)
+int line_quad_intersect(sfloat *v0, sfloat *v1, sfloat *norm,
+                        sfloat *lo, sfloat *hi)
 {
   int sum,side;
-  double xlo,xhi,ylo,yhi,param;
-  double b[3],e[3],point[3];
+  sfloat xlo,xhi,ylo,yhi,param;
+  sfloat b[3],e[3],point[3];
 
   xlo = lo[0];
   xhi = hi[0];
@@ -96,12 +97,12 @@ int line_quad_intersect(double *v0, double *v1, double *norm,
    return xc = intersection point if there is one
 ------------------------------------------------------------------------- */
 
-int quad_line_intersect_point(double *v0, double *v1, double *norm,
-                              double *lo, double *hi, double *xc)
+int quad_line_intersect_point(sfloat *v0, sfloat *v1, sfloat *norm,
+                              sfloat *lo, sfloat *hi, sfloat *xc)
 {
   int side;
-  double xlo,xhi,ylo,yhi,param;
-  double b[3],e[3];
+  sfloat xlo,xhi,ylo,yhi,param;
+  sfloat b[3],e[3];
 
   xlo = lo[0];
   xhi = hi[0];
@@ -140,14 +141,14 @@ int quad_line_intersect_point(double *v0, double *v1, double *norm,
    return 1 if touches, else 0
 ------------------------------------------------------------------------- */
 
-int line_touch_quad_face(double *v0, double *v1, int iface,
-                         double *lo, double *hi)
+int line_touch_quad_face(sfloat *v0, sfloat *v1, int iface,
+                         sfloat *lo, sfloat *hi)
 {
   // value = position of face
 
   int dim = iface / 2;
   int other = dim ? 0 : 1;
-  double value = iface % 2 ? hi[dim] : lo[dim];
+  sfloat value = iface % 2 ? hi[dim] : lo[dim];
 
   // check if either line vertex is within face
 
@@ -171,12 +172,12 @@ int line_touch_quad_face(double *v0, double *v1, int iface,
    return 1 if intersection, else 0
 ------------------------------------------------------------------------- */
 
-int tri_hex_intersect(double *v0, double *v1, double *v2, double *norm,
-                      double *lo, double *hi)
+int tri_hex_intersect(sfloat *v0, sfloat *v1, sfloat *v2, sfloat *norm,
+                      sfloat *lo, sfloat *hi)
 {
   int sum,side;
-  double xlo,xhi,ylo,yhi,zlo,zhi,param;
-  double b[3],e[3],h0[3],h1[3],h2[3],h3[3],n[3],point[3];
+  sfloat xlo,xhi,ylo,yhi,zlo,zhi,param;
+  sfloat b[3],e[3],h0[3],h1[3],h2[3],h3[3],n[3],point[3];
 
   xlo = lo[0];
   xhi = hi[0];
@@ -344,12 +345,12 @@ int tri_hex_intersect(double *v0, double *v1, double *v2, double *norm,
    return xc = intersection point if there is one
 ------------------------------------------------------------------------- */
 
-int hex_tri_intersect_point(double *v0, double *v1, double *v2, double *norm,
-                            double *lo, double *hi, double *xc)
+int hex_tri_intersect_point(sfloat *v0, sfloat *v1, sfloat *v2, sfloat *norm,
+                            sfloat *lo, sfloat *hi, sfloat *xc)
 {
   int side;
-  double xlo,xhi,ylo,yhi,zlo,zhi,param;
-  double b[3],e[3],h0[3],h1[3],h2[3],h3[3],n[3];
+  sfloat xlo,xhi,ylo,yhi,zlo,zhi,param;
+  sfloat b[3],e[3],h0[3],h1[3],h2[3],h3[3],n[3];
 
   xlo = lo[0];
   xhi = hi[0];
@@ -493,8 +494,8 @@ int hex_tri_intersect_point(double *v0, double *v1, double *v2, double *norm,
    return 1 if touches, else 0
 ------------------------------------------------------------------------- */
 
-int tri_touch_hex_face(double *v0, double *v1, double *v2, int iface,
-                       double *lo, double *hi)
+int tri_touch_hex_face(sfloat *v0, sfloat *v1, sfloat *v2, int iface,
+                       sfloat *lo, sfloat *hi)
 {
   // value = position of face
 
@@ -507,7 +508,7 @@ int tri_touch_hex_face(double *v0, double *v1, double *v2, int iface,
   } else if (dim == 2) {
     other1 = 0; other2 = 1;
   }
-  double value = iface % 2 ? hi[dim] : lo[dim];
+  sfloat value = iface % 2 ? hi[dim] : lo[dim];
 
   // check if any triangle vertex is within face
 
@@ -533,9 +534,9 @@ int tri_touch_hex_face(double *v0, double *v1, double *v2, int iface,
    else return -1
 ------------------------------------------------------------------------- */
 
-int tri_on_hex_face(double *v0, double *v1, double *v2, double *lo, double *hi)
+int tri_on_hex_face(sfloat *v0, sfloat *v1, sfloat *v2, sfloat *lo, sfloat *hi)
 {
-  double vmin[3],vmax[3];
+  sfloat vmin[3],vmax[3];
 
   vmin[0] = MIN(v0[0],v1[0]);
   vmin[0] = MIN(v2[0],vmin[0]);
@@ -575,9 +576,9 @@ int tri_on_hex_face(double *v0, double *v1, double *v2, double *lo, double *hi)
    else return -1
 ------------------------------------------------------------------------- */
 
-int edge_on_hex_face(double *v0, double *v1, double *lo, double *hi)
+int edge_on_hex_face(sfloat *v0, sfloat *v1, sfloat *lo, sfloat *hi)
 {
-  double vmin[3],vmax[3];
+  sfloat vmin[3],vmax[3];
 
   vmin[0] = MIN(v0[0],v1[0]);
   vmin[1] = MIN(v0[1],v1[1]);
@@ -623,19 +624,19 @@ int edge_on_hex_face(double *v0, double *v1, double *lo, double *hi)
      side = side of B that was hit = OUTSIDE,INSIDE,ONSURF2OUT,ONSURF2IN
 ------------------------------------------------------------------------- */
 
-bool line_line_intersect(double *start, double *stop,
-                         double *v0, double *v1, double *norm,
-                         double *point, double &param, int &side, int)
+bool line_line_intersect(sfloat *start, sfloat *stop,
+                         sfloat *v0, sfloat *v1, sfloat *norm,
+                         sfloat *point, sfloat &param, int &side, int)
 {
-  double vec[3],start2stop[3],edge[3],pvec[3];
+  sfloat vec[3],start2stop[3],edge[3],pvec[3];
 
   // if start,stop are on same side of line B, no intersection
   // if start,stop are both on infinite line B, no intersection
 
   MathExtra::sub3(start,v0,vec);
-  double dotstart = MathExtra::dot3(norm,vec);
+  sfloat dotstart = MathExtra::dot3(norm,vec);
   MathExtra::sub3(stop,v0,vec);
-  double dotstop = MathExtra::dot3(norm,vec);
+  sfloat dotstop = MathExtra::dot3(norm,vec);
 
   if (dotstart < 0.0 && dotstop < 0.0) return false;
   if (dotstart > 0.0 && dotstop > 0.0) return false;
@@ -713,10 +714,10 @@ bool line_line_intersect(double *start, double *stop,
      side = side of line that was hit = OUTSIDE,INSIDE,ONSURF2OUT,ONSURF2IN
 ------------------------------------------------------------------------- */
 
-bool axi_line_intersect(double tdelta, double *x, double *v,
-                        int outface, double *lo, double *hi,
-                        double *v1, double *v2, double *norm, int selfflag,
-                        double *xc, double *vc, double &param, int &side)
+bool axi_line_intersect(sfloat tdelta, sfloat *x, sfloat *v,
+                        int outface, sfloat *lo, sfloat *hi,
+                        sfloat *v1, sfloat *v2, sfloat *norm, int selfflag,
+                        sfloat *xc, sfloat *vc, sfloat &param, int &side)
 {
   // compute nc = # of collisions with infinite line
   // if 0, return false
@@ -724,7 +725,7 @@ bool axi_line_intersect(double tdelta, double *x, double *v,
   // if 2, set t1 and t2 with t1 < t2
 
   int nc;
-  double t1,t2;
+  sfloat t1,t2;
 
   // vertical line segment
   // no collision if starting on surface
@@ -756,25 +757,25 @@ bool axi_line_intersect(double tdelta, double *x, double *v,
   // general line segment
 
   } else {
-    double x21 = v2[0] - v1[0];
-    double y21 = v2[1] - v1[1];
-    double x21sq = x21*x21;
-    double y21sq = y21*y21;
-    double dconst = x21*v1[1] - y21*v1[0];
+    sfloat x21 = v2[0] - v1[0];
+    sfloat y21 = v2[1] - v1[1];
+    sfloat x21sq = x21*x21;
+    sfloat y21sq = y21*y21;
+    sfloat dconst = x21*v1[1] - y21*v1[0];
 
-    double a = x21sq*(v[1]*v[1] + v[2]*v[2]) - y21sq*v[0]*v[0];
+    sfloat a = x21sq*(v[1]*v[1] + v[2]*v[2]) - y21sq*v[0]*v[0];
     if (a == 0.0) return false;
-    double b = x21sq*x[1]*v[1] - y21sq*x[0]*v[0] - y21*v[0]*dconst;
-    double c = x21sq*x[1]*x[1] - y21sq*x[0]*x[0] -
+    sfloat b = x21sq*x[1]*v[1] - y21sq*x[0]*v[0] - y21*v[0]*dconst;
+    sfloat c = x21sq*x[1]*x[1] - y21sq*x[0]*x[0] -
       2.0*y21*x[0]*dconst - dconst*dconst;
 
-    double arg = b*b - a*c;
+    sfloat arg = b*b - a*c;
     if (arg < 0.0) return false;
-    double sarg = sqrt(arg);
+    sfloat sarg = sqrt(arg);
 
     nc = 2;
-    double tone = (-b - sarg) / a;
-    double ttwo = (-b + sarg) / a;
+    sfloat tone = (-b - sarg) / a;
+    sfloat ttwo = (-b + sarg) / a;
     t1 = MIN(tone,ttwo);
     t2 = MAX(tone,ttwo);
   }
@@ -833,14 +834,14 @@ bool axi_line_intersect(double tdelta, double *x, double *v,
 
     xc[0] = x[0] + t1*v[0];
     if (v1[0] == v2[0]) xc[0] = v1[0];
-    double ynew = x[1] + t1*v[1];
-    double znew = x[2] + t1*v[2];
+    sfloat ynew = x[1] + t1*v[1];
+    sfloat znew = x[2] + t1*v[2];
     xc[1] = sqrt(ynew*ynew + znew*znew);
     if (v1[1] == v2[1]) xc[1] = v1[1];
     xc[2] = 0.0;
 
-    double rn = ynew / xc[1];
-    double wn = znew / xc[1];
+    sfloat rn = ynew / xc[1];
+    sfloat wn = znew / xc[1];
     vc[0] = v[0];
     vc[1] = v[1]*rn + v[2]*wn;
     vc[2] = -v[1]*wn + v[2]*rn;
@@ -872,12 +873,12 @@ bool axi_line_intersect(double tdelta, double *x, double *v,
   // could do this with projection operation instead
 
   /*
-  double vec[3];
+  sfloat vec[3];
   MathExtra::sub3(v2,v1,vec);
-  double lenbig = MathExtra::len3(vec);
+  sfloat lenbig = MathExtra::len3(vec);
   MathExtra::sub3(xc,v1,vec);
-  double lensmall = MathExtra::len3(vec);
-  double ratio = lensmall/lenbig;
+  sfloat lensmall = MathExtra::len3(vec);
+  sfloat ratio = lensmall/lenbig;
   xc[0] = v1[0] + ratio*(v2[0]-v1[0]);
   xc[1] = v1[1] + ratio*(v2[1]-v1[1]);
   */
@@ -890,7 +891,7 @@ bool axi_line_intersect(double tdelta, double *x, double *v,
   // regardless of where particle starts, it can hit front or back of surf
   // use velocity vector at collision pt to determine side
 
-  double dot = MathExtra::dot3(norm,vc);
+  sfloat dot = MathExtra::dot3(norm,vc);
   if (dot < 0.0) side = OUTSIDE;
   else side = INSIDE;
 
@@ -920,19 +921,19 @@ bool axi_line_intersect(double tdelta, double *x, double *v,
    if crosses, also return nc, t1, t2 (can be two collisions)
 ------------------------------------------------------------------------- */
 
-bool axi_horizontal_line(double tdelta, double *x, double *v,
-                         double yhoriz, int &nc, double &t1, double &t2)
+bool axi_horizontal_line(sfloat tdelta, sfloat *x, sfloat *v,
+                         sfloat yhoriz, int &nc, sfloat &t1, sfloat &t2)
 {
-  double a = v[1]*v[1] + v[2]*v[2];
+  sfloat a = v[1]*v[1] + v[2]*v[2];
   if (a == 0.0) return false;
-  double b = -v[1]*x[1];
-  double arg = yhoriz*yhoriz*a - v[2]*v[2]*x[1]*x[1];
+  sfloat b = -v[1]*x[1];
+  sfloat arg = yhoriz*yhoriz*a - v[2]*v[2]*x[1]*x[1];
   if (arg < 0.0) return false;
-  double sarg = sqrt(arg);
+  sfloat sarg = sqrt(arg);
 
   nc = 2;
-  double tone = (b - sarg) / a;
-  double ttwo = (b + sarg) / a;
+  sfloat tone = (b - sarg) / a;
+  sfloat ttwo = (b + sarg) / a;
   t1 = MIN(tone,ttwo);
   t2 = MAX(tone,ttwo);
 
@@ -985,19 +986,19 @@ bool axi_horizontal_line(double tdelta, double *x, double *v,
      side = side of B that was hit = OUTSIDE,INSIDE,ONSURF2OUT,ONSURF2IN
 ------------------------------------------------------------------------- */
 
-bool line_tri_intersect(double *start, double *stop,
-                        double *v0, double *v1, double *v2, double *norm,
-                        double *point, double &param, int &side)
+bool line_tri_intersect(sfloat *start, sfloat *stop,
+                        sfloat *v0, sfloat *v1, sfloat *v2, sfloat *norm,
+                        sfloat *point, sfloat &param, int &side)
 {
-  double vec[3],start2stop[3],edge[3],pvec[3],xproduct[3];
+  sfloat vec[3],start2stop[3],edge[3],pvec[3],xproduct[3];
 
   // if start,stop are on same side of triangle, no intersection
   // if start,stop are both in plane of triangle, no intersection
 
   MathExtra::sub3(start,v0,vec);
-  double dotstart = MathExtra::dot3(norm,vec);
+  sfloat dotstart = MathExtra::dot3(norm,vec);
   MathExtra::sub3(stop,v0,vec);
-  double dotstop = MathExtra::dot3(norm,vec);
+  sfloat dotstop = MathExtra::dot3(norm,vec);
 
   if (dotstart < 0.0 && dotstop < 0.0) return false;
   if (dotstart > 0.0 && dotstop > 0.0) return false;
@@ -1086,19 +1087,19 @@ bool line_tri_intersect(double *start, double *stop,
      are inside surfaces
 ------------------------------------------------------------------------- */
 
-bool line_tri_intersect_noeps(double *start, double *stop,
-                              double *v0, double *v1, double *v2, double *norm,
-                              double *point, double &param, int &side)
+bool line_tri_intersect_noeps(sfloat *start, sfloat *stop,
+                              sfloat *v0, sfloat *v1, sfloat *v2, sfloat *norm,
+                              sfloat *point, sfloat &param, int &side)
 {
-  double vec[3],start2stop[3],edge[3],pvec[3],xproduct[3];
+  sfloat vec[3],start2stop[3],edge[3],pvec[3],xproduct[3];
 
   // if start,stop are on same side of triangle, no intersection
   // if start,stop are both in plane of triangle, no intersection
 
   MathExtra::sub3(start,v0,vec);
-  double dotstart = MathExtra::dot3(norm,vec);
+  sfloat dotstart = MathExtra::dot3(norm,vec);
   MathExtra::sub3(stop,v0,vec);
-  double dotstop = MathExtra::dot3(norm,vec);
+  sfloat dotstop = MathExtra::dot3(norm,vec);
 
   if (dotstart < 0.0 && dotstop < 0.0) return false;
   if (dotstart > 0.0 && dotstop > 0.0) return false;
@@ -1161,14 +1162,14 @@ bool line_tri_intersect_noeps(double *start, double *stop,
    return -1,0,1 for below,on,above plane
 ------------------------------------------------------------------------- */
 
-int whichside(double *v, double *norm, double x, double y, double z)
+int whichside(sfloat *v, sfloat *norm, sfloat x, sfloat y, sfloat z)
 {
-  double vec[3];
+  sfloat vec[3];
   vec[0] = x - v[0];
   vec[1] = y - v[1];
   vec[2] = z - v[2];
 
-  double dotproduct = MathExtra::dot3(norm,vec);
+  sfloat dotproduct = MathExtra::dot3(norm,vec);
   if (dotproduct < 0.0) return -1;
   else if (dotproduct > 0.0) return 1;
   else return 0;
@@ -1179,7 +1180,7 @@ int whichside(double *v, double *norm, double x, double y, double z)
    return 1 if it does, 0 if not
 ------------------------------------------------------------------------- */
 
-int point_on_hex(double *x, double *lo, double *hi)
+int point_on_hex(sfloat *x, sfloat *lo, sfloat *hi)
 {
   if ((x[0] == lo[0] || x[0] == hi[0]) &&
       x[1] >= lo[1] && x[1] <= hi[1] && x[2] >= lo[2] && x[2] <= hi[2])
@@ -1198,7 +1199,7 @@ int point_on_hex(double *x, double *lo, double *hi)
    return 1 if it does, 0 if not
 ------------------------------------------------------------------------- */
 
-int point_in_hex(double *x, double *lo, double *hi)
+int point_in_hex(sfloat *x, sfloat *lo, sfloat *hi)
 {
   if (x[0] >= lo[0] && x[0] <= hi[0] &&
       x[1] >= lo[1] && x[1] <= hi[1] &&
@@ -1212,7 +1213,7 @@ int point_in_hex(double *x, double *lo, double *hi)
    return 1 if it does, 0 if not
 ------------------------------------------------------------------------- */
 
-int point_in_tri(double *x, double *p1, double *p2, double *p3, double *norm)
+int point_in_tri(sfloat *x, sfloat *p1, sfloat *p2, sfloat *p3, sfloat *norm)
 {
   // if not in plane of tri, then not inside tri
 
@@ -1222,9 +1223,9 @@ int point_in_tri(double *x, double *p1, double *p2, double *p3, double *norm)
   // are in plane of tri, pointing towards center of tri
   // enorms are NOT unit vectors
 
-  double enorm1[3],enorm2[3],enorm3[3];
+  sfloat enorm1[3],enorm2[3],enorm3[3];
 
-  double diff[3];
+  sfloat diff[3];
   MathExtra::sub3(p2,p1,diff);
   MathExtra::cross3(norm,diff,enorm1);
   MathExtra::sub3(p3,p2,diff);
@@ -1248,12 +1249,12 @@ int point_in_tri(double *x, double *p1, double *p2, double *p3, double *norm)
    distance = nearest distance to any point on line segment
 ------------------------------------------------------------------------- */
 
-double distsq_point_line(double *x, double *p1, double *p2)
+sfloat distsq_point_line(sfloat *x, sfloat *p1, sfloat *p2)
 {
   // A = vector from P1 to X
   // B = vector from P1 to P2
 
-  double a[3],b[3],c[3];
+  sfloat a[3],b[3],c[3];
   MathExtra::sub3(x,p1,a);
   MathExtra::sub3(p2,p1,b);
 
@@ -1261,7 +1262,7 @@ double distsq_point_line(double *x, double *p1, double *p2)
   // alpha = fraction of distance from P1 to P2 that P is at
   // alpha can be < 0, or between 0 to 1, or > 1
 
-  double alpha = MathExtra::dot3(a,b)/MathExtra::lensq3(b);
+  sfloat alpha = MathExtra::dot3(a,b)/MathExtra::lensq3(b);
 
   // C = vector from point on P1P2 line to X
   // if alpha < 0.0, point on line is P1
@@ -1286,10 +1287,10 @@ double distsq_point_line(double *x, double *p1, double *p2)
    distance = nearest distance to any point within 2d triangle surface
 ------------------------------------------------------------------------- */
 
-double distsq_point_tri(double *x, double *p1, double *p2, double *p3,
-                        double *norm)
+sfloat distsq_point_tri(sfloat *x, sfloat *p1, sfloat *p2, sfloat *p3,
+                        sfloat *norm)
 {
-  double a[3],point[3],edge[3],pvec[3],xproduct[3];
+  sfloat a[3],point[3],edge[3],pvec[3],xproduct[3];
 
   // A = vector from P1 to X
 
@@ -1298,13 +1299,13 @@ double distsq_point_tri(double *x, double *p1, double *p2, double *p3,
   // point = projected point on infinite triangle plane
   // pdistsq = projected distance to plane
 
-  double alpha = MathExtra::dot3(a,norm);
+  sfloat alpha = MathExtra::dot3(a,norm);
   point[0] = x[0] - alpha*norm[0];
   point[1] = x[1] - alpha*norm[1];
   point[2] = x[2] - alpha*norm[2];
 
   MathExtra::sub3(x,point,a);
-  double pdistsq = MathExtra::lensq3(a);
+  sfloat pdistsq = MathExtra::lensq3(a);
 
   // test if projected point is inside triangle
   // edge = edge vector of triangle
@@ -1337,7 +1338,7 @@ double distsq_point_tri(double *x, double *p1, double *p2, double *p3,
   // compute minimum distance to any of 3 triangle edges
   // return sum of min distance and projected distance
 
-  double rsq = distsq_point_line(point,p1,p2);
+  sfloat rsq = distsq_point_line(point,p1,p2);
   rsq = MIN(rsq,distsq_point_line(point,p2,p3));
   rsq = MIN(rsq,distsq_point_line(point,p3,p1));
   return rsq + pdistsq;
@@ -1347,10 +1348,10 @@ double distsq_point_tri(double *x, double *p1, double *p2, double *p3,
    compute distance bewteen a line segmeht XY and 2d quad lo/hi
 ------------------------------------------------------------------------- */
 
-double dist_line_quad(double *x, double *y, double *lo, double *hi)
+sfloat dist_line_quad(sfloat *x, sfloat *y, sfloat *lo, sfloat *hi)
 {
-  double distsq;
-  double pt[3],e1[3],e2[3];
+  sfloat distsq;
+  sfloat pt[3],e1[3],e2[3];
 
   pt[2] = e1[2] = e2[2] = 0.0;
 
@@ -1390,11 +1391,11 @@ double dist_line_quad(double *x, double *y, double *lo, double *hi)
    compute distance bewteen a triangle XYZ with norm and 3d hex lo/hi
 ------------------------------------------------------------------------- */
 
-double dist_tri_hex(double *x, double *y, double *z, double *norm,
-                    double *lo, double *hi)
+sfloat dist_tri_hex(sfloat *x, sfloat *y, sfloat *z, sfloat *norm,
+                    sfloat *lo, sfloat *hi)
 {
-  double distsq;
-  double pt[8][3],face[3];
+  sfloat distsq;
+  sfloat pt[8][3],face[3];
 
   // convert lo/hi to 8 corner pts
 
@@ -1478,15 +1479,15 @@ double dist_tri_hex(double *x, double *y, double *z, double *norm,
    return fracsq = square of frac
 ------------------------------------------------------------------------- */
 
-double line_fraction(double *x, double *v0, double *v1)
+sfloat line_fraction(sfloat *x, sfloat *v0, sfloat *v1)
 {
-  double segment[3];
+  sfloat segment[3];
 
   MathExtra::sub3(v0,v1,segment);
-  double lensq = MathExtra::lensq3(segment);
+  sfloat lensq = MathExtra::lensq3(segment);
 
   MathExtra::sub3(x,v0,segment);
-  double fracsq = MathExtra::lensq3(segment)/lensq;
+  sfloat fracsq = MathExtra::lensq3(segment)/lensq;
   MathExtra::sub3(x,v1,segment);
   fracsq = MIN(fracsq,MathExtra::lensq3(segment)/lensq);
 
@@ -1500,19 +1501,19 @@ double line_fraction(double *x, double *v0, double *v1)
    return fracsq = square of frac
 ------------------------------------------------------------------------- */
 
-double tri_fraction(double *x, double *v0, double *v1, double *v2)
+sfloat tri_fraction(sfloat *x, sfloat *v0, sfloat *v1, sfloat *v2)
 {
-  double segment[3];
+  sfloat segment[3];
 
   MathExtra::sub3(v0,v1,segment);
-  double lensq = MathExtra::lensq3(segment);
+  sfloat lensq = MathExtra::lensq3(segment);
   MathExtra::sub3(v1,v2,segment);
   lensq = MIN(lensq,MathExtra::lensq3(segment));
   MathExtra::sub3(v0,v2,segment);
   lensq = MIN(lensq,MathExtra::lensq3(segment));
 
   MathExtra::sub3(x,v0,segment);
-  double fracsq = MathExtra::lensq3(segment)/lensq;
+  sfloat fracsq = MathExtra::lensq3(segment)/lensq;
   MathExtra::sub3(x,v1,segment);
   fracsq = MIN(fracsq,MathExtra::lensq3(segment)/lensq);
   MathExtra::sub3(x,v2,segment);
@@ -1529,11 +1530,11 @@ double tri_fraction(double *x, double *v0, double *v1, double *v2)
    center = computed centroid of polygon
 ------------------------------------------------------------------------- */
 
-double poly_area(int npoint, double *cpath, double* center)
+sfloat poly_area(int npoint, sfloat *cpath, sfloat* center)
 {
-  double area = 0.0;
-  double v1[3],v2[3],xproduct[3];
-  double pt0[3],pti[3],ptip1[3],tri_center[3];
+  sfloat area = 0.0;
+  sfloat v1[3],v2[3],xproduct[3];
+  sfloat pt0[3],pti[3],ptip1[3],tri_center[3];
 
   center[0] = 0.0;
   center[1] = 0.0;
@@ -1555,7 +1556,7 @@ double poly_area(int npoint, double *cpath, double* center)
     MathExtra::sub3(pti,pt0,v1);
     MathExtra::sub3(ptip1,pt0,v2);
     MathExtra::cross3(v1,v2,xproduct);
-    double tri_area = 0.5*sqrt(MathExtra::dot3(xproduct,xproduct));
+    sfloat tri_area = 0.5*sqrt(MathExtra::dot3(xproduct,xproduct));
 
     MathExtra::add3(pt0,pti,tri_center);
     MathExtra::add3(tri_center,ptip1,tri_center);

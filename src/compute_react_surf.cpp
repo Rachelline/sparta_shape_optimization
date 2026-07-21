@@ -1,3 +1,4 @@
+/* AD-CONVERTED: double->sfloat by tools/ad_convert.py (see sfloat.h) */
 /* ----------------------------------------------------------------------
    SPARTA - Stochastic PArallel Rarefied-gas Time-accurate Analyzer
    http://sparta.github.io
@@ -199,7 +200,7 @@ void ComputeReactSurf::clear()
    jp != NULL means two particles after collision
 ------------------------------------------------------------------------- */
 
-void ComputeReactSurf::surf_tally(double dtremain,
+void ComputeReactSurf::surf_tally(sfloat dtremain,
                                   int isurf, int icell, int reaction,
                                   Particle::OnePart *iorig,
                                   Particle::OnePart *ip, Particle::OnePart *jp)
@@ -225,7 +226,7 @@ void ComputeReactSurf::surf_tally(double dtremain,
   // grow tally list if needed
 
   int itally;
-  double *vec;
+  sfloat *vec;
 
   surfint surfID;
   if (dim == 2) surfID = lines[isurf].id;
@@ -306,7 +307,7 @@ void ComputeReactSurf::grow_tally()
 bigint ComputeReactSurf::memory_usage()
 {
   bigint bytes = 0;
-  bytes += ntotal*maxtally * sizeof(double);    // array_surf_tally
+  bytes += ntotal*maxtally * sizeof(sfloat);    // array_surf_tally
   bytes += maxtally * sizeof(surfint);          // tally2surf
   return bytes;
 }

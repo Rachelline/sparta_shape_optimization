@@ -1,3 +1,4 @@
+/* AD-CONVERTED: double->sfloat by tools/ad_convert.py (see sfloat.h) */
 /* ----------------------------------------------------------------------
    SPARTA - Stochastic PArallel Rarefied-gas Time-accurate Analyzer
    http://sparta.github.io
@@ -176,7 +177,7 @@ void CreateISurf::command(int narg, char **arg)
   nglocal = grid->nlocal;
 
   //MPI_Barrier(world);
-  //double time0 = MPI_Wtime();
+  //sfloat time0 = MPI_Wtime();
 
   // set grid corner point values based on existing explicit surfs and thresh
 
@@ -207,8 +208,8 @@ void CreateISurf::command(int narg, char **arg)
   if (ablate->nevery == 0) modify->delete_fix(ablateID);
 
   //MPI_Barrier(world);
-  //double time1 = MPI_Wtime();
-  //double time_total = time1-time0;
+  //sfloat time1 = MPI_Wtime();
+  //sfloat time_total = time1-time0;
 
   //if (comm->me == 0) {
   //  if (screen)
@@ -413,14 +414,14 @@ void CreateISurf::surface_edge2d()
 
   Grid::ChildCell *cells = grid->cells;
   Grid::ChildInfo *cinfo = grid->cinfo;
-  double cl[3], ch[3]; // cell bounds
-  double cx[8], cy[8], cz[8]; // store all corners
-  double pi[3], pj[3]; // corner coordinate
+  sfloat cl[3], ch[3]; // cell bounds
+  sfloat cx[8], cy[8], cz[8]; // store all corners
+  sfloat pi[3], pj[3]; // corner coordinate
   Surf::Line *line;
   Surf::Line *lines = surf->lines;
   surfint *csurfs;
   int isurf, nsurf, side, hitflag;
-  double param, oparam;
+  sfloat param, oparam;
 
   // initialize param to avoid error
 
@@ -559,14 +560,14 @@ void CreateISurf::surface_edge3d()
 
   Grid::ChildCell *cells = grid->cells;
   Grid::ChildInfo *cinfo = grid->cinfo;
-  double cl[3], ch[3]; // cell bounds
-  double cx[8], cy[8], cz[8]; // store all corners
-  double pi[3], pj[3]; // corner coordinate
+  sfloat cl[3], ch[3]; // cell bounds
+  sfloat cx[8], cy[8], cz[8]; // store all corners
+  sfloat pi[3], pj[3]; // corner coordinate
   Surf::Tri *tri;
   Surf::Tri *tris = surf->tris;
   surfint *csurfs;
   int isurf, nsurf, hitflag, side;
-  double param, oparam;
+  sfloat param, oparam;
 
   // initialize param to avoid error
 
@@ -709,7 +710,7 @@ void CreateISurf::sync(int which)
 {
   int i,j,ix,iy,iz,jx,jy,jz,ixfirst,iyfirst,izfirst,jcorner,jin;
   int icell,jcell;
-  double dtotal[6], dtemp;   // dtotal indexed by nmulti = 4 (2D) or 6 (3D)
+  sfloat dtotal[6], dtemp;   // dtotal indexed by nmulti = 4 (2D) or 6 (3D)
 
   comm_neigh_corners(which);
 
@@ -769,7 +770,7 @@ void CreateISurf::sync(int which)
               if (which == SVAL) {
                 if (svalues[jcell][jcorner] < 2)
                   dtotal[0] = MAX(dtotal[0],
-                    static_cast<double>(svalues[jcell][jcorner]));
+                    static_cast<sfloat>(svalues[jcell][jcorner]));
               } else if (which == IVAL) {
                 for (jin = 0; jin < nmulti; jin++) {
                   dtemp = ivalues[jcell][jcorner][jin];
@@ -795,7 +796,7 @@ void CreateISurf::sync(int which)
                 if (sghost[jcell-nglocal][jcorner] < 2)
                   dtotal[0] =
                     MAX(dtotal[0],
-                    static_cast<double>(sghost[jcell-nglocal][jcorner]));
+                    static_cast<sfloat>(sghost[jcell-nglocal][jcorner]));
               } else if (which == IVAL) {
                 for (jin = 0; jin < nmulti; jin++) {
                   dtemp = ighost[jcell-nglocal][jcorner][jin];
@@ -846,7 +847,7 @@ void CreateISurf::sync_voxels()
 {
   int i,ix,iy,iz,jx,jy,jz,ixfirst,iyfirst,izfirst,jcorner;
   int icell,jcell,ncell;
-  double vol_avg;
+  sfloat vol_avg;
 
   comm_neigh_corners(CVAL);
 
@@ -1010,7 +1011,7 @@ void CreateISurf::comm_neigh_corners(int which)
       sbuf[m++] = ubuf(locallist[nsend]).d;
       if (which == SVAL) {
         for (j = 0; j < ncorner; j++)
-          sbuf[m++] = static_cast<double> (svalues[icell][j]);
+          sbuf[m++] = static_cast<sfloat> (svalues[icell][j]);
       } else if (which == IVAL) {
         for (j = 0; j < ncorner; j++)
           for (k = 0; k < nmulti; k++)
@@ -1030,9 +1031,9 @@ void CreateISurf::comm_neigh_corners(int which)
   // perform irregular neighbor comm
   // Comm class manages rbuf memory
 
-  double *rbuf;
+  sfloat *rbuf;
   int nrecv = comm->irregular_uniform_neighs(nsend,proclist,(char *) sbuf,
-                ncomm*sizeof(double),(char **) &rbuf);
+                ncomm*sizeof(sfloat),(char **) &rbuf);
 
   // realloc val_ghost if necessary
 
@@ -1541,8 +1542,8 @@ void CreateISurf::set_cvalues_voxel()
   Grid::ChildCell *cells = grid->cells;
   Grid::ChildInfo *cinfo = grid->cinfo;
 
-  double dx,dy,dz;
-  double cvol, sfrac;
+  sfloat dx,dy,dz;
+  sfloat cvol, sfrac;
 
   for (int icell = 0; icell < nglocal; icell++) {
     if (!(cinfo[icell].mask & groupbit)) continue;
@@ -1578,7 +1579,7 @@ void CreateISurf::set_cvalues_ave()
   Grid::ChildInfo *cinfo = grid->cinfo;
 
   int nval;
-  double ivalsum;
+  sfloat ivalsum;
   for (int icell = 0; icell < nglocal; icell++) {
     if (!(cinfo[icell].mask & groupbit)) continue;
     if (cells[icell].nsplit <= 0) continue;
@@ -1650,7 +1651,7 @@ void CreateISurf::set_cvalues_multi()
 
   // now handle the overlap cells
 
-  double ival, cval;
+  sfloat ival, cval;
 
   // value of inside corner point next to surface
 
@@ -1682,14 +1683,14 @@ void CreateISurf::set_cvalues_multi()
    2d version
 ------------------------------------------------------------------------- */
 
-int CreateISurf::corner_hit2d(double *p1, double *p2,
-                              Surf::Line *line, double &param, int &side)
+int CreateISurf::corner_hit2d(sfloat *p1, sfloat *p2,
+                              Surf::Line *line, sfloat &param, int &side)
 {
   // try intersect first
 
   int h, tside;
-  double tparam;
-  double d3dum[3];
+  sfloat tparam;
+  sfloat d3dum[3];
   h = Geometry::line_line_intersect(p1,p2,line->p1,line->p2,line->norm,
                                     d3dum,tparam,tside);
   if (h) {
@@ -1706,11 +1707,11 @@ int CreateISurf::corner_hit2d(double *p1, double *p2,
 
   // perturbed points
 
-  double p1p[3];
-  double p2p[3];
+  sfloat p1p[3];
+  sfloat p2p[3];
 
-  double dx[8], dy[8];
-  double dp = mind/1000.0;
+  sfloat dx[8], dy[8];
+  sfloat dp = mind/1000.0;
   dx[0] = dx[1] = dx[6] = dp;
   dx[2] = dx[5] = 0;
   dx[3] = dx[4] = dx[7] = -dp;
@@ -1763,14 +1764,14 @@ int CreateISurf::corner_hit2d(double *p1, double *p2,
    3d version
 ------------------------------------------------------------------------- */
 
-int CreateISurf::corner_hit3d(double *p1, double *p2,
-                              Surf::Tri* tri, double &param, int &side)
+int CreateISurf::corner_hit3d(sfloat *p1, sfloat *p2,
+                              Surf::Tri* tri, sfloat &param, int &side)
 {
   // try intersect first
 
   int h, tside;
-  double tparam;
-  double d3dum[3];
+  sfloat tparam;
+  sfloat d3dum[3];
   h = Geometry::line_tri_intersect(p1,p2,tri->p1,tri->p2,tri->p3,
       tri->norm,d3dum,tparam,tside);
 
@@ -1789,11 +1790,11 @@ int CreateISurf::corner_hit3d(double *p1, double *p2,
   // if miss, maybe surface very close to corner/edge
   // perturbed points
 
-  double p1p[3];
-  double p2p[3];
+  sfloat p1p[3];
+  sfloat p2p[3];
 
-  double dx[26], dy[26], dz[26];
-  double dp = mind/1000.0;
+  sfloat dx[26], dy[26], dz[26];
+  sfloat dp = mind/1000.0;
   dx[0] = dx[2] = dx[3] = dx[4] =
     dx[15] = dx[16] = dx[18] = dx[23] = dx[24] = dp;
   dx[7] = dx[9] = dx[10] = dx[11] =
@@ -1851,14 +1852,14 @@ int CreateISurf::corner_hit3d(double *p1, double *p2,
    value
 ------------------------------------------------------------------------- */
 
-double CreateISurf::param2cval(double param, double v1)
+sfloat CreateISurf::param2cval(sfloat param, sfloat v1)
 {
   // param is proportional to cell length so
   // ... lo = 0; hi = 1
   // trying to find v0
   // param = (thresh  - v0) / (v1 - v0)
 
-  double v0;
+  sfloat v0;
   v0 = (thresh - v1*param) / (1.0 - param);
 
   // bound by limits

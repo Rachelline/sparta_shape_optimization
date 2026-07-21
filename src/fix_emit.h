@@ -1,3 +1,4 @@
+/* AD-CONVERTED: double->sfloat by tools/ad_convert.py (see sfloat.h) */
 /* ----------------------------------------------------------------------
    SPARTA - Stochastic PArallel Rarefied-gas Time-accurate Analyzer
    http://sparta.github.io
@@ -26,7 +27,7 @@ class FixEmit : public Fix {
   int setmask();
   virtual void init();
   void start_of_step();
-  double compute_vector(int);
+  sfloat compute_vector(int);
 
   virtual void grid_changed();
 
@@ -45,8 +46,8 @@ class FixEmit : public Fix {
   virtual void perform_task() = 0;
 
   virtual void create_tasks();
-  double mol_inflow(double, double, double);
-  int subsonic_temperature_check(int, double);
+  sfloat mol_inflow(sfloat, sfloat, sfloat);
+  int subsonic_temperature_check(int, sfloat);
   void options(int, char **);
   virtual int option(int, char **);
 };

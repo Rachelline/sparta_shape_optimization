@@ -1,3 +1,4 @@
+/* AD-CONVERTED: double->sfloat by tools/ad_convert.py (see sfloat.h) */
 /* ----------------------------------------------------------------------
    SPARTA - Stochastic PArallel Rarefied-gas Time-accurate Analyzer
    http://sparta.github.io
@@ -82,7 +83,7 @@ RegUnion::~RegUnion()
    else inside = 0
 ------------------------------------------------------------------------- */
 
-int RegUnion::inside(double *x)
+int RegUnion::inside(sfloat *x)
 {
   int ilist;
   Region **regions = domain->regions;

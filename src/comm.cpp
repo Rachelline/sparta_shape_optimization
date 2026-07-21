@@ -1,3 +1,4 @@
+/* AD-CONVERTED: double->sfloat by tools/ad_convert.py (see sfloat.h) */
 /* ----------------------------------------------------------------------
    SPARTA - Stochastic PArallel Rarefied-gas Time-accurate Analyzer
    http://sparta.github.io
@@ -723,7 +724,7 @@ void Comm::ring(int n, int nper, void *inbuf, int messtag,
      procs_rvous = outorder 0 = proc to send each datum to, 1 = # of datums/proc
                    allocated
      outbuf_rvous = vector of rvous decomp output datums
-   NOTE: could use MPI_INT or MPI_DOUBLE insead of MPI_CHAR
+   NOTE: could use MPI_INT or MPI_SFLOAT insead of MPI_CHAR
          to avoid checked-for overflow in MPI_Alltoallv?
 ------------------------------------------------------------------------- */
 

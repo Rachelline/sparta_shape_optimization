@@ -1,3 +1,4 @@
+/* AD-CONVERTED: double->sfloat by tools/ad_convert.py (see sfloat.h) */
 /* ----------------------------------------------------------------------
    SPARTA - Stochastic PArallel Rarefied-gas Time-accurate Analyzer
    http://sparta.github.io
@@ -36,7 +37,7 @@ enum{XLO,XHI,YLO,YHI,ZLO,ZHI,INTERIOR};         // same as Domain
    ix,iy,iz range from 0 to Nxyz-1 inclusive
 ------------------------------------------------------------------------- */
 
-void Grid::id_point_child(double *x, double *lo, double *hi,
+void Grid::id_point_child(sfloat *x, sfloat *lo, sfloat *hi,
                           int nx, int ny, int nz, int &ix, int &iy, int &iz)
 {
   // ix,iy,iz = child cell indices within parent lo/hi cell
@@ -50,7 +51,7 @@ void Grid::id_point_child(double *x, double *lo, double *hi,
   // insure indices match grid cell boundaries in case of round-off error
   // via master equation id_child_lohi() that defines cell boundaries
 
-  double edge;
+  sfloat edge;
 
   edge = lo[0] + ix*(hi[0]-lo[0])/nx;
   if (x[0] < edge) ix--;
@@ -104,16 +105,16 @@ cellint Grid::id_parent_of_child(cellint childID, int level)
 ------------------------------------------------------------------------- */
 
 int Grid::id_find_child(cellint parentID, int plevel,
-                        double *oplo, double *ophi, double *x)
+                        sfloat *oplo, sfloat *ophi, sfloat *x)
 {
   int ix,iy,iz,nx,ny,nz;
-  double plo[3],phi[3],clo[3],chi[3];
+  sfloat plo[3],phi[3],clo[3],chi[3];
   cellint childID,ichild;
 
   cellint id = parentID;
   int level = plevel;
-  double *lo = oplo;
-  double *hi = ophi;
+  sfloat *lo = oplo;
+  sfloat *hi = ophi;
 
   while (level < maxlevel) {
     nx = plevels[level].nx;
@@ -190,17 +191,17 @@ cellint Grid::id_uniform_level(int level, int xgrid, int ygrid, int zgrid)
 ------------------------------------------------------------------------- */
 
 void Grid::id_find_child_uniform_level(int level, int lohi,
-                                       double *boxlo, double *boxhi, double *x,
+                                       sfloat *boxlo, sfloat *boxhi, sfloat *x,
                                        int &xgrid, int &ygrid, int &zgrid)
 {
   int ix,iy,iz,nx,ny,nz;
-  double plo[3],phi[3],clo[3],chi[3];
+  sfloat plo[3],phi[3],clo[3],chi[3];
   cellint childID,ichild;
 
   cellint id = 0;
   int plevel = 0;
-  double *lo = boxlo;
-  double *hi = boxhi;
+  sfloat *lo = boxlo;
+  sfloat *hi = boxhi;
   xgrid = ygrid = zgrid = 0;
 
   while (plevel < level) {
@@ -443,8 +444,8 @@ int Grid::id_level(cellint id)
    return clo/chi corner points, caller must allocate them
 ------------------------------------------------------------------------- */
 
-void Grid::id_child_lohi(int plevel, double *plo, double *phi,
-                         cellint ichild, double *clo, double *chi)
+void Grid::id_child_lohi(int plevel, sfloat *plo, sfloat *phi,
+                         cellint ichild, sfloat *clo, sfloat *chi)
 {
   int nx = plevels[plevel].nx;
   int ny = plevels[plevel].ny;
@@ -474,12 +475,12 @@ void Grid::id_child_lohi(int plevel, double *plo, double *phi,
    return lo/hi corner points, caller must allocate them
 ------------------------------------------------------------------------- */
 
-void Grid::id_lohi(cellint id, int level, double *boxlo, double *boxhi,
-                   double *lo, double *hi)
+void Grid::id_lohi(cellint id, int level, sfloat *boxlo, sfloat *boxhi,
+                   sfloat *lo, sfloat *hi)
 {
   int childbits;
   cellint ichild,mask;
-  double plo[3],phi[3];
+  sfloat plo[3],phi[3];
 
   plo[0] = boxlo[0]; plo[1] = boxlo[1]; plo[2] = boxlo[2];
   phi[0] = boxhi[0]; phi[1] = boxhi[1]; phi[2] = boxhi[2];

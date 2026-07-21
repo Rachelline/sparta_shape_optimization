@@ -1,3 +1,4 @@
+/* AD-CONVERTED: double->sfloat by tools/ad_convert.py (see sfloat.h) */
 /* ----------------------------------------------------------------------
    SPARTA - Stochastic PArallel Rarefied-gas Time-accurate Analyzer
    http://sparta.sandia.gov
@@ -59,13 +60,13 @@ void FixAblate::decrement_multid_outside()
   Grid::ChildInfo *cinfo = grid->cinfo;
 
   int i,k;
-  double total,perout,Ninterface,Nout;
+  sfloat total,perout,Ninterface,Nout;
 
   int i_cneigh;
   int *neighbors;
 
   int nsurf;
-  double ninter;
+  sfloat ninter;
 
   for (int icell = 0; icell < nglocal; icell++) {
     if (!(cinfo[icell].mask & groupbit)) continue;
@@ -205,7 +206,7 @@ void FixAblate::sync_multid_outside()
 {
   int i,ix,iy,iz,jx,jy,jz,ixfirst,iyfirst,izfirst,jcorner;
   int icell,jcell;
-  double total;
+  sfloat total;
 
   comm_neigh_corners(CDELTA);
 
@@ -268,7 +269,7 @@ void FixAblate::decrement_multid_inside()
   int i,j,ix,iy,iz,jx,jy,jz,ixfirst,iyfirst,izfirst,jcorner;
   int icell,jcell;
   int *neighbors,i_cneigh;
-  double total_remain,nvertices;
+  sfloat total_remain,nvertices;
 
   // find total number of vertices around each corner point
   // required to pass the correct amount from each interfact to inside point
@@ -368,7 +369,7 @@ void FixAblate::sync_multid_inside()
 {
   int i,ix,iy,iz,jx,jy,jz,ixfirst,iyfirst,izfirst,jcorner;
   int icell,jcell;
-  double total;
+  sfloat total;
 
   comm_neigh_corners(CDELTA);
 
@@ -501,8 +502,8 @@ void FixAblate::decrement_multiv()
   Grid::ChildInfo *cinfo = grid->cinfo;
 
   int i,j,imin;
-  double minvalue,total;
-  double iavg;
+  sfloat minvalue,total;
+  sfloat iavg;
 
   // total = full amount to decrement from cell
   // cdelta[icell] = amount to decrement from each corner point of icell
@@ -558,7 +559,7 @@ void FixAblate::sync_multiv()
 {
   int i,j,ix,iy,iz,jx,jy,jz,ixfirst,iyfirst,izfirst,jcorner;
   int icell,jcell;
-  double total[6];   // total indexed by nmultiv = 4 (2D) or 6 (3D)
+  sfloat total[6];   // total indexed by nmultiv = 4 (2D) or 6 (3D)
 
   comm_neigh_corners(CDELTA);
 
@@ -648,7 +649,7 @@ void FixAblate::decrement_multiv_multid_outside()
   Grid::ChildInfo *cinfo = grid->cinfo;
 
   int i,j,k,icell;
-  double total,perout,Ninterface,Nout;
+  sfloat total,perout,Ninterface,Nout;
 
   int i_in,oin,i_cneigh;
   int *ineighbors,*neighbors;
@@ -733,7 +734,7 @@ void FixAblate::sync_multiv_multid_outside()
 {
   int i,j,ix,iy,iz,jx,jy,jz,ixfirst,iyfirst,izfirst,jcorner;
   int icell,jcell;
-  double total[6];
+  sfloat total[6];
 
   comm_neigh_corners(CDELTA);
 
@@ -798,7 +799,7 @@ void FixAblate::decrement_multiv_multid_inside()
   int i,j,icell;
   int i_in,o_in,i_cneigh;
   int *ineighbors,*neighbors;
-  double total_remain;
+  sfloat total_remain;
 
   for (icell = 0; icell < nglocal; icell++) {
     if (!(cinfo[icell].mask & groupbit)) continue;
@@ -857,7 +858,7 @@ void FixAblate::sync_multiv_multid_inside()
 {
   int i,j,ix,iy,iz,jx,jy,jz,ixfirst,iyfirst,izfirst,jcorner;
   int icell,jcell;
-  double total[6];   // total indexed by nmultiv = 4 (2D) or 6 (3D)
+  sfloat total[6];   // total indexed by nmultiv = 4 (2D) or 6 (3D)
 
   comm_neigh_corners(CDELTA);
 

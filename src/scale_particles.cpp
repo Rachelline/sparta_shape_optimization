@@ -1,3 +1,4 @@
+/* AD-CONVERTED: double->sfloat by tools/ad_convert.py (see sfloat.h) */
 /* ----------------------------------------------------------------------
    SPARTA - Stochastic PArallel Rarefied-gas Time-accurate Analyzer
    http://sparta.github.io
@@ -43,19 +44,19 @@ void ScaleParticles::command(int narg, char **arg)
   if (imix < 0) error->all(FLERR,"Scale_particles mixture ID does not exist");
   particle->mixture[imix]->init();
 
-  double factor = atof(arg[1]);
+  sfloat factor = atof(arg[1]);
   if (factor < 0.0) error->all(FLERR,"Illegal scale_particles command");
 
   // RNG for cloning/deletion
 
   RanKnuth *random = new RanKnuth(update->ranmaster->uniform());
-  double seed = update->ranmaster->uniform();
+  sfloat seed = update->ranmaster->uniform();
   random->reset(seed,comm->me,100);
 
   // nbefore = current total # of particles
 
   MPI_Barrier(world);
-  double time1 = MPI_Wtime();
+  sfloat time1 = MPI_Wtime();
 
   bigint nbefore;
   bigint nme = particle->nlocal;
@@ -70,7 +71,7 @@ void ScaleParticles::command(int narg, char **arg)
   int ncustom = particle->ncustom;
 
   int m,ispecies,igroup,nclone,flag;
-  double fraction;
+  sfloat fraction;
 
   int nlocal = particle->nlocal;
   int nlocal_original = nlocal;
@@ -124,7 +125,7 @@ void ScaleParticles::command(int narg, char **arg)
   MPI_Allreduce(&nme,&nafter,1,MPI_SPARTA_BIGINT,MPI_SUM,world);
 
   MPI_Barrier(world);
-  double time2 = MPI_Wtime();
+  sfloat time2 = MPI_Wtime();
 
   // clean up
 

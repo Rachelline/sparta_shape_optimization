@@ -1,3 +1,4 @@
+/* AD-CONVERTED: double->sfloat by tools/ad_convert.py (see sfloat.h) */
 /* ----------------------------------------------------------------------
    SPARTA - Stochastic PArallel Rarefied-gas Time-accurate Analyzer
    http://sparta.github.io
@@ -28,7 +29,7 @@ class Stats : protected Pointers {
   void set_fields(int, char **);
   void header();
   void compute(int);
-  int evaluate_keyword(char *, double *);
+  int evaluate_keyword(char *, sfloat *);
 
  private:
   char *line;
@@ -49,13 +50,13 @@ class Stats : protected Pointers {
   int firststep;
   int flushflag,lineflag;
 
-  double wall0;
-  double last_tpcpu,last_spcpu;
-  double last_time;
+  sfloat wall0;
+  sfloat last_tpcpu,last_spcpu;
+  sfloat last_time;
   bigint last_step;
                          // data used by routines that compute single values
   int ivalue;            // integer value to print
-  double dvalue;         // double value to print
+  sfloat dvalue;         // sfloat value to print
   bigint bivalue;        // big integer value to print
   int ifield;            // which field in thermo output is being computed
   int *field2index;      // which compute,fix,variable calcs this field

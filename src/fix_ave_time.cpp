@@ -1,3 +1,4 @@
+/* AD-CONVERTED: double->sfloat by tools/ad_convert.py (see sfloat.h) */
 /* ----------------------------------------------------------------------
    SPARTA - Stochastic PArallel Rarefied-gas Time-accurate Analyzer
    http://sparta.github.io
@@ -213,7 +214,7 @@ FixAveTime::FixAveTime(SPARTA *sparta, int narg, char **arg) :
         error->all(FLERR,"Fix ave/time columns are inconsistent lengths");
     }
 
-    column = new double[nrows];
+    column = new sfloat[nrows];
   } else column = NULL;
 
   // print file comment lines
@@ -257,8 +258,8 @@ FixAveTime::FixAveTime(SPARTA *sparta, int narg, char **arg) :
   array_list = NULL;
 
   if (mode == SCALAR) {
-    vector = new double[nvalues];
-    vector_total = new double[nvalues];
+    vector = new sfloat[nvalues];
+    vector_total = new sfloat[nvalues];
     if (ave == WINDOW)
       memory->create(vector_list,nwindow,nvalues,"ave/time:vector_list");
   } else {
@@ -397,7 +398,7 @@ void FixAveTime::end_of_step()
 void FixAveTime::invoke_scalar(bigint ntimestep)
 {
   int i,m;
-  double scalar;
+  sfloat scalar;
 
   // zero if first step
 
@@ -467,7 +468,7 @@ void FixAveTime::invoke_scalar(bigint ntimestep)
   // average the final result for the Nfreq timestep
   // no other normalization factor used
 
-  double repeat = nrepeat;
+  sfloat repeat = nrepeat;
   for (i = 0; i < nvalues; i++)
     if (offcol[i] == 0) vector[i] /= repeat;
 
@@ -544,7 +545,7 @@ void FixAveTime::invoke_vector(bigint ntimestep)
           compute->compute_vector();
           compute->invoked_flag |= INVOKED_VECTOR;
         }
-        double *cvector = compute->vector;
+        sfloat *cvector = compute->vector;
         for (i = 0; i < nrows; i++)
           column[i] = cvector[i];
 
@@ -553,7 +554,7 @@ void FixAveTime::invoke_vector(bigint ntimestep)
           compute->compute_array();
           compute->invoked_flag |= INVOKED_ARRAY;
         }
-        double **carray = compute->array;
+        sfloat **carray = compute->array;
         int icol = argindex[j]-1;
         for (i = 0; i < nrows; i++)
           column[i] = carray[i][icol];
@@ -599,7 +600,7 @@ void FixAveTime::invoke_vector(bigint ntimestep)
 
   // average the final result for the Nfreq timestep
 
-  double repeat = nrepeat;
+  sfloat repeat = nrepeat;
 
   for (m = 0; m < nvalues; m++)
     if (offcol[m] == 0)
@@ -659,7 +660,7 @@ void FixAveTime::invoke_vector(bigint ntimestep)
    return scalar value
 ------------------------------------------------------------------------- */
 
-double FixAveTime::compute_scalar()
+sfloat FixAveTime::compute_scalar()
 {
   if (norm) return vector_total[0]/norm;
   return 0.0;
@@ -669,7 +670,7 @@ double FixAveTime::compute_scalar()
    return Ith vector value
 ------------------------------------------------------------------------- */
 
-double FixAveTime::compute_vector(int i)
+sfloat FixAveTime::compute_vector(int i)
 {
   if (norm) {
     if (mode == SCALAR) return vector_total[i]/norm;
@@ -682,7 +683,7 @@ double FixAveTime::compute_vector(int i)
    return I,J array value
 ------------------------------------------------------------------------- */
 
-double FixAveTime::compute_array(int i, int j)
+sfloat FixAveTime::compute_array(int i, int j)
 {
   if (norm) return array_total[i][j]/norm;
   return 0.0;

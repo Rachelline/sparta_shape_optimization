@@ -1,3 +1,4 @@
+/* AD-CONVERTED: double->sfloat by tools/ad_convert.py (see sfloat.h) */
 /* ----------------------------------------------------------------------
    SPARTA - Stochastic PArallel Rarefied-gas Time-accurate Analyzer
    http://sparta.github.io
@@ -227,28 +228,28 @@ void ReactBird::init()
 
     // symmetry parameter
 
-    double epsilon = 1.0;
+    sfloat epsilon = 1.0;
     if (isp == jsp) epsilon = 2.0;
 
-    double diam = collide->extract(isp,jsp,"diam");
-    double omega = collide->extract(isp,jsp,"omega");
-    double tref = collide->extract(isp,jsp,"tref");
+    sfloat diam = collide->extract(isp,jsp,"diam");
+    sfloat omega = collide->extract(isp,jsp,"omega");
+    sfloat tref = collide->extract(isp,jsp,"tref");
 
-    // double pre_ave_vibdof = (species[isp].vibdof + species[jsp].vibdof)/2.0;
-    double mr = species[isp].mass * species[jsp].mass /
+    // sfloat pre_ave_vibdof = (species[isp].vibdof + species[jsp].vibdof)/2.0;
+    sfloat mr = species[isp].mass * species[jsp].mass /
         (species[isp].mass + species[jsp].mass);
-    double sigma = MY_PI*diam*diam;
+    sfloat sigma = MY_PI*diam*diam;
 
     // read effective internal DOFs participating in the reaction
 
-    //double z = r->coeff[0];
+    //sfloat z = r->coeff[0];
 
     // add additional coeff for effective DOF
 
-    double c1 = MY_PIS*epsilon*r->coeff[2]/(2.0*sigma) *
+    sfloat c1 = MY_PIS*epsilon*r->coeff[2]/(2.0*sigma) *
       sqrt(mr/(2.0*update->boltz*tref)) *
       pow(tref,1.0-omega)/pow(update->boltz,r->coeff[3]-1.0+omega);
-    double c2 = r->coeff[3] - 1.0 + omega;
+    sfloat c2 = r->coeff[3] - 1.0 + omega;
 
     r->coeff[2] = c1;
     r->coeff[5] = omega;
@@ -257,7 +258,7 @@ void ReactBird::init()
     // mspec = post-collision species of the particle
     // aspec = post-collision species of the atom
 
-    double momega,aomega;
+    sfloat momega,aomega;
 
     if (r->nproduct > 1) {
       int mspec = r->products[0];
@@ -605,7 +606,7 @@ void ReactBird::readfile(char *fname)
         r->id_products = new char*[MAXPRODUCT];
         r->reactants = new int[MAXREACTANT];
         r->products = new int[MAXPRODUCT];
-        r->coeff = new double[MAXCOEFF];
+        r->coeff = new sfloat[MAXCOEFF];
         r->id = NULL;
       }
     }
@@ -907,7 +908,7 @@ char *ReactBird::reactionID(int m)
    return tally associated with a reaction
 ------------------------------------------------------------------------- */
 
-double ReactBird::extract_tally(int m)
+sfloat ReactBird::extract_tally(int m)
 {
   if (!tally_flag) {
     tally_flag = 1;

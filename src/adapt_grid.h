@@ -1,3 +1,4 @@
+/* AD-CONVERTED: double->sfloat by tools/ad_convert.py (see sfloat.h) */
 /* ----------------------------------------------------------------------
    SPARTA - Stochastic PArallel Rarefied-gas Time-accurate Analyzer
    http://sparta.github.io
@@ -61,9 +62,9 @@ class AdaptGrid : protected Pointers {
   int rdecide,cdecide,combine,minlevel,maxlevel;
   int nx,ny,nz;
   int valuewhich,valindex,icompute,ifix;
-  double rcount,ccount,rvalue,cvalue,rfrac,cfrac;
-  double surfsize;
-  double sdir[3];
+  sfloat rcount,ccount,rvalue,cvalue,rfrac,cfrac;
+  sfloat surfsize;
+  sfloat sdir[3];
   char *computeID,*valueID;
   class Region *region;
   class Compute *compute;
@@ -90,7 +91,7 @@ class AdaptGrid : protected Pointers {
     int nexist;             // # of identified children (owned or recvd)
     int *proc;              // proc that owns each child
     int *index;             // local index of each child on owning proc
-    double *value;          // style value for each child
+    sfloat *value;          // style value for each child
   };
 
   struct ActionList {
@@ -130,7 +131,7 @@ class AdaptGrid : protected Pointers {
   struct Rvous1 {
     cellint parentID;
     int plevel,proc,icell,ichild;     // ichild = 0 to Nxyz-1
-    double value;
+    sfloat value;
   };
 
   // Rvous2 send info
@@ -150,9 +151,9 @@ class AdaptGrid : protected Pointers {
   int perform_refine();
 
   void candidates_coarsen();
-  double coarsen_particle_cell(int);
-  double coarsen_surf_cell(int);
-  double coarsen_value_cell(int);
+  sfloat coarsen_particle_cell(int);
+  sfloat coarsen_surf_cell(int);
+  sfloat coarsen_value_cell(int);
   void coarsen_particle();
   void coarsen_surf();
   void coarsen_value();
@@ -160,10 +161,10 @@ class AdaptGrid : protected Pointers {
   void particle_surf_comm();
   int perform_coarsen();
 
-  double value_compute(int);
-  double value_fix(int);
+  sfloat value_compute(int);
+  sfloat value_fix(int);
 
-  int region_check(double *, double *);
+  int region_check(sfloat *, sfloat *);
 };
 
 }

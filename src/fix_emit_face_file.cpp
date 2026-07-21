@@ -1,3 +1,4 @@
+/* AD-CONVERTED: double->sfloat by tools/ad_convert.py (see sfloat.h) */
 /* ----------------------------------------------------------------------
    SPARTA - Stochastic PArallel Rarefied-gas Time-accurate Analyzer
    http://sparta.github.io
@@ -185,8 +186,8 @@ void FixEmitFaceFile::init()
 
   // mixture soundspeed, used by subsonic PONLY as default cell property
 
-  double avegamma = 0.0;
-  double avemass = 0.0;
+  sfloat avegamma = 0.0;
+  sfloat avemass = 0.0;
 
   for (int m = 0; m < nspecies; m++) {
     int ispecies = particle->mixture[imix]->species[m];
@@ -221,9 +222,9 @@ void FixEmitFaceFile::init()
     delete [] tasks[i].fraction;
     delete [] tasks[i].cummulative;
     delete [] tasks[i].vscale;
-    tasks[i].fraction = new double[nspecies];
-    tasks[i].cummulative = new double[nspecies];
-    tasks[i].vscale = new double[nspecies];
+    tasks[i].fraction = new sfloat[nspecies];
+    tasks[i].cummulative = new sfloat[nspecies];
+    tasks[i].vscale = new sfloat[nspecies];
   }
 
   // if used, reallocate ntargetsp for each task
@@ -232,7 +233,7 @@ void FixEmitFaceFile::init()
   if (perspecies) {
     for (int i = 0; i < ntask; i++) {
       delete [] tasks[i].ntargetsp;
-      tasks[i].ntargetsp = new double[nspecies];
+      tasks[i].ntargetsp = new sfloat[nspecies];
     }
   }
 
@@ -240,7 +241,7 @@ void FixEmitFaceFile::init()
   // initialize to mixture settings
 
   fflag = new int[nspecies];
-  fuser = new double[nspecies];
+  fuser = new sfloat[nspecies];
   for (isp = 0; isp < nspecies; isp++) {
     fflag[isp] = fraction_flag_mix[isp];
     fuser[isp] = fraction_user_mix[isp];
@@ -346,14 +347,14 @@ void FixEmitFaceFile::create_task(int icell)
 void FixEmitFaceFile::perform_task()
 {
   int pcell,ninsert,nactual,isp,ispecies,id;
-  double temp_thermal,temp_rot,temp_vib;
-  double indot,scosine,rn,ntarget,vr;
-  double beta_un,normalized_distbn_fn,theta,erot,evib;
-  double x[3],v[3];
-  double *lo,*hi,*vstream,*cummulative,*vscale;
+  sfloat temp_thermal,temp_rot,temp_vib;
+  sfloat indot,scosine,rn,ntarget,vr;
+  sfloat beta_un,normalized_distbn_fn,theta,erot,evib;
+  sfloat x[3],v[3];
+  sfloat *lo,*hi,*vstream,*cummulative,*vscale;
   Particle::OnePart *p;
 
-  double dt = update->dt;
+  sfloat dt = update->dt;
   int *species = particle->mixture[imix]->species;
 
   // if subsonic, re-compute particle inflow counts for each task
@@ -369,7 +370,7 @@ void FixEmitFaceFile::perform_task()
   //       first stage: normal dimension (ndim)
   //       second stage: parallel dimensions (pdim1,pdim2)
 
-  // double while loop until randomized particle velocity meets 2 criteria
+  // sfloat while loop until randomized particle velocity meets 2 criteria
   // inner do-while loop:
   //   v = vstream-component + vthermal is into simulation box
   //   see Bird 1994, p 425
@@ -611,8 +612,8 @@ void FixEmitFaceFile::read_file(char *file, char *section)
 
   // read IMESH,JMESH coords
 
-  mesh.imesh = new double[mesh.ni];
-  mesh.jmesh = new double[mesh.nj];
+  mesh.imesh = new sfloat[mesh.ni];
+  mesh.jmesh = new sfloat[mesh.nj];
 
   tmp = fgets(line,MAXLINE,fp);
   word = strtok(line," \t\n\r");
@@ -682,22 +683,22 @@ void FixEmitFaceFile::bcast_mesh()
   MPI_Bcast(&mesh.ni,1,MPI_INT,0,world);
   MPI_Bcast(&mesh.nj,1,MPI_INT,0,world);
   MPI_Bcast(&mesh.nvalues,1,MPI_INT,0,world);
-  MPI_Bcast(mesh.lo,2,MPI_DOUBLE,0,world);
-  MPI_Bcast(mesh.hi,2,MPI_DOUBLE,0,world);
+  MPI_Bcast(mesh.lo,2,MPI_SFLOAT,0,world);
+  MPI_Bcast(mesh.hi,2,MPI_SFLOAT,0,world);
 
   if (me) {
     mesh.which = new int[mesh.nvalues];
-    mesh.imesh = new double[mesh.ni];
-    mesh.jmesh = new double[mesh.nj];
+    mesh.imesh = new sfloat[mesh.ni];
+    mesh.jmesh = new sfloat[mesh.nj];
     n = mesh.ni * mesh.nj;
     memory->create(mesh.values,n,mesh.nvalues,"inflow/file:values");
   }
 
   MPI_Bcast(mesh.which,mesh.nvalues,MPI_INT,0,world);
-  MPI_Bcast(mesh.imesh,mesh.ni,MPI_DOUBLE,0,world);
-  MPI_Bcast(mesh.jmesh,mesh.nj,MPI_DOUBLE,0,world);
+  MPI_Bcast(mesh.imesh,mesh.ni,MPI_SFLOAT,0,world);
+  MPI_Bcast(mesh.jmesh,mesh.nj,MPI_SFLOAT,0,world);
   MPI_Bcast(&mesh.values[0][0],mesh.ni*mesh.nj*mesh.nvalues,
-            MPI_DOUBLE,0,world);
+            MPI_SFLOAT,0,world);
 
   // subsonic if PRESS is set in mesh file
   // PTBOTH if TEMP is also set, else PONLY
@@ -760,9 +761,9 @@ void FixEmitFaceFile::check_mesh_values()
 int FixEmitFaceFile::interpolate(int icell)
 {
   int j,m,isp,plo,phi,qlo,qhi,anyfrac,err;
-  double indot,newtemp,area;
-  double *lo,*hi;
-  double xc[2];
+  sfloat indot,newtemp,area;
+  sfloat *lo,*hi;
+  sfloat xc[2];
 
   // task lo/hi = extent of overlap
   // if lo >= hi, then no overlap
@@ -940,7 +941,7 @@ int FixEmitFaceFile::interpolate(int icell)
   // skip task if final ntarget = 0.0, due to large outbound vstream
   // do not skip for subsonic since it resets ntarget every step
 
-  double ntargetsp;
+  sfloat ntargetsp;
   for (isp = 0; isp < nspecies; isp++) {
     ntargetsp = frac_user *
       mol_inflow(indot,tasks[ntask].vscale[isp],tasks[ntask].fraction[isp]);
@@ -964,11 +965,11 @@ int FixEmitFaceFile::interpolate(int icell)
    linear interpolation at x between lo and hi bounds, for column M
 ------------------------------------------------------------------------- */
 
-double FixEmitFaceFile::linear_interpolation(double x, int m, int plo, int phi)
+sfloat FixEmitFaceFile::linear_interpolation(sfloat x, int m, int plo, int phi)
 {
-  double *imesh = mesh.imesh;
-  double **values = mesh.values;
-  double value = (values[plo][m]*(imesh[phi]-x) +
+  sfloat *imesh = mesh.imesh;
+  sfloat **values = mesh.values;
+  sfloat value = (values[plo][m]*(imesh[phi]-x) +
                   values[phi][m]*(x-imesh[plo])) / (imesh[phi]-imesh[plo]);
   return value;
 }
@@ -978,21 +979,21 @@ double FixEmitFaceFile::linear_interpolation(double x, int m, int plo, int phi)
    for column M
 ------------------------------------------------------------------------- */
 
-double FixEmitFaceFile::bilinear_interpolation(double x, double y, int m,
+sfloat FixEmitFaceFile::bilinear_interpolation(sfloat x, sfloat y, int m,
                                                int plo, int phi,
                                                int qlo, int qhi)
 {
   int ni = mesh.ni;
-  double *imesh = mesh.imesh;
-  double *jmesh = mesh.jmesh;
-  double **values = mesh.values;
+  sfloat *imesh = mesh.imesh;
+  sfloat *jmesh = mesh.jmesh;
+  sfloat **values = mesh.values;
 
-  double area = (imesh[phi]-imesh[plo]) * (jmesh[qhi]-jmesh[qlo]);
-  double quad1 = values[qlo*ni+plo][m] * (imesh[phi]-x) * (jmesh[qhi]-y);
-  double quad2 = values[qlo*ni+phi][m] * (x-imesh[plo]) * (jmesh[qhi]-y);
-  double quad3 = values[qhi*ni+phi][m] * (x-imesh[plo]) * (y-jmesh[qlo]);
-  double quad4 = values[qhi*ni+plo][m] * (imesh[phi]-x) * (y-jmesh[qlo]);
-  double value = (quad1 + quad2 + quad3 + quad4) / area;
+  sfloat area = (imesh[phi]-imesh[plo]) * (jmesh[qhi]-jmesh[qlo]);
+  sfloat quad1 = values[qlo*ni+plo][m] * (imesh[phi]-x) * (jmesh[qhi]-y);
+  sfloat quad2 = values[qlo*ni+phi][m] * (x-imesh[plo]) * (jmesh[qhi]-y);
+  sfloat quad3 = values[qhi*ni+phi][m] * (x-imesh[plo]) * (y-jmesh[qlo]);
+  sfloat quad4 = values[qhi*ni+plo][m] * (imesh[phi]-x) * (y-jmesh[qlo]);
+  sfloat value = (quad1 + quad2 + quad3 + quad4) / area;
 
   return value;
 }
@@ -1006,7 +1007,7 @@ double FixEmitFaceFile::bilinear_interpolation(double x, double y, int m,
 
 int FixEmitFaceFile::split(int icell)
 {
-  double x[3];
+  sfloat x[3];
 
   Grid::ChildCell *cells = grid->cells;
 
@@ -1047,14 +1048,14 @@ void FixEmitFaceFile::subsonic_inflow()
   // recompute mixture vscale, since depends on temp_thermal
 
   int isp,icell;
-  double mass,indot,area,nrho,temp_thermal,vscale,ntargetsp;
-  double *vstream;
+  sfloat mass,indot,area,nrho,temp_thermal,vscale,ntargetsp;
+  sfloat *vstream;
 
   Particle::Species *species = particle->species;
   Grid::ChildInfo *cinfo = grid->cinfo;
   int *mspecies = particle->mixture[imix]->species;
-  double fnum = update->fnum;
-  double boltz = update->boltz;
+  sfloat fnum = update->fnum;
+  sfloat boltz = update->boltz;
 
   for (int i = 0; i < ntask; i++) {
     vstream = tasks[i].vstream;
@@ -1147,20 +1148,20 @@ void FixEmitFaceFile::subsonic_sort()
 void FixEmitFaceFile::subsonic_grid()
 {
   int m,ip,np,icell,ispecies;
-  double mass,masstot,gamma,ke,sign;
-  double nrho_cell,massrho_cell,temp_thermal_cell,press_cell;
-  double mass_cell,gamma_cell,soundspeed_cell;
-  double mv[4];
-  double *v,*vstream,*vscale;
+  sfloat mass,masstot,gamma,ke,sign;
+  sfloat nrho_cell,massrho_cell,temp_thermal_cell,press_cell;
+  sfloat mass_cell,gamma_cell,soundspeed_cell;
+  sfloat mv[4];
+  sfloat *v,*vstream,*vscale;
 
   Grid::ChildInfo *cinfo = grid->cinfo;
   Particle::OnePart *particles = particle->particles;
   int *next = particle->next;
   Particle::Species *species = particle->species;
-  double boltz = update->boltz;
+  sfloat boltz = update->boltz;
 
   int temp_exceed_flag = 0;
-  double tempmax = 0.0;
+  sfloat tempmax = 0.0;
 
   for (int i = 0; i < ntask; i++) {
     icell = tasks[i].pcell;
@@ -1268,16 +1269,16 @@ void FixEmitFaceFile::grow_task()
 
   if (perspecies) {
     for (int i = oldmax; i < ntaskmax; i++)
-      tasks[i].ntargetsp = new double[nspecies];
+      tasks[i].ntargetsp = new sfloat[nspecies];
   } else {
     for (int i = oldmax; i < ntaskmax; i++)
       tasks[i].ntargetsp = NULL;
   }
 
   for (int i = oldmax; i < ntaskmax; i++) {
-    tasks[i].fraction = new double[nspecies];
-    tasks[i].cummulative = new double[nspecies];
-    tasks[i].vscale = new double[nspecies];
+    tasks[i].fraction = new sfloat[nspecies];
+    tasks[i].cummulative = new sfloat[nspecies];
+    tasks[i].vscale = new sfloat[nspecies];
   }
 }
 

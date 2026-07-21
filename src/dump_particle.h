@@ -1,3 +1,4 @@
+/* AD-CONVERTED: double->sfloat by tools/ad_convert.py (see sfloat.h) */
 /* ----------------------------------------------------------------------
    SPARTA - Stochastic PArallel Rarefied-gas Time-accurate Analyzer
    http://sparta.github.io
@@ -38,14 +39,14 @@ class DumpParticle : public Dump {
   int nthresh;               // # of defined threshholds
   int *thresh_array;         // array to threshhhold on for each nthresh
   int *thresh_op;            // threshhold operation for each nthresh
-  double *thresh_value;      // threshhold value for each nthresh
+  sfloat *thresh_value;      // threshhold value for each nthresh
 
   char *columns;             // column labels
 
   int nchoose;               // # of selected atoms
   int maxlocal;              // size of atom selection and variable arrays
   int *choose;               // local indices of selected atoms
-  double *dchoose;           // value for each atom to threshhold against
+  sfloat *dchoose;           // value for each atom to threshhold against
   int *clist;                // compressed list of indices of selected atoms
 
   int nfield;                // # of keywords listed by user
@@ -66,7 +67,7 @@ class DumpParticle : public Dump {
   int nvariable;             // # of Variables used by dump
   char **id_variable;        // their names
   int *variable;             // list of indices for the Variables
-  double **vbuf;             // local storage for variable evaluation
+  sfloat **vbuf;             // local storage for variable evaluation
 
   int ncustom;               // # of particle Custom attributes used by dump
   char **id_custom;          // their IDs
@@ -76,7 +77,7 @@ class DumpParticle : public Dump {
   void write_header(bigint);
   int count();
   void pack();
-  void write_data(int, double *);
+  void write_data(int, sfloat *);
 
   int parse_fields(int, char **);
   int add_custom(char *);
@@ -91,11 +92,11 @@ class DumpParticle : public Dump {
   void header_binary(bigint);
   void header_item(bigint);
 
-  typedef void (DumpParticle::*FnPtrData)(int, double *);
+  typedef void (DumpParticle::*FnPtrData)(int, sfloat *);
   FnPtrData write_choice;              // ptr to write data functions
-  void write_binary(int, double *);
-  void write_string(int, double *);
-  void write_text(int, double *);
+  void write_binary(int, sfloat *);
+  void write_string(int, sfloat *);
+  void write_text(int, sfloat *);
 
   // customize by adding a method prototype
 

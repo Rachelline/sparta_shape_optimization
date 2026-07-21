@@ -1,3 +1,4 @@
+/* AD-CONVERTED: double->sfloat by tools/ad_convert.py (see sfloat.h) */
 /* ----------------------------------------------------------------------
    SPARTA - Stochastic PArallel Rarefied-gas Time-accurate Analyzer
    http://sparta.github.io
@@ -457,7 +458,7 @@ void Surf::remove_ghosts()
    called by ReadISurf or FixAblate via Marching Squares
 ------------------------------------------------------------------------- */
 
-void Surf::add_line(surfint id, int itype, double *p1, double *p2)
+void Surf::add_line(surfint id, int itype, sfloat *p1, sfloat *p2)
 {
   if (nlocal == nmax) {
     if ((bigint) nmax + DELTA > MAXSMALLINT)
@@ -518,7 +519,7 @@ void Surf::add_line_copy(int ownflag, Line *line)
    called by ReadISurf or FixAblate via Marching Cubes
 ------------------------------------------------------------------------- */
 
-void Surf::add_tri(surfint id, int itype, double *p1, double *p2, double *p3)
+void Surf::add_tri(surfint id, int itype, sfloat *p1, sfloat *p2, sfloat *p3)
 {
   if (nlocal == nmax) {
     if ((bigint) nmax + DELTA > MAXSMALLINT)
@@ -595,7 +596,7 @@ void Surf::add_tri_copy(int ownflag, Tri *tri)
 
 void Surf::add_surfs(int replace, int ncount,
 		     Line *newlines, Tri *newtris,
-		     int nc, int *index_custom, double **cvalues)
+		     int nc, int *index_custom, sfloat **cvalues)
 {
   // if replace: remove all existing surfs and their memory
   // remove ghost surfs for replace or add
@@ -761,8 +762,8 @@ void Surf::setup_owned()
 void Surf::bbox_all()
 {
   int i,j;
-  double bblo_one[3],bbhi_one[3];
-  double *x;
+  sfloat bblo_one[3],bbhi_one[3];
+  sfloat *x;
 
   int istart,istop,idelta;
   Line *linelist;
@@ -823,8 +824,8 @@ void Surf::bbox_all()
     }
   }
 
-  MPI_Allreduce(bblo_one,bblo,3,MPI_DOUBLE,MPI_MIN,world);
-  MPI_Allreduce(bbhi_one,bbhi,3,MPI_DOUBLE,MPI_MAX,world);
+  MPI_Allreduce(bblo_one,bblo,3,MPI_SFLOAT,MPI_MIN,world);
+  MPI_Allreduce(bbhi_one,bbhi,3,MPI_SFLOAT,MPI_MAX,world);
 }
 
 /* ----------------------------------------------------------------------
@@ -835,9 +836,9 @@ void Surf::bbox_all()
    only called when surfs = explict (all or distributed)
 ------------------------------------------------------------------------- */
 
-void Surf::bbox_one(void *ptr, double *lo, double *hi)
+void Surf::bbox_one(void *ptr, sfloat *lo, sfloat *hi)
 {
-  double *p1,*p2,*p3;
+  sfloat *p1,*p2,*p3;
 
   if (domain->dimension == 2) {
     Line *line = (Line *) ptr;
@@ -874,7 +875,7 @@ void Surf::bbox_one(void *ptr, double *lo, double *hi)
 
 void Surf::compute_line_normal(int old)
 {
-  double z[3],delta[3];
+  sfloat z[3],delta[3];
 
   z[0] = 0.0; z[1] = 0.0; z[2] = 1.0;
 
@@ -904,7 +905,7 @@ void Surf::compute_line_normal(int old)
 
 void Surf::compute_tri_normal(int old)
 {
-  double delta12[3],delta13[3];
+  sfloat delta12[3],delta13[3];
 
   int n;
   Tri *newtris;
@@ -930,7 +931,7 @@ void Surf::compute_tri_normal(int old)
    icorner pts 1 to 4 are ordered by x, then by y
 ------------------------------------------------------------------------- */
 
-void Surf::quad_corner_point(int icorner, double *lo, double *hi, double *pt)
+void Surf::quad_corner_point(int icorner, sfloat *lo, sfloat *hi, sfloat *pt)
 {
   if (icorner % 2) pt[0] = hi[0];
   else pt[0] = lo[0];
@@ -944,7 +945,7 @@ void Surf::quad_corner_point(int icorner, double *lo, double *hi, double *pt)
    icorner pts 1 to 8 are ordered by x, then by y, then by z
 ------------------------------------------------------------------------- */
 
-void Surf::hex_corner_point(int icorner, double *lo, double *hi, double *pt)
+void Surf::hex_corner_point(int icorner, sfloat *lo, sfloat *hi, sfloat *pt)
 {
   if (icorner % 2) pt[0] = hi[0];
   else pt[0] = lo[0];
@@ -986,7 +987,7 @@ void Surf::extract_masks(int *masks)
    return length of line M from lines list (not myline)
 ------------------------------------------------------------------------- */
 
-double Surf::line_size(int m)
+sfloat Surf::line_size(int m)
 {
   return line_size(lines[m].p1,lines[m].p2);
 }
@@ -995,7 +996,7 @@ double Surf::line_size(int m)
    return length of line
 ------------------------------------------------------------------------- */
 
-double Surf::line_size(Line *line)
+sfloat Surf::line_size(Line *line)
 {
   return line_size(line->p1,line->p2);
 }
@@ -1004,9 +1005,9 @@ double Surf::line_size(Line *line)
    return length of line bewteen 2 points
 ------------------------------------------------------------------------- */
 
-double Surf::line_size(double *p1, double *p2)
+sfloat Surf::line_size(sfloat *p1, sfloat *p2)
 {
-  double delta[3];
+  sfloat delta[3];
   MathExtra::sub3(p2,p1,delta);
   return MathExtra::len3(delta);
 }
@@ -1015,13 +1016,13 @@ double Surf::line_size(double *p1, double *p2)
    return area associated with rotating axisymmetric line around y=0 axis
 ------------------------------------------------------------------------- */
 
-double Surf::axi_line_size(int m)
+sfloat Surf::axi_line_size(int m)
 {
-  double *x1 = lines[m].p1;
-  double *x2 = lines[m].p2;
-  double h = x2[0]-x1[0];
-  double r = x2[1]-x1[1];
-  double area = MY_PI*(x1[1]+x2[1])*sqrt(r*r+h*h);
+  sfloat *x1 = lines[m].p1;
+  sfloat *x2 = lines[m].p2;
+  sfloat h = x2[0]-x1[0];
+  sfloat r = x2[1]-x1[1];
+  sfloat area = MY_PI*(x1[1]+x2[1])*sqrt(r*r+h*h);
   return area;
 }
 
@@ -1029,13 +1030,13 @@ double Surf::axi_line_size(int m)
    return area associated with rotating axisymmetric line around y=0 axis
 ------------------------------------------------------------------------- */
 
-double Surf::axi_line_size(Line *line)
+sfloat Surf::axi_line_size(Line *line)
 {
-  double *x1 = line->p1;
-  double *x2 = line->p2;
-  double h = x2[0]-x1[0];
-  double r = x2[1]-x1[1];
-  double area = MY_PI*(x1[1]+x2[1])*sqrt(r*r+h*h);
+  sfloat *x1 = line->p1;
+  sfloat *x2 = line->p2;
+  sfloat h = x2[0]-x1[0];
+  sfloat r = x2[1]-x1[1];
+  sfloat area = MY_PI*(x1[1]+x2[1])*sqrt(r*r+h*h);
   return area;
 }
 
@@ -1045,7 +1046,7 @@ double Surf::axi_line_size(Line *line)
    return area = area of triangle M
 ------------------------------------------------------------------------- */
 
-double Surf::tri_size(int m, double &len)
+sfloat Surf::tri_size(int m, sfloat &len)
 {
   return tri_size(tris[m].p1,tris[m].p2,tris[m].p3,len);
 }
@@ -1056,7 +1057,7 @@ double Surf::tri_size(int m, double &len)
    return area = area of triangle M
 ------------------------------------------------------------------------- */
 
-double Surf::tri_size(Tri *tri, double &len)
+sfloat Surf::tri_size(Tri *tri, sfloat &len)
 {
   return tri_size(tri->p1,tri->p2,tri->p3,len);
 }
@@ -1067,9 +1068,9 @@ double Surf::tri_size(Tri *tri, double &len)
    return area = area of triangle M
 ------------------------------------------------------------------------- */
 
-double Surf::tri_size(double *p1, double *p2, double *p3, double &len)
+sfloat Surf::tri_size(sfloat *p1, sfloat *p2, sfloat *p3, sfloat &len)
 {
-  double delta12[3],delta13[3],delta23[3],cross[3];
+  sfloat delta12[3],delta13[3],delta23[3],cross[3];
 
   MathExtra::sub3(p2,p1,delta12);
   MathExtra::sub3(p3,p1,delta13);
@@ -1078,7 +1079,7 @@ double Surf::tri_size(double *p1, double *p2, double *p3, double &len)
   len = MIN(len,MathExtra::len3(delta23));
 
   MathExtra::cross3(delta12,delta13,cross);
-  double area = 0.5 * MathExtra::len3(cross);
+  sfloat area = 0.5 * MathExtra::len3(cross);
   return area;
 }
 
@@ -1113,7 +1114,7 @@ void Surf::check_watertight_2d_all()
   // should appear once at each end
   // error if any duplicate points
 
-  double *p1,*p2;
+  sfloat *p1,*p2;
   OnePoint2d key;
   int value;
 
@@ -1148,15 +1149,15 @@ void Surf::check_watertight_2d_all()
   // check that each end point has a match (value = 3)
   // allow for exception if end point on box surface
 
-  double *boxlo = domain->boxlo;
-  double *boxhi = domain->boxhi;
-  double *kpt;
-  double pt[3];
+  sfloat *boxlo = domain->boxlo;
+  sfloat *boxhi = domain->boxhi;
+  sfloat *kpt;
+  sfloat pt[3];
 
   int nbad = 0;
   for (it = phash.begin(); it != phash.end(); ++it) {
     if (it->second != 3) {
-      kpt = (double *) it->first.pt;
+      kpt = (sfloat *) it->first.pt;
       pt[0] = kpt[0]; pt[1] = kpt[1]; pt[2] = 0.0;
       if (!Geometry::point_on_hex(pt,boxlo,boxhi)) nbad++;
     }
@@ -1203,12 +1204,12 @@ void Surf::check_watertight_2d_distributed()
 
   int nrvous = 0;
   for (int i = 0; i < n; i++) {
-    proclist[nrvous] = hashlittle(lines_rvous[i].p1,2*sizeof(double),0) % nprocs;
+    proclist[nrvous] = hashlittle(lines_rvous[i].p1,2*sizeof(sfloat),0) % nprocs;
     inpoint[nrvous].x[0] = lines_rvous[i].p1[0];
     inpoint[nrvous].x[1] = lines_rvous[i].p1[1];
     inpoint[nrvous].which = 1;
     nrvous++;
-    proclist[nrvous] = hashlittle(lines_rvous[i].p2,2*sizeof(double),0) % nprocs;
+    proclist[nrvous] = hashlittle(lines_rvous[i].p2,2*sizeof(sfloat),0) % nprocs;
     inpoint[nrvous].x[0] = lines_rvous[i].p2[0];
     inpoint[nrvous].x[1] = lines_rvous[i].p2[1];
     inpoint[nrvous].which = 2;
@@ -1283,15 +1284,15 @@ int Surf::rendezvous_watertight_2d(int n, char *inbuf, int &flag, int *&proclist
   // check that each end point has a match (value = 3)
   // allow for exception if end point on box surface
 
-  double *boxlo = domain->boxlo;
-  double *boxhi = domain->boxhi;
-  double *kpt;
-  double pt[3];
+  sfloat *boxlo = domain->boxlo;
+  sfloat *boxhi = domain->boxhi;
+  sfloat *kpt;
+  sfloat pt[3];
 
   int nbad = 0;
   for (it = phash.begin(); it != phash.end(); ++it) {
     if (it->second != 3) {
-      kpt = (double *) it->first.pt;
+      kpt = (sfloat *) it->first.pt;
       pt[0] = kpt[0]; pt[1] = kpt[1]; pt[2] = 0.0;
       if (!Geometry::point_on_hex(pt,boxlo,boxhi)) nbad++;
     }
@@ -1342,7 +1343,7 @@ void Surf::check_watertight_3d_all()
   // should appear once in each direction
   // error if any duplicate edges
 
-  double *p1,*p2,*p3;
+  sfloat *p1,*p2,*p3;
   TwoPoint3d key,keyinv;
   int value;
 
@@ -1402,14 +1403,14 @@ void Surf::check_watertight_3d_all()
   // check that each edge has an inverted match
   // allow for exception if edge is on box face
 
-  double *boxlo = domain->boxlo;
-  double *boxhi = domain->boxhi;
-  double *pts;
+  sfloat *boxlo = domain->boxlo;
+  sfloat *boxhi = domain->boxhi;
+  sfloat *pts;
 
   int nbad = 0;
   for (it = phash.begin(); it != phash.end(); ++it) {
     if (it->second != 2) {
-      pts = (double *) it->first.pts;
+      pts = (sfloat *) it->first.pts;
       if (Geometry::edge_on_hex_face(&pts[0],&pts[3],boxlo,boxhi) < 0) nbad++;
     }
   }
@@ -1454,10 +1455,10 @@ void Surf::check_watertight_3d_distributed()
   //   forward or reverse order
   // hash of edge coords (xyz for 2 pts) determines which proc to send to
 
-  double edge[6];
-  double *p1,*p2,*p3;
+  sfloat edge[6];
+  sfloat *p1,*p2,*p3;
 
-  int nbytes = 3*sizeof(double);
+  int nbytes = 3*sizeof(sfloat);
 
   int nrvous = 0;
   for (int i = 0; i < n; i++) {
@@ -1556,7 +1557,7 @@ int Surf::rendezvous_watertight_3d(int n, char *inbuf, int &flag, int *&proclist
   // error if any duplicate edges
 
   Surf::TwoPoint3d key;
-  double *x1,*x2;
+  sfloat *x1,*x2;
   int which,value;
 
   int ndup = 0;
@@ -1576,7 +1577,7 @@ int Surf::rendezvous_watertight_3d(int n, char *inbuf, int &flag, int *&proclist
 
   int alldup;
   MPI_Allreduce(&ndup,&alldup,1,MPI_INT,MPI_SUM,world);
-  alldup /= 2;              // avoid double counting
+  alldup /= 2;              // avoid sfloat counting
   if (alldup) {
     char str[128];
     sprintf(str,"Watertight check failed with %d duplicate edges",alldup);
@@ -1586,21 +1587,21 @@ int Surf::rendezvous_watertight_3d(int n, char *inbuf, int &flag, int *&proclist
   // check that each edge has an inverted match(value = 3)
   // allow for exception if edge is on box face
 
-  double *boxlo = domain->boxlo;
-  double *boxhi = domain->boxhi;
-  double *pts;
+  sfloat *boxlo = domain->boxlo;
+  sfloat *boxhi = domain->boxhi;
+  sfloat *pts;
 
   int nbad = 0;
   for (it = phash.begin(); it != phash.end(); ++it) {
     if (it->second != 3) {
-      pts = (double *) it->first.pts;
+      pts = (sfloat *) it->first.pts;
       if (Geometry::edge_on_hex_face(&pts[0],&pts[3],boxlo,boxhi) < 0) nbad++;
     }
   }
 
   int allbad;
   MPI_Allreduce(&nbad,&allbad,1,MPI_INT,MPI_SUM,world);
-  allbad /= 2;              // avoid double counting
+  allbad /= 2;              // avoid sfloat counting
   if (allbad) {
     char str[128];
     sprintf(str,"Watertight check failed with %d unmatched edges",allbad);
@@ -1622,10 +1623,10 @@ int Surf::rendezvous_watertight_3d(int n, char *inbuf, int &flag, int *&proclist
 void Surf::check_point_inside(int old)
 {
   int nbad;
-  double *x;
+  sfloat *x;
 
-  double *boxlo = domain->boxlo;
-  double *boxhi = domain->boxhi;
+  sfloat *boxlo = domain->boxlo;
+  sfloat *boxhi = domain->boxhi;
 
   if (domain->dimension == 2) {
     Line *newlines;
@@ -1701,8 +1702,8 @@ void Surf::check_point_near_surf_2d()
 {
   int i,j,n;
   surfint *csurfs;
-  double side,epssq;
-  double *p1,*p2,*lo,*hi;
+  sfloat side,epssq;
+  sfloat *p1,*p2,*lo,*hi;
   Surf::Line *line;
 
   Surf::Line *lines = surf->lines;
@@ -1764,8 +1765,8 @@ void Surf::check_point_near_surf_3d()
 {
   int i,j,n;
   surfint *csurfs;
-  double side,epssq;
-  double *p1,*p2,*p3,*lo,*hi;
+  sfloat side,epssq;
+  sfloat *p1,*p2,*p3,*lo,*hi;
   Surf::Tri *tri;
 
   Surf::Tri *tris = surf->tris;
@@ -1831,7 +1832,7 @@ void Surf::output_extent(int old)
   // extent of surfs after geometric transformations
   // compute sizes of smallest surface elements
 
-  double extent[3][2],extentall[3][2];
+  sfloat extent[3][2],extentall[3][2];
   extent[0][0] = extent[1][0] = extent[2][0] = BIG;
   extent[0][1] = extent[1][1] = extent[2][1] = -BIG;
 
@@ -1881,12 +1882,12 @@ void Surf::output_extent(int old)
   extent[0][0] = -extent[0][0];
   extent[1][0] = -extent[1][0];
   extent[2][0] = -extent[2][0];
-  MPI_Allreduce(extent,extentall,6,MPI_DOUBLE,MPI_MAX,world);
+  MPI_Allreduce(extent,extentall,6,MPI_SFLOAT,MPI_MAX,world);
   extentall[0][0] = -extentall[0][0];
   extentall[1][0] = -extentall[1][0];
   extentall[2][0] = -extentall[2][0];
 
-  double minlen,minarea;
+  sfloat minlen,minarea;
   if (domain->dimension == 2) minlen = shortest_line(old);
   else smallest_tri(old,minlen,minarea);
 
@@ -1920,9 +1921,9 @@ void Surf::output_extent(int old)
    return shortest line length
 ------------------------------------------------------------------------- */
 
-double Surf::shortest_line(int old)
+sfloat Surf::shortest_line(int old)
 {
-  double len = BIG;
+  sfloat len = BIG;
 
   if (!implicit && distributed) {
     for (int i = old; i < nown; i++)
@@ -1932,8 +1933,8 @@ double Surf::shortest_line(int old)
       len = MIN(len,line_size(&lines[i]));
   }
 
-  double lenall;
-  MPI_Allreduce(&len,&lenall,1,MPI_DOUBLE,MPI_MIN,world);
+  sfloat lenall;
+  MPI_Allreduce(&len,&lenall,1,MPI_SFLOAT,MPI_MIN,world);
 
   return lenall;
 }
@@ -1942,11 +1943,11 @@ double Surf::shortest_line(int old)
    return shortest tri edge and smallest tri area
 ------------------------------------------------------------------------- */
 
-void Surf::smallest_tri(int old, double &lenall, double &areaall)
+void Surf::smallest_tri(int old, sfloat &lenall, sfloat &areaall)
 {
-  double lenone,areaone;
-  double len = BIG;
-  double area = BIG;
+  sfloat lenone,areaone;
+  sfloat len = BIG;
+  sfloat area = BIG;
 
   if (!implicit && distributed) {
     for (int i = old; i < nown; i++) {
@@ -1962,8 +1963,8 @@ void Surf::smallest_tri(int old, double &lenall, double &areaall)
     }
   }
 
-  MPI_Allreduce(&len,&lenall,1,MPI_DOUBLE,MPI_MIN,world);
-  MPI_Allreduce(&area,&areaall,1,MPI_DOUBLE,MPI_MIN,world);
+  MPI_Allreduce(&len,&lenall,1,MPI_SFLOAT,MPI_MIN,world);
+  MPI_Allreduce(&area,&areaall,1,MPI_SFLOAT,MPI_MIN,world);
 }
 
 /* ----------------------------------------------------------------------
@@ -1973,12 +1974,12 @@ void Surf::smallest_tri(int old, double &lenall, double &areaall)
    increment nwarn if point is within epssq distance of line
 ------------------------------------------------------------------------- */
 
-void Surf::point_line_compare(double *pt, double *p1, double *p2,
-                              double epssq, int &nerror, int &nwarn)
+void Surf::point_line_compare(sfloat *pt, sfloat *p1, sfloat *p2,
+                              sfloat epssq, int &nerror, int &nwarn)
 {
   if (pt[0] == p1[0] && pt[1] == p1[1]) return;
   if (pt[0] == p2[0] && pt[1] == p2[1]) return;
-  double rsq = Geometry::distsq_point_line(pt,p1,p2);
+  sfloat rsq = Geometry::distsq_point_line(pt,p1,p2);
   if (rsq == 0.0) nerror++;
   else if (rsq < epssq) nwarn++;
 }
@@ -1990,14 +1991,14 @@ void Surf::point_line_compare(double *pt, double *p1, double *p2,
    increment nwarn if point is within epssq distance of triangle
 ------------------------------------------------------------------------- */
 
-void Surf::point_tri_compare(double *pt, double *p1, double *p2, double *p3,
-                             double *norm, double epssq, int &nerror, int &nwarn,
+void Surf::point_tri_compare(sfloat *pt, sfloat *p1, sfloat *p2, sfloat *p3,
+                             sfloat *norm, sfloat epssq, int &nerror, int &nwarn,
                              int, int, int)
 {
   if (pt[0] == p1[0] && pt[1] == p1[1] && pt[2] == p1[2]) return;
   if (pt[0] == p2[0] && pt[1] == p2[1] && pt[2] == p2[2]) return;
   if (pt[0] == p3[0] && pt[1] == p3[1] && pt[2] == p3[2]) return;
-  double rsq = Geometry::distsq_point_tri(pt,p1,p2,p3,norm);
+  sfloat rsq = Geometry::distsq_point_tri(pt,p1,p2,p3,norm);
   if (rsq == 0.0) nerror++;
   else if (rsq < epssq) nwarn++;
 }
@@ -2158,7 +2159,7 @@ void Surf::group(int narg, char **arg)
 {
   int i,flag;
   bigint nme,nall;
-  double x[3];
+  sfloat x[3];
 
   if (narg < 3) error->all(FLERR,"Illegal group command");
 
@@ -2954,7 +2955,7 @@ int Surf::size_restart_one()
   n = IROUNDUP(n);
   n += 3*sizeof(int);
   n = IROUNDUP(n);
-  n += domain->dimension * 3*sizeof(double);
+  n += domain->dimension * 3*sizeof(sfloat);
   n = IROUNDUP(n);
   n += sizeof_custom();
   return n;
@@ -3026,10 +3027,10 @@ int Surf::pack_restart(char *buf)
       ptr += 3*sizeof(int);
       ptr = ROUNDUP(ptr);
 
-      double *dbuf = (double *) ptr;
-      memcpy(&dbuf[0],plines[m].p1,3*sizeof(double));
-      memcpy(&dbuf[3],plines[m].p2,3*sizeof(double));
-      ptr += 2 * 3*sizeof(double);
+      sfloat *dbuf = (sfloat *) ptr;
+      memcpy(&dbuf[0],plines[m].p1,3*sizeof(sfloat));
+      memcpy(&dbuf[3],plines[m].p2,3*sizeof(sfloat));
+      ptr += 2 * 3*sizeof(sfloat);
       ptr = ROUNDUP(ptr);
 
       ptr += pack_custom(count,ptr);
@@ -3051,11 +3052,11 @@ int Surf::pack_restart(char *buf)
       ptr += 3*sizeof(int);
       ptr = ROUNDUP(ptr);
 
-      double *dbuf = (double *) ptr;
-      memcpy(&dbuf[0],ptris[m].p1,3*sizeof(double));
-      memcpy(&dbuf[3],ptris[m].p2,3*sizeof(double));
-      memcpy(&dbuf[6],ptris[m].p3,3*sizeof(double));
-      ptr += 3 * 3*sizeof(double);
+      sfloat *dbuf = (sfloat *) ptr;
+      memcpy(&dbuf[0],ptris[m].p1,3*sizeof(sfloat));
+      memcpy(&dbuf[3],ptris[m].p2,3*sizeof(sfloat));
+      memcpy(&dbuf[6],ptris[m].p3,3*sizeof(sfloat));
+      ptr += 3 * 3*sizeof(sfloat);
       ptr = ROUNDUP(ptr);
 
       ptr += pack_custom(count,ptr);

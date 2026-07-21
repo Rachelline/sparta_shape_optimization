@@ -1,3 +1,4 @@
+/* AD-CONVERTED: double->sfloat by tools/ad_convert.py (see sfloat.h) */
 /* ----------------------------------------------------------------------
    SPARTA - Stochastic PArallel Rarefied-gas Time-accurate Analyzer
    http://sparta.github.io
@@ -70,10 +71,10 @@ class ComputeLambdaGrid : public Compute {
   class Compute *cnrho,*ctemp;
   class Fix *fnrho,*ftemp;
 
-  double **nrho,*temp;
-  double *lambda_grid;
-  double **lambdainv,**tauinv;
-  double **array_grid1;
+  sfloat **nrho,*temp;
+  sfloat *lambda_grid;
+  sfloat **lambdainv,**tauinv;
+  sfloat **array_grid1;
 };
 
 }

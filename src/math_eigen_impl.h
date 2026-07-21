@@ -1,3 +1,4 @@
+/* AD-CONVERTED: double->sfloat by tools/ad_convert.py (see sfloat.h) */
 /* ----------------------------------------------------------------------
    SPARTA - Stochastic PArallel Rarefied-gas Time-accurate Analyzer
    http://sparta.github.io
@@ -22,7 +23,7 @@
 //        This file contains a library of functions and classes which can
 //        efficiently perform eigendecomposition for an extremely broad
 //        range of matrix types: both real and complex, dense and sparse.
-//        Matrices need not be of type "double **", for example.
+//        Matrices need not be of type "sfloat **", for example.
 //        In principle, almost any type of C++ container can be used.
 //        Some general C++11 compatible functions for allocating matrices and
 //        calculating norms of real and complex vectors are also provided.

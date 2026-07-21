@@ -1,3 +1,4 @@
+/* AD-CONVERTED: double->sfloat by tools/ad_convert.py (see sfloat.h) */
 /* ----------------------------------------------------------------------
    SPARTA - Stochastic PArallel Rarefied-gas Time-accurate Analyzer
    http://sparta.github.io
@@ -68,7 +69,7 @@ RegBlock::RegBlock(SPARTA *sparta, int narg, char **arg) :
    inside = 0 if x,y,z is outside and not on surface
 ------------------------------------------------------------------------- */
 
-int RegBlock::inside(double *x)
+int RegBlock::inside(sfloat *x)
 {
   if (x[0] >= xlo && x[0] <= xhi && x[1] >= ylo && x[1] <= yhi &&
       x[2] >= zlo && x[2] <= zhi)

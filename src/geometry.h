@@ -1,3 +1,4 @@
+/* AD-CONVERTED: double->sfloat by tools/ad_convert.py (see sfloat.h) */
 /* ----------------------------------------------------------------------
    SPARTA - Stochastic PArallel Rarefied-gas Time-accurate Analyzer
    http://sparta.github.io
@@ -15,52 +16,54 @@
 #ifndef SPARTA_GEOMETRY_H
 #define SPARTA_GEOMETRY_H
 
+#include "sfloat.h"
+
 namespace Geometry {
-  int line_quad_intersect(double *, double *, double *,
-                          double *, double *);
-  int quad_line_intersect_point(double *, double *, double *,
-                                double *, double *, double *);
-  int line_touch_quad_face(double *, double *, int, double *, double *);
+  int line_quad_intersect(sfloat *, sfloat *, sfloat *,
+                          sfloat *, sfloat *);
+  int quad_line_intersect_point(sfloat *, sfloat *, sfloat *,
+                                sfloat *, sfloat *, sfloat *);
+  int line_touch_quad_face(sfloat *, sfloat *, int, sfloat *, sfloat *);
 
-  int tri_hex_intersect(double *, double *, double *, double *,
-                        double *, double *);
-  int hex_tri_intersect_point(double *, double *, double *, double *,
-                              double *, double *, double *);
-  int tri_touch_hex_face(double *, double *, double *, int, double *, double *);
-  int tri_on_hex_face(double *, double *, double *, double *, double *);
-  int edge_on_hex_face(double *, double *, double *, double *);
+  int tri_hex_intersect(sfloat *, sfloat *, sfloat *, sfloat *,
+                        sfloat *, sfloat *);
+  int hex_tri_intersect_point(sfloat *, sfloat *, sfloat *, sfloat *,
+                              sfloat *, sfloat *, sfloat *);
+  int tri_touch_hex_face(sfloat *, sfloat *, sfloat *, int, sfloat *, sfloat *);
+  int tri_on_hex_face(sfloat *, sfloat *, sfloat *, sfloat *, sfloat *);
+  int edge_on_hex_face(sfloat *, sfloat *, sfloat *, sfloat *);
 
-  bool line_line_intersect(double *, double *,
-                           double *, double *, double *,
-                           double *, double &param, int &, int=0);
+  bool line_line_intersect(sfloat *, sfloat *,
+                           sfloat *, sfloat *, sfloat *,
+                           sfloat *, sfloat &param, int &, int=0);
 
-  bool axi_line_intersect(double, double *, double *, int, double *, double *,
-                          double *, double *, double *, int,
-                          double *, double *, double &, int &);
-  bool axi_horizontal_line(double, double *, double *, double,
-                           int &, double &, double &);
+  bool axi_line_intersect(sfloat, sfloat *, sfloat *, int, sfloat *, sfloat *,
+                          sfloat *, sfloat *, sfloat *, int,
+                          sfloat *, sfloat *, sfloat &, int &);
+  bool axi_horizontal_line(sfloat, sfloat *, sfloat *, sfloat,
+                           int &, sfloat &, sfloat &);
 
-  bool line_tri_intersect(double *, double *,
-                          double *, double *, double *, double *,
-                          double *, double &param, int &);
-  bool line_tri_intersect_noeps(double *, double *,
-                                double *, double *, double *, double *,
-                                double *, double &param, int &);
-  int whichside(double *, double *, double, double, double);
-  int point_on_hex(double *, double *, double *);
-  int point_in_hex(double *, double *, double *);
-  int point_in_tri(double *, double *, double *, double *, double *);
+  bool line_tri_intersect(sfloat *, sfloat *,
+                          sfloat *, sfloat *, sfloat *, sfloat *,
+                          sfloat *, sfloat &param, int &);
+  bool line_tri_intersect_noeps(sfloat *, sfloat *,
+                                sfloat *, sfloat *, sfloat *, sfloat *,
+                                sfloat *, sfloat &param, int &);
+  int whichside(sfloat *, sfloat *, sfloat, sfloat, sfloat);
+  int point_on_hex(sfloat *, sfloat *, sfloat *);
+  int point_in_hex(sfloat *, sfloat *, sfloat *);
+  int point_in_tri(sfloat *, sfloat *, sfloat *, sfloat *, sfloat *);
 
-  double distsq_point_line(double *, double *, double *);
-  double distsq_point_tri(double *, double *, double *, double *, double *);
+  sfloat distsq_point_line(sfloat *, sfloat *, sfloat *);
+  sfloat distsq_point_tri(sfloat *, sfloat *, sfloat *, sfloat *, sfloat *);
 
-  double dist_line_quad(double *, double *, double *, double *);
-  double dist_tri_hex(double *, double *, double *, double *,
-                      double *, double *);
+  sfloat dist_line_quad(sfloat *, sfloat *, sfloat *, sfloat *);
+  sfloat dist_tri_hex(sfloat *, sfloat *, sfloat *, sfloat *,
+                      sfloat *, sfloat *);
 
-  double line_fraction(double *, double *, double *);
-  double tri_fraction(double *, double *, double *, double *);
-  double poly_area(int, double *, double *);
+  sfloat line_fraction(sfloat *, sfloat *, sfloat *);
+  sfloat tri_fraction(sfloat *, sfloat *, sfloat *, sfloat *);
+  sfloat poly_area(int, sfloat *, sfloat *);
 }
 
 #endif

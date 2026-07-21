@@ -1,3 +1,4 @@
+/* AD-CONVERTED: double->sfloat by tools/ad_convert.py (see sfloat.h) */
 /* ----------------------------------------------------------------------
    SPARTA - Stochastic PArallel Rarefied-gas Time-accurate Analyzer
    http://sparta.github.io
@@ -32,9 +33,9 @@ class React : protected Pointers {
                              // actually doing reaction
 
   int partialEnergy;         // 1 if using rDOF model, 0 if using all energy
-  double recomb_density;     // num density of particles in collision grid cell
-  double recomb_boost;       // rate boost param for recombination reactions
-  double recomb_boost_inverse;   // inverse of boost parameter
+  sfloat recomb_density;     // num density of particles in collision grid cell
+  sfloat recomb_boost;       // rate boost param for recombination reactions
+  sfloat recomb_boost_inverse;   // inverse of boost parameter
   Particle::OnePart *recomb_part3;  // ptr to 3rd particle in recomb reaction
 
   int copy,uncopy,copymode;  // prevent deallocation of
@@ -48,9 +49,9 @@ class React : protected Pointers {
   virtual int recomb_exist(int, int) = 0;
   virtual void ambi_check() = 0;
   virtual int attempt(Particle::OnePart *, Particle::OnePart *,
-                      double, double, double, double &, int &) = 0;
+                      sfloat, sfloat, sfloat, sfloat &, int &) = 0;
   virtual char *reactionID(int) = 0;
-  virtual double extract_tally(int) = 0;
+  virtual sfloat extract_tally(int) = 0;
 
   void modify_params(int, char **);
 

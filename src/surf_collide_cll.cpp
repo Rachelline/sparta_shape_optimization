@@ -1,3 +1,4 @@
+/* AD-CONVERTED: double->sfloat by tools/ad_convert.py (see sfloat.h) */
 /* ----------------------------------------------------------------------
    SPARTA - Stochastic PArallel Rarefied-gas Time-accurate Analyzer
    http://sparta.github.io
@@ -128,7 +129,7 @@ SurfCollideCLL::SurfCollideCLL(SPARTA *sparta, int narg, char **arg) :
   // initialize RNG
 
   random = new RanKnuth(update->ranmaster->uniform());
-  double seed = update->ranmaster->uniform();
+  sfloat seed = update->ranmaster->uniform();
   random->reset(seed,comm->me,100);
 }
 
@@ -160,8 +161,8 @@ void SurfCollideCLL::init()
 ------------------------------------------------------------------------- */
 
 Particle::OnePart *SurfCollideCLL::
-collide(Particle::OnePart *&ip, double &,
-        int isurf, double *norm, int isr, int &reaction)
+collide(Particle::OnePart *&ip, sfloat &,
+        int isurf, sfloat *norm, int isr, int &reaction)
 {
   nsingle++;
 
@@ -238,16 +239,16 @@ collide(Particle::OnePart *&ip, double &,
   tangent12 are both unit vectors
 ------------------------------------------------------------------------- */
 
-void SurfCollideCLL::cll(Particle::OnePart *p, double *norm)
+void SurfCollideCLL::cll(Particle::OnePart *p, sfloat *norm)
 {
-  double tangent1[3],tangent2[3];
+  sfloat tangent1[3],tangent2[3];
   Particle::Species *species = particle->species;
   int ispecies = p->ispecies;
-  double beta_un,normalized_distbn_fn;
+  sfloat beta_un,normalized_distbn_fn;
 
-  double *v = p->v;
-  double dot = MathExtra::dot3(v,norm);
-  double vrm, vperp, vtan1, vtan2;
+  sfloat *v = p->v;
+  sfloat dot = MathExtra::dot3(v,norm);
+  sfloat vrm, vperp, vtan1, vtan2;
 
   tangent1[0] = v[0] - dot*norm[0];
   tangent1[1] = v[1] - dot*norm[1];
@@ -263,22 +264,22 @@ void SurfCollideCLL::cll(Particle::OnePart *p, double *norm)
   MathExtra::norm3(tangent1);
   MathExtra::cross3(norm,tangent1,tangent2);
 
-  double tan1 = MathExtra::dot3(v,tangent1);
+  sfloat tan1 = MathExtra::dot3(v,tangent1);
 
   vrm = sqrt(2.0*update->boltz * tsurf / species[ispecies].mass);
 
   // CLL model normal velocity
 
-  double r_1 = sqrt(-acc_n*log(random->uniform()));
-  double theta_1 = MY_2PI * random->uniform();
-  double dot_norm = dot/vrm * sqrt(1-acc_n);
+  sfloat r_1 = sqrt(-acc_n*log(random->uniform()));
+  sfloat theta_1 = MY_2PI * random->uniform();
+  sfloat dot_norm = dot/vrm * sqrt(1-acc_n);
   vperp = vrm * sqrt(r_1*r_1 + dot_norm*dot_norm + 2*r_1*dot_norm*cos(theta_1));
 
   // CLL model tangential velocities
 
-  double r_2 = sqrt(-acc_t*log(random->uniform()));
-  double theta_2 = MY_2PI * random->uniform();
-  double vtangent = tan1/vrm * sqrt(1-acc_t);
+  sfloat r_2 = sqrt(-acc_t*log(random->uniform()));
+  sfloat theta_2 = MY_2PI * random->uniform();
+  sfloat vtangent = tan1/vrm * sqrt(1-acc_t);
   vtan1 = vrm * (vtangent + r_2*cos(theta_2));
   vtan2 = vrm * r_2 * sin(theta_2);
 
@@ -288,15 +289,15 @@ void SurfCollideCLL::cll(Particle::OnePart *p, double *norm)
   //   the velocity magnitude or speed according to CLL scattering
 
   if (pflag) {
-    double tan2 = MathExtra::dot3(v,tangent2);
-    double phi_i, psi_i, theta_f, phi_f, psi_f, cos_beta;
+    sfloat tan2 = MathExtra::dot3(v,tangent2);
+    sfloat phi_i, psi_i, theta_f, phi_f, psi_f, cos_beta;
 
     psi_i = acos(dot*dot/MathExtra::lensq3(v));
     phi_i = atan2(tan2,tan1);
 
-    double v_mag = sqrt(vperp*vperp + vtan1*vtan1 + vtan2*vtan2);
+    sfloat v_mag = sqrt(vperp*vperp + vtan1*vtan1 + vtan2*vtan2);
 
-    double P = 0;
+    sfloat P = 0;
     while (random->uniform() > P) {
       phi_f = MY_2PI*random->uniform();
       psi_f = acos(1-random->uniform());
@@ -316,10 +317,10 @@ void SurfCollideCLL::cll(Particle::OnePart *p, double *norm)
   // only keep portion of vector tangential to surface element
 
   if (trflag) {
-    double vxdelta,vydelta,vzdelta;
+    sfloat vxdelta,vydelta,vzdelta;
     if (tflag) {
       vxdelta = vx; vydelta = vy; vzdelta = vz;
-      double dot = vxdelta*norm[0] + vydelta*norm[1] + vzdelta*norm[2];
+      sfloat dot = vxdelta*norm[0] + vydelta*norm[1] + vzdelta*norm[2];
 
       if (fabs(dot) > 0.001) {
         dot /= vrm;
@@ -335,11 +336,11 @@ void SurfCollideCLL::cll(Particle::OnePart *p, double *norm)
       }
 
     } else {
-      double *x = p->x;
+      sfloat *x = p->x;
       vxdelta = wy*(x[2]-pz) - wz*(x[1]-py);
       vydelta = wz*(x[0]-px) - wx*(x[2]-pz);
       vzdelta = wx*(x[1]-py) - wy*(x[0]-px);
-      double dot = vxdelta*norm[0] + vydelta*norm[1] + vzdelta*norm[2];
+      sfloat dot = vxdelta*norm[0] + vydelta*norm[1] + vzdelta*norm[2];
       vxdelta -= dot*norm[0];
       vydelta -= dot*norm[1];
       vzdelta -= dot*norm[2];
@@ -363,9 +364,9 @@ void SurfCollideCLL::cll(Particle::OnePart *p, double *norm)
       species[ispecies].rotdof < 2) p->erot = 0.0;
 
   else {
-    double erot_mag = sqrt(p->erot*(1-acc_rot)/(update->boltz*tsurf));
+    sfloat erot_mag = sqrt(p->erot*(1-acc_rot)/(update->boltz*tsurf));
 
-    double r_rot,cos_theta_rot,A_rot,X_rot;
+    sfloat r_rot,cos_theta_rot,A_rot,X_rot;
     if (species[ispecies].rotdof == 2) {
       r_rot = sqrt(-acc_rot*log(random->uniform()));
       cos_theta_rot = cos(MY_2PI*random->uniform());
@@ -388,13 +389,13 @@ void SurfCollideCLL::cll(Particle::OnePart *p, double *norm)
   // NOTE: check all references to species[]->vibtmp
 
   int vibdof = species[ispecies].vibdof;
-  double r_vib, cos_theta_vib, A_vib, X_vib, evib_mag, evib_val;
+  sfloat r_vib, cos_theta_vib, A_vib, X_vib, evib_mag, evib_val;
 
   if (!sparta->collide || sparta->collide->vibstyle == NONE || vibdof < 2)
     p->evib = 0.0;
 
   else if (sparta->collide->vibstyle == DISCRETE && vibdof == 2) {
-    double evib_star =
+    sfloat evib_star =
       -log(1 - random->uniform() *
            (1 - exp(-update->boltz*species[ispecies].vibtemp[0])));
     evib_val = p->evib + evib_star;
@@ -434,8 +435,8 @@ void SurfCollideCLL::cll(Particle::OnePart *p, double *norm)
    called by SurfReactAdsorb
 ------------------------------------------------------------------------- */
 
-void SurfCollideCLL::wrapper(Particle::OnePart *p, double *norm,
-                             int *flags, double *coeffs)
+void SurfCollideCLL::wrapper(Particle::OnePart *p, sfloat *norm,
+                             int *flags, sfloat *coeffs)
 {
   if (flags) {
     tsurf = coeffs[0];
@@ -455,7 +456,7 @@ void SurfCollideCLL::wrapper(Particle::OnePart *p, double *norm,
    return flags and coeffs for this SurfCollide instance to caller
 ------------------------------------------------------------------------- */
 
-void SurfCollideCLL::flags_and_coeffs(int *flags, double *coeffs)
+void SurfCollideCLL::flags_and_coeffs(int *flags, sfloat *coeffs)
 {
   if (tmode != NUMERIC)
     error->all(FLERR,"Surf_collide cll with non-numeric Tsurf "

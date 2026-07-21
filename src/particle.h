@@ -1,3 +1,4 @@
+/* AD-CONVERTED: double->sfloat by tools/ad_convert.py (see sfloat.h) */
 /* ----------------------------------------------------------------------
    SPARTA - Stochastic PArallel Rarefied-gas Time-accurate Analyzer
    http://sparta.github.io
@@ -29,32 +30,32 @@ class Particle : protected Pointers {
 
   struct Species {          // info on each particle species, read from file
     char id[16];            // species ID
-    double molwt;           // molecular weight
-    double mass;            // molecular mass
-    double specwt;          // species weight
-    double charge;          // multiple of electron charge
-    double rotrel;          // inverse rotational relaxation number
-    double rottemp[3];      // rotational temperature(s)
-    double vibtemp[MAXVIBMODE];   // vibrational temperature(s)
-    double vibrel[MAXVIBMODE];    // inverse vibrational relaxation number(s)
+    sfloat molwt;           // molecular weight
+    sfloat mass;            // molecular mass
+    sfloat specwt;          // species weight
+    sfloat charge;          // multiple of electron charge
+    sfloat rotrel;          // inverse rotational relaxation number
+    sfloat rottemp[3];      // rotational temperature(s)
+    sfloat vibtemp[MAXVIBMODE];   // vibrational temperature(s)
+    sfloat vibrel[MAXVIBMODE];    // inverse vibrational relaxation number(s)
     int vibdegen[MAXVIBMODE];     // vibrational mode degeneracies
     int rotdof,vibdof;      // rotational/vibrational DOF
     int nrottemp,nvibmode;  // # of rotational/vibrational temps/modes defined
     int internaldof;        // 1 if either rotdof or vibdof != 0
     int vibdiscrete_read;   // 1 if species.vib file read for this species
-    double magmoment;       // magnetic moment, set by species_modify command
+    sfloat magmoment;       // magnetic moment, set by species_modify command
   };
 
   struct RotFile {          // extra rotation info read from rotfile
     char id[16];
-    double rottemp[4];
+    sfloat rottemp[4];
     int ntemp;
   };
 
   struct VibFile {          // extra vibration info read from vibfile
     char id[16];
-    double vibrel[MAXVIBMODE];
-    double vibtemp[MAXVIBMODE];
+    sfloat vibrel[MAXVIBMODE];
+    sfloat vibtemp[MAXVIBMODE];
     int vibdegen[MAXVIBMODE];
     int nmode;              // # of distinct modes (frequencies) listed
     int ntotal;            // N = total # of oscillators = sum of degeneracies
@@ -73,12 +74,12 @@ class Particle : protected Pointers {
     int ispecies;           // particle species index
     int icell;              // which local Grid::cells the particle is in
     int flag;               // used for migration status
-    double x[3];            // particle position
-    double v[3];            // particle velocity
-    double erot;            // rotational energy
-    double evib;            // vibrational energy
-    double dtremain;        // portion of move timestep remaining
-    double weight;          // particle or cell weight, if weighting enabled
+    sfloat x[3];            // particle position
+    sfloat v[3];            // particle velocity
+    sfloat erot;            // rotational energy
+    sfloat evib;            // vibrational energy
+    sfloat dtremain;        // portion of move timestep remaining
+    sfloat weight;          // particle or cell weight, if weighting enabled
   };
 
   struct OnePartRestart {
@@ -87,10 +88,10 @@ class Particle : protected Pointers {
     cellint icell;          // cell ID the particle is in
     int nsplit;             // 1 for unsplit cell
                             // else neg of sub cell index (0 to Nsplit-1)
-    double x[3];            // particle position
-    double v[3];            // particle velocity
-    double erot;            // rotational energy
-    double evib;            // vibrational energy
+    sfloat x[3];            // particle position
+    sfloat v[3];            // particle velocity
+    sfloat erot;            // rotational energy
+    sfloat evib;            // vibrational energy
   };
 
   bigint nglobal;           // global # of particles
@@ -119,8 +120,8 @@ class Particle : protected Pointers {
 
   int **eivec;              // pointer to each integer vector
   int ***eiarray;           // pointer to each integer array
-  double **edvec;           // pointer to each double vector
-  double ***edarray;        // pointer to each double array
+  sfloat **edvec;           // pointer to each sfloat vector
+  sfloat ***edarray;        // pointer to each sfloat array
 
   // restart buffers, filled by read_restart
 
@@ -150,7 +151,7 @@ class Particle : protected Pointers {
   virtual void pre_weight();
   virtual void post_weight();
 
-  virtual int add_particle(int, int, int, double *, double *, double, double);
+  virtual int add_particle(int, int, int, sfloat *, sfloat *, sfloat, sfloat);
   virtual int add_particle();
   int clone_particle(int);
   void add_species(int, char **);
@@ -158,8 +159,8 @@ class Particle : protected Pointers {
   void species_modify(int, char **);
   void add_mixture(int, char **);
   int find_mixture(char *);
-  double erot(int, double, class RanKnuth *);
-  double evib(int, double, class RanKnuth *);
+  sfloat erot(int, sfloat, class RanKnuth *);
+  sfloat evib(int, sfloat, class RanKnuth *);
 
   void write_restart_species(FILE *fp);
   void read_restart_species(FILE *fp);
@@ -214,11 +215,11 @@ class Particle : protected Pointers {
   int *icustom_iarray;      // index into ncustom for each integer array
   int *eicol;               // # of columns in each integer array (esize)
 
-  int ncustom_dvec;         // # of double vector attributes
-  int ncustom_darray;       // # of double array attributes
-  int *icustom_dvec;        // index into ncustom for each double vector
-  int *icustom_darray;      // index into ncustom for each double array
-  int *edcol;               // # of columns in each double array (esize)
+  int ncustom_dvec;         // # of sfloat vector attributes
+  int ncustom_darray;       // # of sfloat array attributes
+  int *icustom_dvec;        // index into ncustom for each sfloat vector
+  int *icustom_darray;      // index into ncustom for each sfloat array
+  int *edcol;               // # of columns in each sfloat array (esize)
 
   // private methods
 

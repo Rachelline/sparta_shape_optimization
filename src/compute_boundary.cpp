@@ -1,3 +1,4 @@
+/* AD-CONVERTED: double->sfloat by tools/ad_convert.py (see sfloat.h) */
 /* ----------------------------------------------------------------------
    SPARTA - Stochastic PArallel Rarefied-gas Time-accurate Analyzer
    http://sparta.github.io
@@ -99,7 +100,7 @@ void ComputeBoundary::init()
 
   // set normflux based on box face area and timestep size
 
-  double nfactor = update->dt/update->fnum;
+  sfloat nfactor = update->dt/update->fnum;
   if (domain->dimension == 2) {
     normflux[XLO] = normflux[XHI] = domain->yprd * nfactor;
 
@@ -137,7 +138,7 @@ void ComputeBoundary::compute_array()
   // sum tallies across processors
 
   MPI_Allreduce(&myarray[0][0],&array[0][0],nrow*ntotal,
-                MPI_DOUBLE,MPI_SUM,world);
+                MPI_SFLOAT,MPI_SUM,world);
 
   // normalize tallies
 
@@ -172,7 +173,7 @@ void ComputeBoundary::clear()
    jp != NULL means two particles after collision
 ------------------------------------------------------------------------- */
 
-void ComputeBoundary::boundary_tally(double dtremain,
+void ComputeBoundary::boundary_tally(sfloat dtremain,
                                      int iface, int istyle, int reaction,
                                      Particle::OnePart *iorig,
                                      Particle::OnePart *ip,
@@ -189,22 +190,22 @@ void ComputeBoundary::boundary_tally(double dtremain,
   // particle weight used for all keywords except NUM
   // styles PERIODIC and OUTFLOW do not have post-bounce velocity
 
-  double vsqpre,ivsqpost,jvsqpost;
-  double ierot,jerot,ievib,jevib,iother,jother,otherpre;
-  double vnorm[3],vtang[3],pdelta[3],pnorm[3],ptang[3];
+  sfloat vsqpre,ivsqpost,jvsqpost;
+  sfloat ierot,jerot,ievib,jevib,iother,jother,otherpre;
+  sfloat vnorm[3],vtang[3],pdelta[3],pnorm[3],ptang[3];
 
-  double *norm = domain->norm[iface];
+  sfloat *norm = domain->norm[iface];
 
-  double origmass,imass,jmass,pre;
+  sfloat origmass,imass,jmass,pre;
   if (weightflag) weight = iorig->weight;
   origmass = particle->species[origspecies].mass * weight;
   if (ip) imass = particle->species[ip->ispecies].mass * weight;
   if (jp) jmass = particle->species[jp->ispecies].mass * weight;
 
-  double *vorig = iorig->v;
-  double mvv2e = update->mvv2e;
+  sfloat *vorig = iorig->v;
+  sfloat mvv2e = update->mvv2e;
 
-  double *vec = myarray[iface];
+  sfloat *vec = myarray[iface];
   int k = igroup*nvalue;
   int nflag = 0;
   int tflag = 0;

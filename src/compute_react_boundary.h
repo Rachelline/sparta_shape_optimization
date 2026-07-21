@@ -1,3 +1,4 @@
+/* AD-CONVERTED: double->sfloat by tools/ad_convert.py (see sfloat.h) */
 /* ----------------------------------------------------------------------
    SPARTA - Stochastic PArallel Rarefied-gas Time-accurate Analyzer
    http://sparta.github.io
@@ -33,7 +34,7 @@ class ComputeReactBoundary : public Compute {
   virtual void init();
   virtual void compute_array();
   virtual void clear();
-  virtual void boundary_tally(double, int, int, int, Particle::OnePart *,
+  virtual void boundary_tally(sfloat, int, int, int, Particle::OnePart *,
                               Particle::OnePart *, Particle::OnePart *);
 
  protected:
@@ -42,7 +43,7 @@ class ComputeReactBoundary : public Compute {
 
   int **reaction2col;      // 1 if ireaction triggers tally for icol
 
-  double **myarray;        // local accumulator array
+  sfloat **myarray;        // local accumulator array
 };
 
 }

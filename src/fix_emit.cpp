@@ -1,3 +1,4 @@
+/* AD-CONVERTED: double->sfloat by tools/ad_convert.py (see sfloat.h) */
 /* ----------------------------------------------------------------------
    SPARTA - Stochastic PArallel Rarefied-gas Time-accurate Analyzer
    http://sparta.github.io
@@ -48,7 +49,7 @@ FixEmit::FixEmit(SPARTA *sparta, int narg, char **arg) :
 
   int me = comm->me;
   random = new RanKnuth(update->ranmaster->uniform());
-  double seed = update->ranmaster->uniform();
+  sfloat seed = update->ranmaster->uniform();
   random->reset(seed,me,100);
 
   // counters common to all emit styles for output from fix
@@ -158,16 +159,16 @@ void FixEmit::create_tasks()
    bounding by -3.0 allows backflow influx of particles opposite to
      streaming velocity up to a reasonable limit
    if did not bound, would rarely emit a particle, but when do,
-     could take too many iterations of double do while loop,
+     could take too many iterations of sfloat do while loop,
      e.g. in FixEmitFace::perform_task(),
      to generate an inward velocity for the particle
 ------------------------------------------------------------------------- */
 
-double FixEmit::mol_inflow(double indot, double vscale, double fraction)
+sfloat FixEmit::mol_inflow(sfloat indot, sfloat vscale, sfloat fraction)
 {
-  double scosine = indot / vscale;
+  sfloat scosine = indot / vscale;
   if (scosine < -3.0) return 0.0;
-  double inward_number_flux = vscale*fraction *
+  sfloat inward_number_flux = vscale*fraction *
     (exp(-scosine*scosine) + MY_PIS*scosine*(1.0 + erf(scosine))) /
     (2*MY_PIS);
   return inward_number_flux;
@@ -179,13 +180,13 @@ double FixEmit::mol_inflow(double indot, double vscale, double fraction)
    called from constructor of child emit styles
 ------------------------------------------------------------------------- */
 
-int FixEmit::subsonic_temperature_check(int flag, double tempmax)
+int FixEmit::subsonic_temperature_check(int flag, sfloat tempmax)
 {
   int allflag;
   MPI_Allreduce(&flag,&allflag,1,MPI_INT,MPI_SUM,world);
   if (allflag) {
-    double allmax;
-    MPI_Allreduce(&tempmax,&allmax,1,MPI_DOUBLE,MPI_MAX,world);
+    sfloat allmax;
+    MPI_Allreduce(&tempmax,&allmax,1,MPI_SFLOAT,MPI_MAX,world);
     if (comm->me == 0) {
       char str[128];
       sprintf(str,"Excessive subsonic thermal temp = %g",allmax);
@@ -247,12 +248,12 @@ int FixEmit::option(int, char **)
    return one-step or total count of particle insertions
 ------------------------------------------------------------------------- */
 
-double FixEmit::compute_vector(int i)
+sfloat FixEmit::compute_vector(int i)
 {
-  double one,all;
+  sfloat one,all;
 
   if (i == 0) one = nsingle;
   else one = ntotal;
-  MPI_Allreduce(&one,&all,1,MPI_DOUBLE,MPI_SUM,world);
+  MPI_Allreduce(&one,&all,1,MPI_SFLOAT,MPI_SUM,world);
   return all;
 }

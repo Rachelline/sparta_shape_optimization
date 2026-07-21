@@ -1,3 +1,4 @@
+/* AD-CONVERTED: double->sfloat by tools/ad_convert.py (see sfloat.h) */
 /* ----------------------------------------------------------------------
    SPARTA - Stochastic PArallel Rarefied-gas Time-accurate Analyzer
    http://sparta.github.io
@@ -32,26 +33,26 @@ class SurfCollideDiffuse : public SurfCollide {
   SurfCollideDiffuse(class SPARTA *sparta) : SurfCollide(sparta) {} // needed Kokkos
   virtual ~SurfCollideDiffuse();
   virtual void init();
-  Particle::OnePart *collide(Particle::OnePart *&, double &,
-                             int, double *, int, int &);
-  void wrapper(Particle::OnePart *, double *, int *, double*);
-  void flags_and_coeffs(int *, double *);
+  Particle::OnePart *collide(Particle::OnePart *&, sfloat &,
+                             int, sfloat *, int, int &);
+  void wrapper(Particle::OnePart *, sfloat *, int *, sfloat*);
+  void flags_and_coeffs(int *, sfloat *);
 
  protected:
-  double acc;                // surface accomodation coeff
-  double vx,vy,vz;           // translational velocity of surface
-  double wx,wy,wz;           // angular velocity of surface
-  double px,py,pz;           // point to rotate surface around
+  sfloat acc;                // surface accomodation coeff
+  sfloat vx,vy,vz;           // translational velocity of surface
+  sfloat wx,wy,wz;           // angular velocity of surface
+  sfloat px,py,pz;           // point to rotate surface around
   int tflag,rflag;           // flags for translation and rotation
   int trflag;                // 1 if either tflag or rflag is set
 
   Surf::Line *lines;
   Surf::Tri *tris;
 
-  double vstream[3];
+  sfloat vstream[3];
   class RanKnuth *random;     // RNG for particle reflection
 
-  void diffuse(Particle::OnePart *, double *);
+  void diffuse(Particle::OnePart *, sfloat *);
 };
 
 }

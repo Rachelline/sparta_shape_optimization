@@ -1,3 +1,4 @@
+/* AD-CONVERTED: double->sfloat by tools/ad_convert.py (see sfloat.h) */
 /* ----------------------------------------------------------------------
    SPARTA - Stochastic PArallel Rarefied-gas Time-accurate Analyzer
    http://sparta.github.io
@@ -43,10 +44,10 @@ class FixHalt : public Fix {
  private:
   int attribute, operation, eflag, msgflag, ivar;
   bigint nextstep, thisstep;
-  double value, tratio;
+  sfloat value, tratio;
   char *idvar;
 
-  double tlimit();
+  sfloat tlimit();
 };
 
 }    // namespace SPARTA_NS

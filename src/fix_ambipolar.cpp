@@ -1,3 +1,4 @@
+/* AD-CONVERTED: double->sfloat by tools/ad_convert.py (see sfloat.h) */
 /* ----------------------------------------------------------------------
    SPARTA - Stochastic PArallel Rarefied-gas Time-accurate Analyzer
    http://sparta.github.io
@@ -63,7 +64,7 @@ FixAmbipolar::FixAmbipolar(SPARTA *sparta, int narg, char **arg) :
   // random = RNG for electron velocity creation
 
   random = new RanKnuth(update->ranmaster->uniform());
-  double seed = update->ranmaster->uniform();
+  sfloat seed = update->ranmaster->uniform();
   random->reset(seed,comm->me,100);
 
   // check if 2 custom attributes already exist, due to restart file
@@ -120,12 +121,12 @@ void FixAmbipolar::init()
    if an ion, set ionambi and velambi for particle
 ------------------------------------------------------------------------- */
 
-void FixAmbipolar::update_custom(int index, double temp_thermal,
-                                double, double,
-                                double *vstream)
+void FixAmbipolar::update_custom(int index, sfloat temp_thermal,
+                                sfloat, sfloat,
+                                sfloat *vstream)
 {
   int *ionambi = particle->eivec[particle->ewhich[ionindex]];
-  double **velambi = particle->edarray[particle->ewhich[velindex]];
+  sfloat **velambi = particle->edarray[particle->ewhich[velindex]];
 
   // if species is not ambipolar ion, set ionambi off and return
 
@@ -141,13 +142,13 @@ void FixAmbipolar::update_custom(int index, double temp_thermal,
 
   ionambi[index] = 1;
 
-  double vscale = sqrt(2.0 * update->boltz * temp_thermal /
+  sfloat vscale = sqrt(2.0 * update->boltz * temp_thermal /
                        particle->species[especies].mass);
 
-  double vn = vscale * sqrt(-log(random->uniform()));
-  double vr = vscale * sqrt(-log(random->uniform()));
-  double theta1 = MY_2PI * random->uniform();
-  double theta2 = MY_2PI * random->uniform();
+  sfloat vn = vscale * sqrt(-log(random->uniform()));
+  sfloat vr = vscale * sqrt(-log(random->uniform()));
+  sfloat theta1 = MY_2PI * random->uniform();
+  sfloat theta2 = MY_2PI * random->uniform();
 
   velambi[index][0] = vstream[0] + vn*cos(theta1);
   velambi[index][1] = vstream[1] + vr*cos(theta2);

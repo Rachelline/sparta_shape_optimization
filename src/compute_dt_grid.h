@@ -1,3 +1,4 @@
+/* AD-CONVERTED: double->sfloat by tools/ad_convert.py (see sfloat.h) */
 /* ----------------------------------------------------------------------
    SPARTA - Stochastic PArallel Rarefied-gas Time-accurate Analyzer
    http://sparta.github.io
@@ -36,8 +37,8 @@ class ComputeDtGrid : public Compute {
 
  protected:
 
-  double transit_fraction,collision_fraction;
-  double min_species_mass;
+  sfloat transit_fraction,collision_fraction;
+  sfloat min_species_mass;
 
   int groupbit;
   int nglocal;
@@ -49,7 +50,7 @@ class ComputeDtGrid : public Compute {
   class Compute *ctau,*ctemp,*cusq,*cvsq,*cwsq;
   class Fix *ftau,*ftemp,*fusq,*fvsq,*fwsq;
 
-  double *tau,*temp,*usq,*vsq,*wsq;
+  sfloat *tau,*temp,*usq,*vsq,*wsq;
 };
 }
 

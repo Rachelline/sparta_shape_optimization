@@ -1,3 +1,4 @@
+/* AD-CONVERTED: double->sfloat by tools/ad_convert.py (see sfloat.h) */
 /* ----------------------------------------------------------------------
    SPARTA - Stochastic PArallel Rarefied-gas Time-accurate Analyzer
    http://sparta.github.io
@@ -23,7 +24,7 @@ usage:
   chunk size can vary from request to request
   chunk size can be known in advance or registered after usage via vgot()
 inputs:
-   template T = one datum, e.g. int, double, struct
+   template T = one datum, e.g. int, sfloat, struct
    maxchunk = max # of datums in one chunk, def = 1
    pagesize = # of datums in one page, def = 1024
               should insure big enough to store multiple chunks

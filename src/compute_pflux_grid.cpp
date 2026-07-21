@@ -1,3 +1,4 @@
+/* AD-CONVERTED: double->sfloat by tools/ad_convert.py (see sfloat.h) */
 /* ----------------------------------------------------------------------
    SPARTA - Stochastic PArallel Rarefied-gas Time-accurate Analyzer
    http://sparta.github.io
@@ -160,8 +161,8 @@ void ComputePFluxGrid::compute_per_grid()
   int nlocal = particle->nlocal;
 
   int i,j,k,m,ispecies,igroup,icell;
-  double mass;
-  double *v,*vec;
+  sfloat mass;
+  sfloat *v,*vec;
 
   // zero all accumulators - could do this with memset()
 
@@ -236,7 +237,7 @@ void ComputePFluxGrid::compute_per_grid()
    also return cols = ptr to list of columns in tally for this index
 ------------------------------------------------------------------------- */
 
-int ComputePFluxGrid::query_tally_grid(int index, double **&array, int *&cols)
+int ComputePFluxGrid::query_tally_grid(int index, sfloat **&array, int *&cols)
 {
   index--;
   int ivalue = index % nvalue;
@@ -260,8 +261,8 @@ int ComputePFluxGrid::query_tally_grid(int index, double **&array, int *&cols)
 ------------------------------------------------------------------------- */
 
 void ComputePFluxGrid::post_process_grid(int index, int nsample,
-                                         double **etally, int *emap,
-                                         double *vec, int nstride)
+                                         sfloat **etally, int *emap,
+                                         sfloat *vec, int nstride)
 {
   index--;
   int ivalue = index % nvalue;
@@ -294,8 +295,8 @@ void ComputePFluxGrid::post_process_grid(int index, int nsample,
   case MOMYY:
   case MOMZZ:
     {
-      double summass,summv,wt;
-      double fnum = update->fnum;
+      sfloat summass,summv,wt;
+      sfloat fnum = update->fnum;
       Grid::ChildInfo *cinfo = grid->cinfo;
 
       int mass = emap[0];
@@ -318,8 +319,8 @@ void ComputePFluxGrid::post_process_grid(int index, int nsample,
   case MOMYZ:
   case MOMXZ:
     {
-      double summass,wt;
-      double fnum = update->fnum;
+      sfloat summass,wt;
+      sfloat fnum = update->fnum;
       Grid::ChildInfo *cinfo = grid->cinfo;
 
       int mass = emap[0];
@@ -410,7 +411,7 @@ void ComputePFluxGrid::reallocate()
 bigint ComputePFluxGrid::memory_usage()
 {
   bigint bytes;
-  bytes = nglocal * sizeof(double);
-  bytes = ntotal*nglocal * sizeof(double);
+  bytes = nglocal * sizeof(sfloat);
+  bytes = ntotal*nglocal * sizeof(sfloat);
   return bytes;
 }

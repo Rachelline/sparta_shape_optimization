@@ -1,3 +1,4 @@
+/* AD-CONVERTED: double->sfloat by tools/ad_convert.py (see sfloat.h) */
 /* ----------------------------------------------------------------------
    SPARTA - Stochastic PArallel Rarefied-gas Time-accurate Analyzer
    http://sparta.github.io
@@ -219,7 +220,7 @@ void ComputePropertySurf::compute_per_surf()
 bigint ComputePropertySurf::memory_usage()
 {
   bigint bytes;
-  bytes = nvalues*nsown * sizeof(double);
+  bytes = nvalues*nsown * sizeof(sfloat);
   return bytes;
 }
 
@@ -547,7 +548,7 @@ void ComputePropertySurf::pack_area(int n)
     Surf::Line *lines;
     if (distributed) lines = surf->mylines;
     else lines = surf->lines;
-    double p12[3];
+    sfloat p12[3];
     for (int i = 0; i < nsown; i++) {
       m = cglobal[i];
       if (lines[m].mask & groupbit) {
@@ -560,7 +561,7 @@ void ComputePropertySurf::pack_area(int n)
     Surf::Tri *tris;
     if (distributed) tris = surf->mytris;
     else tris = surf->tris;
-    double p12[3],p23[3],cross[3];
+    sfloat p12[3],p23[3],cross[3];
     for (int i = 0; i < nsown; i++) {
       m = cglobal[i];
       if (tris[m].mask & groupbit) {

@@ -1,3 +1,4 @@
+/* AD-CONVERTED: double->sfloat by tools/ad_convert.py (see sfloat.h) */
 /* ----------------------------------------------------------------------
    SPARTA - Stochastic PArallel Rarefied-gas Time-accurate Analyzer
    http://sparta.github.io
@@ -95,9 +96,9 @@ void ComputeDistSurfGrid::compute_per_grid()
   int i,m,n;
   int *csubs;
   surfint *csurfs;
-  double dist,mindist;
-  double *p1,*p2,*p3,*lo,*hi;
-  double cctr[3],cell2surf[3];
+  sfloat dist,mindist;
+  sfloat *p1,*p2,*p3,*lo,*hi;
+  sfloat cctr[3],cell2surf[3];
 
   invoked_per_grid = update->ntimestep;
 
@@ -139,9 +140,9 @@ void ComputeDistSurfGrid::compute_per_grid()
 
   // pre-compute center point of each eligible surf
 
-  double invthird = 1.0/3.0;
+  sfloat invthird = 1.0/3.0;
 
-  double **sctr;
+  sfloat **sctr;
   memory->create(sctr,nsurf,3,"distsurf/grid:sctr");
   for (i = 0; i < nsurf; i++) {
     m = slist[i];
@@ -260,6 +261,6 @@ void ComputeDistSurfGrid::reallocate()
 bigint ComputeDistSurfGrid::memory_usage()
 {
   bigint bytes;
-  bytes = nglocal * sizeof(double);
+  bytes = nglocal * sizeof(sfloat);
   return bytes;
 }

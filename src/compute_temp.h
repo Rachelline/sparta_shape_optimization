@@ -1,3 +1,4 @@
+/* AD-CONVERTED: double->sfloat by tools/ad_convert.py (see sfloat.h) */
 /* ----------------------------------------------------------------------
    SPARTA - Stochastic PArallel Rarefied-gas Time-accurate Analyzer
    http://sparta.github.io
@@ -29,7 +30,7 @@ class ComputeTemp : public Compute {
  public:
   ComputeTemp(class SPARTA *, int, char **);
   ~ComputeTemp() {}
-  virtual double compute_scalar();
+  virtual sfloat compute_scalar();
 };
 
 }

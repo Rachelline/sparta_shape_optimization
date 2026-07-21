@@ -1,3 +1,4 @@
+/* AD-CONVERTED: double->sfloat by tools/ad_convert.py (see sfloat.h) */
 /* ----------------------------------------------------------------------
    SPARTA - Stochastic PArallel Rarefied-gas Time-accurate Analyzer
    http://sparta.github.io
@@ -39,7 +40,7 @@ SurfCollideAdiabatic::SurfCollideAdiabatic(SPARTA *sparta, int narg, char **arg)
   // initialize RNG for isotropic reflection
 
   random = new RanKnuth(update->ranmaster->uniform());
-  double seed = update->ranmaster->uniform();
+  sfloat seed = update->ranmaster->uniform();
   random->reset(seed,comm->me,100);
 }
 
@@ -65,8 +66,8 @@ SurfCollideAdiabatic::~SurfCollideAdiabatic()
 ------------------------------------------------------------------------- */
 
 Particle::OnePart *SurfCollideAdiabatic::
-collide(Particle::OnePart *&ip, double &,
-        int isurf, double *norm, int isr, int &reaction)
+collide(Particle::OnePart *&ip, sfloat &,
+        int isurf, sfloat *norm, int isr, int &reaction)
 {
   nsingle++;
 
@@ -132,14 +133,14 @@ collide(Particle::OnePart *&ip, double &,
    see documentation
 ------------------------------------------------------------------------- */
 
-void SurfCollideAdiabatic::scatter_isotropic(Particle::OnePart *p, double *norm)
+void SurfCollideAdiabatic::scatter_isotropic(Particle::OnePart *p, sfloat *norm)
 {
-  double *v = p->v;
-  double dot = MathExtra::dot3(v,norm);
+  sfloat *v = p->v;
+  sfloat dot = MathExtra::dot3(v,norm);
 
   // tangent1/2 = surface tangential unit vectors
 
-  double tangent1[3], tangent2[3];
+  sfloat tangent1[3], tangent2[3];
   tangent1[0] = v[0] - dot*norm[0];
   tangent1[1] = v[1] - dot*norm[1];
   tangent1[2] = v[2] - dot*norm[2];
@@ -164,15 +165,15 @@ void SurfCollideAdiabatic::scatter_isotropic(Particle::OnePart *p, double *norm)
   // vperp = velocity component perpendicular to surface along norm (cy)
   // vtan1/2 = 2 remaining velocity components tangential to surface
 
-  double vmag = MathExtra::len3(v);
+  sfloat vmag = MathExtra::len3(v);
 
-  double theta = MY_2PI*random->uniform();
-  double f_phi = random->uniform();
-  double sqrt_f_phi = sqrt(f_phi);
+  sfloat theta = MY_2PI*random->uniform();
+  sfloat f_phi = random->uniform();
+  sfloat sqrt_f_phi = sqrt(f_phi);
 
-  double vperp = vmag * sqrt(1.0 - f_phi);
-  double vtan1 = vmag * sqrt_f_phi * sin(theta);
-  double vtan2 = vmag * sqrt_f_phi * cos(theta);
+  sfloat vperp = vmag * sqrt(1.0 - f_phi);
+  sfloat vtan1 = vmag * sqrt_f_phi * sin(theta);
+  sfloat vtan2 = vmag * sqrt_f_phi * cos(theta);
 
   // update particle velocity
   v[0] = vperp*norm[0] + vtan1*tangent1[0] + vtan2*tangent2[0];
@@ -190,8 +191,8 @@ void SurfCollideAdiabatic::scatter_isotropic(Particle::OnePart *p, double *norm)
    called by SurfReactAdsorb
 ------------------------------------------------------------------------- */
 
-void SurfCollideAdiabatic::wrapper(Particle::OnePart *p, double *norm,
-                                  int *flags, double *coeffs)
+void SurfCollideAdiabatic::wrapper(Particle::OnePart *p, sfloat *norm,
+                                  int *flags, sfloat *coeffs)
 {
   scatter_isotropic(p,norm);
 }

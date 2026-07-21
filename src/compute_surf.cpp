@@ -1,3 +1,4 @@
+/* AD-CONVERTED: double->sfloat by tools/ad_convert.py (see sfloat.h) */
 /* ----------------------------------------------------------------------
    SPARTA - Stochastic PArallel Rarefied-gas Time-accurate Analyzer
    http://sparta.github.io
@@ -197,7 +198,7 @@ void ComputeSurf::init_normflux()
 {
   // normalization nfactor = dt/fnum
 
-  double nfactor = update->dt/update->fnum;
+  sfloat nfactor = update->dt/update->fnum;
   nfactor_inverse = 1.0/nfactor;
 
   // normflux for all surface elements, based on area and timestep size
@@ -212,7 +213,7 @@ void ComputeSurf::init_normflux()
   memory->create(normflux,nsurf,"surf:normflux");
 
   int axisymmetric = domain->axisymmetric;
-  double tmp;
+  sfloat tmp;
 
   for (int i = 0; i < nsurf; i++) {
     if (!normarea) normflux[i] = 1.0;
@@ -260,7 +261,7 @@ void ComputeSurf::clear()
    jp != NULL means two particles after collision
 ------------------------------------------------------------------------- */
 
-void ComputeSurf::surf_tally(double /*dtremain*/, int isurf, int icell, int reaction,
+void ComputeSurf::surf_tally(sfloat /*dtremain*/, int isurf, int icell, int reaction,
                              Particle::OnePart *iorig,
                              Particle::OnePart *ip, Particle::OnePart *jp)
 {
@@ -296,7 +297,7 @@ void ComputeSurf::surf_tally(double /*dtremain*/, int isurf, int icell, int reac
   // grow tally list if needed
 
   int itally,transparent,isr;
-  double *vec;
+  sfloat *vec;
 
   surfint surfID;
   if (dim == 2) {
@@ -309,7 +310,7 @@ void ComputeSurf::surf_tally(double /*dtremain*/, int isurf, int icell, int reac
     isr = tris[isurf].isr;
   }
 
-  double r_coeff;
+  sfloat r_coeff;
   SurfReact *sr;
 
   if (hash->find(surfID) != hash->end()) itally = (*hash)[surfID];
@@ -323,7 +324,7 @@ void ComputeSurf::surf_tally(double /*dtremain*/, int isurf, int icell, int reac
     ntally++;
   }
 
-  double fluxscale = normflux[isurf];
+  sfloat fluxscale = normflux[isurf];
 
   // tally all values associated with group into array
   // set fflag after force computation is done once
@@ -334,25 +335,25 @@ void ComputeSurf::surf_tally(double /*dtremain*/, int isurf, int icell, int reac
   // fluxscale factor applied for all keywords except NUM,FX,FY,FZ
   // if surf is transparent, all flux tallying is for incident particle only
 
-  double vsqpre,ivsqpost,jvsqpost;
-  double ierot,jerot,ievib,jevib,iother,jother,otherpre,etot;
-  double pdelta[3],pnorm[3],ptang[3],pdelta_force[3],rdelta[3],torque[3];
-  double *xcollide;
+  sfloat vsqpre,ivsqpost,jvsqpost;
+  sfloat ierot,jerot,ievib,jevib,iother,jother,otherpre,etot;
+  sfloat pdelta[3],pnorm[3],ptang[3],pdelta_force[3],rdelta[3],torque[3];
+  sfloat *xcollide;
 
-  double *norm;
+  sfloat *norm;
   if (dim == 2) norm = lines[isurf].norm;
   else norm = tris[isurf].norm;
 
-  double origmass = 0.0;
-  double imass,jmass;
+  sfloat origmass = 0.0;
+  sfloat imass,jmass;
   if (weightflag && iorig) weight = iorig->weight;
   else if (weightflag) weight = ip->weight;
   if (origspecies >= 0) origmass = particle->species[origspecies].mass * weight;
   if (ip) imass = particle->species[ip->ispecies].mass * weight;
   if (jp) jmass = particle->species[jp->ispecies].mass * weight;
 
-  double *vorig = NULL;
-  double oerot,oevib;
+  sfloat *vorig = NULL;
+  sfloat oerot,oevib;
   if (iorig) {
     vorig = iorig->v;
     oerot = iorig->erot;
@@ -362,7 +363,7 @@ void ComputeSurf::surf_tally(double /*dtremain*/, int isurf, int icell, int reac
     oevib = 0.0;
   }
 
-  double mvv2e = update->mvv2e;
+  sfloat mvv2e = update->mvv2e;
 
   vec = array_surf_tally[itally];
   int k = igroup*nvalue;
@@ -707,7 +708,7 @@ void ComputeSurf::reallocate()
 bigint ComputeSurf::memory_usage()
 {
   bigint bytes = 0;
-  bytes += ntotal*maxtally * sizeof(double);    // array_surf_tally
+  bytes += ntotal*maxtally * sizeof(sfloat);    // array_surf_tally
   bytes += maxtally * sizeof(surfint);          // tally2surf
   return bytes;
 }

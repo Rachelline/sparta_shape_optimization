@@ -1,3 +1,4 @@
+/* AD-CONVERTED: double->sfloat by tools/ad_convert.py (see sfloat.h) */
 /* ----------------------------------------------------------------------
    SPARTA - Stochastic PArallel Rarefied-gas Time-accurate Analyzer
    http://sparta.github.io
@@ -92,9 +93,9 @@ void FixTempRescale::end_of_step()
 
   // set current t_target
 
-  double delta = update->ntimestep - update->beginstep;
+  sfloat delta = update->ntimestep - update->beginstep;
   if (delta != 0.0) delta /= update->endstep - update->beginstep;
-  double t_target = tstart + delta * (tstop-tstart);
+  sfloat t_target = tstart + delta * (tstop-tstart);
 
   // sort particles by grid cell if needed
 
@@ -110,7 +111,7 @@ void FixTempRescale::end_of_step()
    current thermal temperature is calculated on a per-cell basis
 ---------------------------------------------------------------------- */
 
-void FixTempRescale::end_of_step_no_average(double t_target)
+void FixTempRescale::end_of_step_no_average(sfloat t_target)
 {
   // loop over grid cells and twice over particles in each cell
   // 1st pass: calc thermal temp via same logic as in ComputeThermalGrid
@@ -125,12 +126,12 @@ void FixTempRescale::end_of_step_no_average(double t_target)
   // loop over grid cells with more than 1 particle
 
   int ip,ispecies,count;
-  double mass;
-  double totmass,mvx,mvy,mvz,mvsq;
-  double invtotmass,vscale;
-  double vxcom,vycom,vzcom;
-  double t_current;
-  double *v;
+  sfloat mass;
+  sfloat totmass,mvx,mvy,mvz,mvsq;
+  sfloat invtotmass,vscale;
+  sfloat vxcom,vycom,vzcom;
+  sfloat t_current;
+  sfloat *v;
 
   for (int icell = 0; icell < nglocal; icell++) {
     if (cinfo[icell].count <= 1) continue;
@@ -196,7 +197,7 @@ void FixTempRescale::end_of_step_no_average(double t_target)
    current thermal temperature is averaged over all per-cell temperatures
 ---------------------------------------------------------------------- */
 
-void FixTempRescale::end_of_step_average(double t_target)
+void FixTempRescale::end_of_step_average(sfloat t_target)
 {
   Particle::OnePart *particles = particle->particles;
   Particle::Species *species = particle->species;
@@ -217,13 +218,13 @@ void FixTempRescale::end_of_step_average(double t_target)
   // only unsplit and sub cells, skip split cells
 
   int ip,ispecies,count;
-  double mass;
-  double totmass,mvx,mvy,mvz,mvsq;
-  double invtotmass,t_one;
-  double *v;
+  sfloat mass;
+  sfloat totmass,mvx,mvy,mvz,mvsq;
+  sfloat invtotmass,t_one;
+  sfloat *v;
 
   bigint n_current_mine = 0.0;
-  double t_current_mine = 0.0;
+  sfloat t_current_mine = 0.0;
 
   for (int icell = 0; icell < nglocal; icell++) {
     if (cells[icell].nsplit > 1) continue;
@@ -284,8 +285,8 @@ void FixTempRescale::end_of_step_average(double t_target)
   // t_current = average of cellwise thermal T across all cells
   // n_current = total # of cells contributing to t_current
 
-  double t_current;
-  MPI_Allreduce(&t_current_mine,&t_current,1,MPI_DOUBLE,MPI_SUM,world);
+  sfloat t_current;
+  MPI_Allreduce(&t_current_mine,&t_current,1,MPI_SFLOAT,MPI_SUM,world);
 
   bigint n_current;
   MPI_Allreduce(&n_current_mine,&n_current,1,MPI_SPARTA_BIGINT,MPI_SUM,world);
@@ -294,7 +295,7 @@ void FixTempRescale::end_of_step_average(double t_target)
   // scale all particles in all cells by vscale
 
   t_current /= n_current;
-  double vscale = sqrt(t_target/t_current);
+  sfloat vscale = sqrt(t_target/t_current);
 
   // loop over grid cells to rescale velocity of particles in each
   // single-particle cells are also rescaled, their vcom = 0.0
@@ -324,9 +325,9 @@ void FixTempRescale::end_of_step_average(double t_target)
    memory usage
 ------------------------------------------------------------------------- */
 
-double FixTempRescale::memory_usage()
+sfloat FixTempRescale::memory_usage()
 {
-  double bytes = 0.0;
-  bytes += maxgrid*3 * sizeof(double);    // vcom
+  sfloat bytes = 0.0;
+  bytes += maxgrid*3 * sizeof(sfloat);    // vcom
   return bytes;
 }

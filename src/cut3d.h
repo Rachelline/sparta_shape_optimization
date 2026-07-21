@@ -1,3 +1,4 @@
+/* AD-CONVERTED: double->sfloat by tools/ad_convert.py (see sfloat.h) */
 /* ----------------------------------------------------------------------
    SPARTA - Stochastic PArallel Rarefied-gas Time-accurate Analyzer
    http://sparta.github.io
@@ -27,24 +28,24 @@ class Cut3d : protected Pointers {
 
   Cut3d(class SPARTA *);
   ~Cut3d();
-  int surf2grid(cellint, double *, double *, surfint *, int);
-  int surf2grid_list(cellint, double *, double *, int, surfint *,
+  int surf2grid(cellint, sfloat *, sfloat *, surfint *, int);
+  int surf2grid_list(cellint, sfloat *, sfloat *, int, surfint *,
                      surfint *, int);
-  int surf2grid_one(double *, double *, double *, double *, double *);
+  int surf2grid_one(sfloat *, sfloat *, sfloat *, sfloat *, sfloat *);
 
-  int split(cellint, double *, double *, int, surfint *,
-            double *&, int *, int *, int &, double *);
+  int split(cellint, sfloat *, sfloat *, int, surfint *,
+            sfloat *&, int *, int *, int &, sfloat *);
 
-  int clip_external(double *, double *, double *,
-                    double *, double *, double *);
-  int sameface(double *, double *, double *);
-  int sameface_external(double *, double *, double *, double *, double *);
+  int clip_external(sfloat *, sfloat *, sfloat *,
+                    sfloat *, sfloat *, sfloat *);
+  int sameface(sfloat *, sfloat *, sfloat *);
+  int sameface_external(sfloat *, sfloat *, sfloat *, sfloat *, sfloat *);
 
  private:
   int implicit;
 
   cellint id;            // ID of cell being worked on
-  double lo[3],hi[3];    // opposite corner pts of cell being worked on
+  sfloat lo[3],hi[3];    // opposite corner pts of cell being worked on
 
   int nsurf;             // # of surf elements in cell
   surfint *surfs;        // indices of surf elements in cell, caller owns
@@ -52,11 +53,11 @@ class Cut3d : protected Pointers {
   int grazecount;        // count of tris that graze cell surf w/ outward norm
   int touchcount;        // count of tris that only touch cell surf
   int touchmark;         // corner marking inferred by touching tris
-  double epsilon;        // epsilon size for this cell
+  sfloat epsilon;        // epsilon size for this cell
 
-  double **path1,**path2;
+  sfloat **path1,**path2;
 
-  MyVec<double> vols;    // vols of each flow polyhedron found
+  MyVec<sfloat> vols;    // vols of each flow polyhedron found
 
   int empty;
 
@@ -72,12 +73,12 @@ class Cut3d : protected Pointers {
     int dirfirst;    // dir of first edge in vertex
     int last;        // last edge in vertex
     int dirlast;     // dir of last edge in vertex
-    double volume;   // volume of vertex projected against lower z face of cell
-    double *norm;    // ptr to norm of tri, NULL for other styles
+    sfloat volume;   // volume of vertex projected against lower z face of cell
+    sfloat *norm;    // ptr to norm of tri, NULL for other styles
   };
 
   struct Edge {
-    double p1[3],p2[3];  // 2 points in edge
+    sfloat p1[3],p2[3];  // 2 points in edge
     int active;          // 1/0 if active or not
     int style;           // CTRI or CTRIFACE or FACEPGON or FACE
     int clipped;         // 1/0 if already clipped during face iteration
@@ -95,7 +96,7 @@ class Cut3d : protected Pointers {
   };
 
   struct Loop {
-    double volume;        // volume of loop
+    sfloat volume;        // volume of loop
     int flag;             // INTERIOR (if all CTRI vertices) or BORDER
     int n;                // # of vertices in loop
     int first;            // index of first vertex in loop
@@ -103,7 +104,7 @@ class Cut3d : protected Pointers {
   };
 
   struct PH {
-    double volume;
+    sfloat volume;
     int n;
     int first;
   };
@@ -121,9 +122,9 @@ class Cut3d : protected Pointers {
 
   // methods
 
-  int clip(double *, double *, double *);
+  int clip(sfloat *, sfloat *, sfloat *);
   int split_try(cellint, int, surfint *,
-                double *&, int *, int *, int &, double *, int &);
+                sfloat *&, int *, int *, int &, sfloat *, int &);
   void split_error(int);
 
   int add_tris();
@@ -133,32 +134,32 @@ class Cut3d : protected Pointers {
   int edge2face();
   void edge2clines(int);
   int add_face_pgons(int);
-  int add_face(int, double *, double *);
+  int add_face(int, sfloat *, sfloat *);
   void remove_faces();
   int check();
   void walk();
   int loop2ph();
   void create_surfmap(int *);
-  int split_point_explicit(int *, double *, int &);
-  int split_point_implicit(int *, double *, int &);
+  int split_point_explicit(int *, sfloat *, int &);
+  int split_point_implicit(int *, sfloat *, int &);
 
   void edge_insert(int, int, int, int, int, int, int);
   void edge_remove(Edge *);
   void edge_remove(Edge *, int);
   void vertex_remove(Vertex *);
   int grazing(Vertex *);
-  int which_faces(double *, double *, int *);
-  void face_from_cell(int, double *, double *);
-  void compress2d(int, double *, double *);
-  void expand2d(int, double, double *, double *);
+  int which_faces(sfloat *, sfloat *, int *);
+  void face_from_cell(int, sfloat *, sfloat *);
+  void compress2d(int, sfloat *, sfloat *);
+  void expand2d(int, sfloat, sfloat *, sfloat *);
 
-  int findedge(double *, double *, int, int &);
-  void between(double *, double *, int, double, double *);
-  int samepoint(double *, double *);
-  int corner(double *);
-  int on_faces(double *, int *);
-  void move_to_faces(double *);
-  int ptflag(double *);
+  int findedge(sfloat *, sfloat *, int, int &);
+  void between(sfloat *, sfloat *, int, sfloat, sfloat *);
+  int samepoint(sfloat *, sfloat *);
+  int corner(sfloat *);
+  int on_faces(sfloat *, int *);
+  void move_to_faces(sfloat *);
+  int ptflag(sfloat *);
 
   void failed_cell();
   void print_bpg(const char *);

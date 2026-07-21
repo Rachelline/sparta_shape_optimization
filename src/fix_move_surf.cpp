@@ -1,3 +1,4 @@
+/* AD-CONVERTED: double->sfloat by tools/ad_convert.py (see sfloat.h) */
 /* ----------------------------------------------------------------------
    SPARTA - Stochastic PArallel Rarefied-gas Time-accurate Analyzer
    http://sparta.github.io
@@ -136,7 +137,7 @@ void FixMoveSurf::end_of_step()
   // fraction = fraction of Nlarge represented by this timestep
 
   bigint nelapsed = update->ntimestep - ntimestep_original;
-  double fraction = 1.0*nelapsed / nlarge;
+  sfloat fraction = 1.0*nelapsed / nlarge;
 
   // sort particles
 
@@ -191,7 +192,7 @@ void FixMoveSurf::end_of_step()
    return particles deleted on last surface move
 ------------------------------------------------------------------------- */
 
-double FixMoveSurf::compute_scalar()
+sfloat FixMoveSurf::compute_scalar()
 {
-  return (double) ndeleted;
+  return (sfloat) ndeleted;
 }

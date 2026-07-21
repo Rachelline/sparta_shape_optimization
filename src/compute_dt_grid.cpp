@@ -1,3 +1,4 @@
+/* AD-CONVERTED: double->sfloat by tools/ad_convert.py (see sfloat.h) */
 /* ----------------------------------------------------------------------
    SPARTA - Stochastic PArallel Rarefied-gas Time-accurate Analyzer
    http://sparta.github.io
@@ -452,18 +453,18 @@ void ComputeDtGrid::compute_per_grid()
       ctau->post_process_grid(tau_index,1,NULL,NULL,NULL,1);
 
     if (tau_index == 0)
-      memcpy(tau,ctau->vector_grid,nglocal*sizeof(double));
+      memcpy(tau,ctau->vector_grid,nglocal*sizeof(sfloat));
     else {
       int index = tau_index-1;
-      double **array = ctau->array_grid;
+      sfloat **array = ctau->array_grid;
       for (int i = 0; i < nglocal; i++)
         tau[i] = array[i][index];
     }
   } else if (tau_which == FIX) {
     if (tau_index == 0) {
-      memcpy(tau,ftau->vector_grid,nglocal*sizeof(double));
+      memcpy(tau,ftau->vector_grid,nglocal*sizeof(sfloat));
     } else {
-      double **array = ftau->array_grid;
+      sfloat **array = ftau->array_grid;
       int index = tau_index-1;
       for (int i = 0; i < nglocal; i++)
         tau[i] = array[i][index];
@@ -479,18 +480,18 @@ void ComputeDtGrid::compute_per_grid()
       ctemp->post_process_grid(temp_index,1,NULL,NULL,NULL,1);
 
     if (temp_index == 0)
-      memcpy(temp,ctemp->vector_grid,nglocal*sizeof(double));
+      memcpy(temp,ctemp->vector_grid,nglocal*sizeof(sfloat));
     else {
       int index = temp_index-1;
-      double **array = ctemp->array_grid;
+      sfloat **array = ctemp->array_grid;
       for (int i = 0; i < nglocal; i++)
         temp[i] = array[i][index];
     }
   } else if (temp_which == FIX) {
     if (temp_index == 0) {
-      memcpy(temp,ftemp->vector_grid,nglocal*sizeof(double));
+      memcpy(temp,ftemp->vector_grid,nglocal*sizeof(sfloat));
     } else {
-      double **array = ftemp->array_grid;
+      sfloat **array = ftemp->array_grid;
       int index = temp_index-1;
       for (int i = 0; i < nglocal; i++)
         temp[i] = array[i][index];
@@ -506,18 +507,18 @@ void ComputeDtGrid::compute_per_grid()
       cusq->post_process_grid(usq_index,1,NULL,NULL,NULL,1);
 
     if (usq_index == 0)
-      memcpy(usq,cusq->vector_grid,nglocal*sizeof(double));
+      memcpy(usq,cusq->vector_grid,nglocal*sizeof(sfloat));
     else {
       int index = usq_index-1;
-      double **array = cusq->array_grid;
+      sfloat **array = cusq->array_grid;
       for (int i = 0; i < nglocal; i++)
         usq[i] = array[i][index];
     }
   } else if (usq_which == FIX) {
     if (usq_index == 0) {
-      memcpy(usq,fusq->vector_grid,nglocal*sizeof(double));
+      memcpy(usq,fusq->vector_grid,nglocal*sizeof(sfloat));
     } else {
-      double **array = fusq->array_grid;
+      sfloat **array = fusq->array_grid;
       int index = usq_index-1;
       for (int i = 0; i < nglocal; i++)
         usq[i] = array[i][index];
@@ -533,18 +534,18 @@ void ComputeDtGrid::compute_per_grid()
       cvsq->post_process_grid(vsq_index,1,NULL,NULL,NULL,1);
 
     if (vsq_index == 0)
-      memcpy(vsq,cvsq->vector_grid,nglocal*sizeof(double));
+      memcpy(vsq,cvsq->vector_grid,nglocal*sizeof(sfloat));
     else {
       int index = vsq_index-1;
-      double **array = cvsq->array_grid;
+      sfloat **array = cvsq->array_grid;
       for (int i = 0; i < nglocal; i++)
         vsq[i] = array[i][index];
     }
   } else if (vsq_which == FIX) {
     if (vsq_index == 0) {
-      memcpy(vsq,fvsq->vector_grid,nglocal*sizeof(double));
+      memcpy(vsq,fvsq->vector_grid,nglocal*sizeof(sfloat));
     } else {
-      double **array = fvsq->array_grid;
+      sfloat **array = fvsq->array_grid;
       int index = vsq_index-1;
       for (int i = 0; i < nglocal; i++)
         vsq[i] = array[i][index];
@@ -560,18 +561,18 @@ void ComputeDtGrid::compute_per_grid()
       cwsq->post_process_grid(wsq_index,1,NULL,NULL,NULL,1);
 
     if (wsq_index == 0)
-      memcpy(wsq,cwsq->vector_grid,nglocal*sizeof(double));
+      memcpy(wsq,cwsq->vector_grid,nglocal*sizeof(sfloat));
     else {
       int index = wsq_index-1;
-      double **array = cwsq->array_grid;
+      sfloat **array = cwsq->array_grid;
       for (int i = 0; i < nglocal; i++)
         wsq[i] = array[i][index];
     }
   } else if (wsq_which == FIX) {
     if (wsq_index == 0) {
-      memcpy(wsq,fwsq->vector_grid,nglocal*sizeof(double));
+      memcpy(wsq,fwsq->vector_grid,nglocal*sizeof(sfloat));
     } else {
-      double **array = fwsq->array_grid;
+      sfloat **array = fwsq->array_grid;
       int index = wsq_index-1;
       for (int i = 0; i < nglocal; i++)
         wsq[i] = array[i][index];
@@ -584,11 +585,11 @@ void ComputeDtGrid::compute_per_grid()
   Grid::ChildCell *cells = grid->cells;
   Grid::ChildInfo *cinfo = grid->cinfo;
 
-  double dx,dy,dz;
-  double umag,vmag,wmag;
-  double vrm_max;
-  double cell_dt_desired;
-  double dt_candidate;
+  sfloat dx,dy,dz;
+  sfloat umag,vmag,wmag;
+  sfloat vrm_max;
+  sfloat cell_dt_desired;
+  sfloat dt_candidate;
 
   for (int i = 0; i < nglocal; ++i) {
     vector_grid[i] = 0.;
@@ -607,7 +608,7 @@ void ComputeDtGrid::compute_per_grid()
     if ( !(temp[i] > 0.) ) continue;
 
     // exclude cells with zero speed
-    double speed_squared = 0.;
+    sfloat speed_squared = 0.;
     if (domain->dimension == 3)
       speed_squared = usq[i] + vsq[i] + wsq[i];
     else
@@ -690,8 +691,8 @@ void ComputeDtGrid::reallocate()
 bigint ComputeDtGrid::memory_usage()
 {
   bigint bytes;
-  bytes = nglocal * sizeof(double);      // vector_grid
-  bytes += 5*nglocal * sizeof(double);   // tau,temp,usq,vsq,wsq
+  bytes = nglocal * sizeof(sfloat);      // vector_grid
+  bytes += 5*nglocal * sizeof(sfloat);   // tau,temp,usq,vsq,wsq
   return bytes;
 }
 

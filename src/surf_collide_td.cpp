@@ -1,3 +1,4 @@
+/* AD-CONVERTED: double->sfloat by tools/ad_convert.py (see sfloat.h) */
 /* ----------------------------------------------------------------------
    SPARTA - Stochastic PArallel Rarefied-gas Time-accurate Analyzer
    http://sparta.github.io
@@ -94,7 +95,7 @@ SurfCollideTD::SurfCollideTD(SPARTA *sparta, int narg, char **arg) :
   // initialize RNG
 
   random = new RanKnuth(update->ranmaster->uniform());
-  double seed = update->ranmaster->uniform();
+  sfloat seed = update->ranmaster->uniform();
   random->reset(seed,comm->me,100);
 }
 
@@ -126,8 +127,8 @@ void SurfCollideTD::init()
 ------------------------------------------------------------------------- */
 
 Particle::OnePart *SurfCollideTD::
-collide(Particle::OnePart *&ip, double &,
-        int isurf, double *norm, int isr, int &reaction)
+collide(Particle::OnePart *&ip, sfloat &,
+        int isurf, sfloat *norm, int isr, int &reaction)
 {
   nsingle++;
 
@@ -204,15 +205,15 @@ collide(Particle::OnePart *&ip, double &,
    tangent12 are both unit vectors
 ------------------------------------------------------------------------- */
 
-void SurfCollideTD::td(Particle::OnePart *p, double *norm)
+void SurfCollideTD::td(Particle::OnePart *p, sfloat *norm)
 {
-  double tangent1[3],tangent2[3];
+  sfloat tangent1[3],tangent2[3];
   Particle::Species *species = particle->species;
   int ispecies = p->ispecies;
-  double boltz = update->boltz;
+  sfloat boltz = update->boltz;
 
-  double *v = p->v;
-  double dot = MathExtra::dot3(v,norm);
+  sfloat *v = p->v;
+  sfloat dot = MathExtra::dot3(v,norm);
 
   tangent1[0] = v[0] - dot*norm[0];
   tangent1[1] = v[1] - dot*norm[1];
@@ -228,31 +229,31 @@ void SurfCollideTD::td(Particle::OnePart *p, double *norm)
   MathExtra::norm3(tangent1);
   MathExtra::cross3(norm,tangent1,tangent2);
 
-  double mass = species[ispecies].mass;
-  double E_i = 0.5 * mass * MathExtra::lensq3(v);
+  sfloat mass = species[ispecies].mass;
+  sfloat E_i = 0.5 * mass * MathExtra::lensq3(v);
 
-  double E_t = boltz * tsurf;
+  sfloat E_t = boltz * tsurf;
   if (bond_flag) E_t += boltz*bond_trans;
   if (initen_flag) E_t += E_i*initen_trans;
 
-  double E_n = E_t;
+  sfloat E_n = E_t;
   if (barrier_flag) E_n += boltz*barrier_val;
 
-  double vrm_n = sqrt(2.0*E_n / mass);
-  double vrm_t = sqrt(2.0*E_t / mass);
-  double vperp = vrm_n * sqrt(-log(random->uniform()));
+  sfloat vrm_n = sqrt(2.0*E_n / mass);
+  sfloat vrm_t = sqrt(2.0*E_t / mass);
+  sfloat vperp = vrm_n * sqrt(-log(random->uniform()));
 
-  double theta = MY_2PI * random->uniform();
-  double vtangent = vrm_t * sqrt(-log(random->uniform()));
-  double vtan1 = vtangent * sin(theta);
-  double vtan2 = vtangent * cos(theta);
+  sfloat theta = MY_2PI * random->uniform();
+  sfloat vtangent = vrm_t * sqrt(-log(random->uniform()));
+  sfloat vtan1 = vtangent * sin(theta);
+  sfloat vtan2 = vtangent * cos(theta);
 
   v[0] = vperp*norm[0] + vtan1*tangent1[0] + vtan2*tangent2[0];
   v[1] = vperp*norm[1] + vtan1*tangent1[1] + vtan2*tangent2[1];
   v[2] = vperp*norm[2] + vtan1*tangent1[2] + vtan2*tangent2[2];
 
-  double twall_rot = tsurf;
-  double twall_vib = tsurf;
+  sfloat twall_rot = tsurf;
+  sfloat twall_vib = tsurf;
 
   if (bond_flag) {
     twall_rot += bond_rot;
@@ -275,8 +276,8 @@ void SurfCollideTD::td(Particle::OnePart *p, double *norm)
    called by SurfReactAdsorb
 ------------------------------------------------------------------------- */
 
-void SurfCollideTD::wrapper(Particle::OnePart *p, double *norm,
-                            int *flags, double *coeffs)
+void SurfCollideTD::wrapper(Particle::OnePart *p, sfloat *norm,
+                            int *flags, sfloat *coeffs)
 {
   if (flags) {
     tsurf = coeffs[0];
@@ -309,7 +310,7 @@ void SurfCollideTD::wrapper(Particle::OnePart *p, double *norm,
    return flags and coeffs for this SurfCollide instance to caller
 ------------------------------------------------------------------------- */
 
-void SurfCollideTD::flags_and_coeffs(int *flags, double *coeffs)
+void SurfCollideTD::flags_and_coeffs(int *flags, sfloat *coeffs)
 {
   if (tmode != NUMERIC)
     error->all(FLERR,"Surf_collide td with non-numeric Tsurf "

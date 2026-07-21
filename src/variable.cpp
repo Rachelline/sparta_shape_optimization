@@ -1,3 +1,4 @@
+/* AD-CONVERTED: double->sfloat by tools/ad_convert.py (see sfloat.h) */
 /* ----------------------------------------------------------------------
    SPARTA - Stochastic PArallel Rarefied-gas Time-accurate Analyzer
    http://sparta.github.io
@@ -731,7 +732,7 @@ char *Variable::retrieve(char *name)
     str = data[ivar][0];
 
   } else if (style[ivar] == EQUAL) {
-    double answer = evaluate(data[ivar][0],NULL);
+    sfloat answer = evaluate(data[ivar][0],NULL);
     sprintf(data[ivar][1],"%.15g",answer);
     str = data[ivar][1];
 
@@ -739,7 +740,7 @@ char *Variable::retrieve(char *name)
     int jvar = find(data[ivar][0]);
     if (jvar == -1) return NULL;
     if (!equal_style(jvar)) return NULL;
-    double answer = compute_equal(jvar);
+    sfloat answer = compute_equal(jvar);
     sprintf(data[ivar][2],data[ivar][1],answer);
     str = data[ivar][2];
 
@@ -781,20 +782,20 @@ char *Variable::retrieve(char *name)
      since caller will have already checked via equalstyle()
 ------------------------------------------------------------------------- */
 
-double Variable::compute_equal(int ivar)
+sfloat Variable::compute_equal(int ivar)
 {
   if (eval_in_progress[ivar])
     error->all(FLERR,"Variable has circular dependency");
 
   eval_in_progress[ivar] = 1;
 
-  double value;
+  sfloat value;
   if (style[ivar] == EQUAL) value = evaluate(data[ivar][0],NULL);
   else if (style[ivar] == INTERNAL) value = dvalue[ivar];
   else if (style[ivar] == PYTHON) python->invoke_function(pyindex[ivar],nullptr,&value);
 
   // round to zero on underflow
-  //if (fabs(value) < std::numeric_limits<double>::min()) value = 0.0;
+  //if (fabs(value) < std::numeric_limits<sfloat>::min()) value = 0.0;
 
   eval_in_progress[ivar] = 0;
   return value;
@@ -805,7 +806,7 @@ double Variable::compute_equal(int ivar)
    called from Input::substitute()
 ------------------------------------------------------------------------- */
 
-double Variable::compute_equal(char *str)
+sfloat Variable::compute_equal(char *str)
 {
   return evaluate(str,NULL);
 }
@@ -817,7 +818,7 @@ double Variable::compute_equal(char *str)
    if sumflag, add variable values to existing result
 ------------------------------------------------------------------------- */
 
-void Variable::compute_particle(int ivar, double *result,
+void Variable::compute_particle(int ivar, sfloat *result,
                                 int stride, int sumflag)
 {
   Tree *tree;
@@ -860,7 +861,7 @@ void Variable::compute_particle(int ivar, double *result,
    if sumflag, add variable values to existing result
 ------------------------------------------------------------------------- */
 
-void Variable::compute_grid(int ivar, double *result,
+void Variable::compute_grid(int ivar, sfloat *result,
                             int stride, int sumflag)
 {
   Tree *tree;
@@ -902,7 +903,7 @@ void Variable::compute_grid(int ivar, double *result,
    if sumflag, add variable values to existing result
 ------------------------------------------------------------------------- */
 
-void Variable::compute_surf(int ivar, double *result,
+void Variable::compute_surf(int ivar, sfloat *result,
                             int stride, int sumflag)
 {
   if (surf->implicit)
@@ -945,7 +946,7 @@ void Variable::compute_surf(int ivar, double *result,
    set value stored by INTERNAL style ivar
 ------------------------------------------------------------------------- */
 
-void Variable::internal_set(int ivar, double value)
+void Variable::internal_set(int ivar, sfloat value)
 {
   dvalue[ivar] = value;
 }
@@ -954,7 +955,7 @@ void Variable::internal_set(int ivar, double value)
    create an INTERNAL style variable with name, set to value
 ------------------------------------------------------------------------- */
 
-void Variable::internal_create(char *name, double value)
+void Variable::internal_create(char *name, sfloat value)
 {
   if (find(name) >= 0) {
     char str[128];
@@ -1008,7 +1009,7 @@ void Variable::python_command(int narg, char **arg)
 /* ----------------------------------------------------------------------
    return 1 if variable is EQUAL style, 0 if not
    INTERNAL, PYTHON qualify as EQUAL style
-   this is checked before call to compute_equal() to return a double
+   this is checked before call to compute_equal() to return a sfloat
 ------------------------------------------------------------------------- */
 
 int Variable::equal_style(int ivar)
@@ -1162,20 +1163,20 @@ void Variable::copy(int narg, char **from, char **to)
      fix = f_ID, f_ID[i], f_ID[i][j]
      variable = v_name
    equal-style variable passes in tree = NULL:
-     evaluate the formula, return result as a double
+     evaluate the formula, return result as a sfloat
    particle-style or grid-style or surf-style variable passes in tree = non-NULL:
      parse the formula but do not evaluate it
      create a parse tree and return it
 ------------------------------------------------------------------------- */
 
-double Variable::evaluate(char *str, Tree **tree)
+sfloat Variable::evaluate(char *str, Tree **tree)
 {
   int op,opprevious;
-  double value1,value2;
+  sfloat value1,value2;
   char onechar;
   char *ptr;
 
-  double argstack[MAXLEVEL];
+  sfloat argstack[MAXLEVEL];
   Tree *treestack[MAXLEVEL];
   int opstack[MAXLEVEL];
   int nargstack = 0;
@@ -2341,9 +2342,9 @@ double Variable::evaluate(char *str, Tree **tree)
      vdisplace(x,y),swiggle(x,y,z),cwiggle(x,y,z)
 ---------------------------------------------------------------------- */
 
-double Variable::collapse_tree(Tree *tree)
+sfloat Variable::collapse_tree(Tree *tree)
 {
-  double arg1,arg2;
+  sfloat arg1,arg2;
 
   if (tree->type == VALUE) return tree->value;
   if (tree->type == ARRAY) return 0.0;
@@ -2628,7 +2629,7 @@ double Variable::collapse_tree(Tree *tree)
     collapse_tree(tree->second);
     if (randomparticle == NULL) {
       randomparticle = new RanKnuth(update->ranmaster->uniform());
-      double seed = update->ranmaster->uniform();
+      sfloat seed = update->ranmaster->uniform();
       randomparticle->reset(seed,me,100);
     }
     return 0.0;
@@ -2636,12 +2637,12 @@ double Variable::collapse_tree(Tree *tree)
 
   if (tree->type == NORMAL) {
     collapse_tree(tree->first);
-    double sigma = collapse_tree(tree->second);
+    sfloat sigma = collapse_tree(tree->second);
     if (sigma < 0.0)
       error->one(FLERR,"Invalid math function in variable formula");
     if (randomparticle == NULL) {
       randomparticle = new RanKnuth(update->ranmaster->uniform());
-      double seed = update->ranmaster->uniform();
+      sfloat seed = update->ranmaster->uniform();
       randomparticle->reset(seed,me,100);
     }
     return 0.0;
@@ -2676,7 +2677,7 @@ double Variable::collapse_tree(Tree *tree)
     arg2 = collapse_tree(tree->second);
     if (tree->first->type != VALUE || tree->second->type != VALUE) return 0.0;
     tree->type = VALUE;
-    double delta = update->ntimestep - update->beginstep;
+    sfloat delta = update->ntimestep - update->beginstep;
     if (delta != 0.0) delta /= update->endstep - update->beginstep;
     tree->value = arg1 + delta*(arg2-arg1);
     return tree->value;
@@ -2735,41 +2736,41 @@ double Variable::collapse_tree(Tree *tree)
   }
 
   if (tree->type == VDISPLACE) {
-    double arg1 = collapse_tree(tree->first);
-    double arg2 = collapse_tree(tree->second);
+    sfloat arg1 = collapse_tree(tree->first);
+    sfloat arg2 = collapse_tree(tree->second);
     if (tree->first->type != VALUE || tree->second->type != VALUE) return 0.0;
     tree->type = VALUE;
-    double delta = update->ntimestep - update->beginstep;
+    sfloat delta = update->ntimestep - update->beginstep;
     tree->value = arg1 + arg2*delta*update->dt;
     return tree->value;
   }
 
   if (tree->type == SWIGGLE) {
-    double arg1 = collapse_tree(tree->first);
-    double arg2 = collapse_tree(tree->second);
-    double arg3 = collapse_tree(tree->extra[0]);
+    sfloat arg1 = collapse_tree(tree->first);
+    sfloat arg2 = collapse_tree(tree->second);
+    sfloat arg3 = collapse_tree(tree->extra[0]);
     if (tree->first->type != VALUE || tree->second->type != VALUE ||
         tree->extra[0]->type != VALUE) return 0.0;
     tree->type = VALUE;
     if (arg3 == 0.0)
       error->one(FLERR,"Invalid math function in variable formula");
-    double delta = update->ntimestep - update->beginstep;
-    double omega = 2.0*MY_PI/arg3;
+    sfloat delta = update->ntimestep - update->beginstep;
+    sfloat omega = 2.0*MY_PI/arg3;
     tree->value = arg1 + arg2*sin(omega*delta*update->dt);
     return tree->value;
   }
 
   if (tree->type == CWIGGLE) {
-    double arg1 = collapse_tree(tree->first);
-    double arg2 = collapse_tree(tree->second);
-    double arg3 = collapse_tree(tree->extra[0]);
+    sfloat arg1 = collapse_tree(tree->first);
+    sfloat arg2 = collapse_tree(tree->second);
+    sfloat arg3 = collapse_tree(tree->extra[0]);
     if (tree->first->type != VALUE || tree->second->type != VALUE ||
         tree->extra[0]->type != VALUE) return 0.0;
     tree->type = VALUE;
     if (arg3 == 0.0)
       error->one(FLERR,"Invalid math function in variable formula");
-    double delta = update->ntimestep - update->beginstep;
-    double omega = 2.0*MY_PI/arg3;
+    sfloat delta = update->ntimestep - update->beginstep;
+    sfloat omega = 2.0*MY_PI/arg3;
     tree->value = arg1 + arg2*(1.0-cos(omega*delta*update->dt));
     return tree->value;
   }
@@ -2777,7 +2778,7 @@ double Variable::collapse_tree(Tree *tree)
   if (tree->type == PYWRAPPER) {
     int narg = tree->argcount;
     int *argvars = tree->argvars;
-    double arg;
+    sfloat arg;
     for (int iarg = 0; iarg < narg; iarg++) {
       if (iarg == 0) arg = collapse_tree(tree->first);
       else if (iarg == 1) arg = collapse_tree(tree->second);
@@ -2813,19 +2814,19 @@ double Variable::collapse_tree(Tree *tree)
      vdisplace(x,y),swiggle(x,y,z),cwiggle(x,y,z)
 ---------------------------------------------------------------------- */
 
-double Variable::eval_tree(Tree *tree, int i)
+sfloat Variable::eval_tree(Tree *tree, int i)
 {
-  double arg,arg1,arg2,arg3;
+  sfloat arg,arg1,arg2,arg3;
 
   if (tree->type == VALUE) return tree->value;
   if (tree->type == ARRAY) return tree->array[(bigint)i*tree->nstride];
   if (tree->type == ARRAYINT) return tree->iarray[(bigint)i*tree->nstride];
   if (tree->type == PARTARRAYDOUBLE)
-    return *((double *) &tree->carray[(bigint)i*tree->nstride]);
+    return *((sfloat *) &tree->carray[(bigint)i*tree->nstride]);
   if (tree->type == PARTARRAYINT)
     return *((int *) &tree->carray[(bigint)i*tree->nstride]);
   if (tree->type == SPECARRAY)
-    return *((double *)
+    return *((sfloat *)
              &tree->carray[(bigint)particle->particles[i].ispecies*tree->nstride]);
   if (tree->type == PARTGRIDARRAY) {
     int icell = particle->particles[i].icell;
@@ -2839,17 +2840,17 @@ double Variable::eval_tree(Tree *tree, int i)
   if (tree->type == MULTIPLY)
     return eval_tree(tree->first,i) * eval_tree(tree->second,i);
   if (tree->type == DIVIDE) {
-    double denom = eval_tree(tree->second,i);
+    sfloat denom = eval_tree(tree->second,i);
     if (denom == 0.0) error->one(FLERR,"Divide by 0 in variable formula");
     return eval_tree(tree->first,i) / denom;
   }
   if (tree->type == MODULO) {
-    double denom = eval_tree(tree->second,i);
+    sfloat denom = eval_tree(tree->second,i);
     if (denom == 0.0) error->one(FLERR,"Modulo 0 in variable formula");
     return fmod(eval_tree(tree->first,i),denom);
   }
   if (tree->type == CARAT) {
-    double exponent = eval_tree(tree->second,i);
+    sfloat exponent = eval_tree(tree->second,i);
     if (exponent == 0.0) error->one(FLERR,"Power by 0 in variable formula");
     return pow(eval_tree(tree->first,i),exponent);
   }
@@ -2944,23 +2945,23 @@ double Variable::eval_tree(Tree *tree, int i)
     return erf(eval_tree(tree->first,i));
 
   if (tree->type == RANDOM) {
-    double lower = eval_tree(tree->first,i);
-    double upper = eval_tree(tree->second,i);
+    sfloat lower = eval_tree(tree->first,i);
+    sfloat upper = eval_tree(tree->second,i);
     if (randomparticle == NULL) {
       randomparticle = new RanKnuth(update->ranmaster->uniform());
-      double seed = update->ranmaster->uniform();
+      sfloat seed = update->ranmaster->uniform();
       randomparticle->reset(seed,me,100);
     }
     return randomparticle->uniform()*(upper-lower)+lower;
   }
   if (tree->type == NORMAL) {
-    double mu = eval_tree(tree->first,i);
-    double sigma = eval_tree(tree->second,i);
+    sfloat mu = eval_tree(tree->first,i);
+    sfloat sigma = eval_tree(tree->second,i);
     if (sigma < 0.0)
       error->one(FLERR,"Invalid math function in variable formula");
     if (randomparticle == NULL) {
       randomparticle = new RanKnuth(update->ranmaster->uniform());
-      double seed = update->ranmaster->uniform();
+      sfloat seed = update->ranmaster->uniform();
       randomparticle->reset(seed,me,100);
     }
     return mu + sigma*randomparticle->gaussian();
@@ -2976,7 +2977,7 @@ double Variable::eval_tree(Tree *tree, int i)
   if (tree->type == RAMP) {
     arg1 = eval_tree(tree->first,i);
     arg2 = eval_tree(tree->second,i);
-    double delta = update->ntimestep - update->beginstep;
+    sfloat delta = update->ntimestep - update->beginstep;
     if (delta != 0.0) delta /= update->endstep - update->beginstep;
     arg = arg1 + delta*(arg2-arg1);
     return arg;
@@ -3029,7 +3030,7 @@ double Variable::eval_tree(Tree *tree, int i)
   if (tree->type == VDISPLACE) {
     arg1 = eval_tree(tree->first,i);
     arg2 = eval_tree(tree->second,i);
-    double delta = update->ntimestep - update->beginstep;
+    sfloat delta = update->ntimestep - update->beginstep;
     arg = arg1 + arg2*delta*update->dt;
     return arg;
   }
@@ -3040,8 +3041,8 @@ double Variable::eval_tree(Tree *tree, int i)
     arg3 = eval_tree(tree->extra[0],i);
     if (arg3 == 0.0)
       error->one(FLERR,"Invalid math function in variable formula");
-    double delta = update->ntimestep - update->beginstep;
-    double omega = 2.0*MY_PI/arg3;
+    sfloat delta = update->ntimestep - update->beginstep;
+    sfloat omega = 2.0*MY_PI/arg3;
     arg = arg1 + arg2*sin(omega*delta*update->dt);
     return arg;
   }
@@ -3052,8 +3053,8 @@ double Variable::eval_tree(Tree *tree, int i)
     arg3 = eval_tree(tree->extra[0],i);
     if (arg3 == 0.0)
       error->one(FLERR,"Invalid math function in variable formula");
-    double delta = update->ntimestep - update->beginstep;
-    double omega = 2.0*MY_PI/arg3;
+    sfloat delta = update->ntimestep - update->beginstep;
+    sfloat omega = 2.0*MY_PI/arg3;
     arg = arg1 + arg2*(1.0-cos(omega*delta*update->dt));
     return arg;
   }
@@ -3213,7 +3214,7 @@ int Variable::int_between_brackets(char *&ptr, int varallow, const char *caller)
 
 int Variable::math_function(char *word, char *contents, Tree **tree,
                             Tree **treestack, int &ntreestack,
-                            double *argstack, int &nargstack)
+                            sfloat *argstack, int &nargstack)
 {
   // word not a match to any math function
 
@@ -3241,8 +3242,8 @@ int Variable::math_function(char *word, char *contents, Tree **tree,
   int narg = parse_args(contents,args);
 
   Tree *newtree = nullptr;
-  double value1,value2;
-  double values[MAXFUNCARG-2];
+  sfloat value1,value2;
+  sfloat values[MAXFUNCARG-2];
 
   if (tree) {
     newtree = new Tree();
@@ -3373,7 +3374,7 @@ int Variable::math_function(char *word, char *contents, Tree **tree,
     else {
       if (randomequal == NULL) {
         randomequal = new RanKnuth(update->ranmaster->uniform());
-        double seed = update->ranmaster->uniform();
+        sfloat seed = update->ranmaster->uniform();
         randomequal->reset(seed,me,100);
       }
       argstack[nargstack++] = randomequal->uniform()*(value2-value1) + value1;
@@ -3387,7 +3388,7 @@ int Variable::math_function(char *word, char *contents, Tree **tree,
         error->all(FLERR,"Invalid math function in variable formula");
       if (randomequal == NULL) {
         randomequal = new RanKnuth(update->ranmaster->uniform());
-        double seed = update->ranmaster->uniform();
+        sfloat seed = update->ranmaster->uniform();
         randomequal->reset(seed,me,100);
       }
       argstack[nargstack++] = value1 + value2*randomequal->gaussian();
@@ -3418,9 +3419,9 @@ int Variable::math_function(char *word, char *contents, Tree **tree,
       error->all(FLERR,"Cannot use ramp in variable formula between runs");
     if (tree) newtree->type = RAMP;
     else {
-      double delta = update->ntimestep - update->beginstep;
+      sfloat delta = update->ntimestep - update->beginstep;
       if (delta != 0.0) delta /= update->endstep - update->beginstep;
-      double value = value1 + delta*(value2-value1);
+      sfloat value = value1 + delta*(value2-value1);
       argstack[nargstack++] = value;
     }
 
@@ -3435,7 +3436,7 @@ int Variable::math_function(char *word, char *contents, Tree **tree,
         error->all(FLERR,"Invalid math function in variable formula");
       int lower = update->ntimestep/ivalue1 * ivalue1;
       int delta = update->ntimestep - lower;
-      double value;
+      sfloat value;
       if (delta < ivalue2) value = lower+ivalue2;
       else value = lower+ivalue1;
       argstack[nargstack++] = value;
@@ -3451,7 +3452,7 @@ int Variable::math_function(char *word, char *contents, Tree **tree,
       int ivalue3 = static_cast<int> (values[0]);
       if (ivalue1 <= 0 || ivalue2 <= 0 || ivalue3 <= 0 || ivalue2 >= ivalue3)
         error->all(FLERR,"Invalid math function in variable formula");
-      double value;
+      sfloat value;
       if (update->ntimestep < ivalue1) value = ivalue1;
       else {
         int lower = ivalue1;
@@ -3473,7 +3474,7 @@ int Variable::math_function(char *word, char *contents, Tree **tree,
       int ivalue3 = static_cast<int> (values[0]);
       if (ivalue1 < 0 || ivalue2 < 0 || ivalue3 <= 0 || ivalue1 > ivalue2)
         error->one(FLERR,"Invalid math function in variable formula");
-      double value;
+      sfloat value;
       if (update->ntimestep < ivalue1) value = ivalue1;
       else if (update->ntimestep < ivalue2) {
         int offset = update->ntimestep - ivalue1;
@@ -3490,8 +3491,8 @@ int Variable::math_function(char *word, char *contents, Tree **tree,
       error->all(FLERR,"Cannot use vdisplace in variable formula between runs");
     if (tree) newtree->type = VDISPLACE;
     else {
-      double delta = update->ntimestep - update->beginstep;
-      double value = value1 + value2*delta*update->dt;
+      sfloat delta = update->ntimestep - update->beginstep;
+      sfloat value = value1 + value2*delta*update->dt;
       argstack[nargstack++] = value;
     }
 
@@ -3504,9 +3505,9 @@ int Variable::math_function(char *word, char *contents, Tree **tree,
     else {
       if (values[0] == 0.0)
         error->all(FLERR,"Invalid math function in variable formula");
-      double delta = update->ntimestep - update->beginstep;
-      double omega = 2.0*MY_PI/values[0];
-      double value = value1 + value2*sin(omega*delta*update->dt);
+      sfloat delta = update->ntimestep - update->beginstep;
+      sfloat omega = 2.0*MY_PI/values[0];
+      sfloat value = value1 + value2*sin(omega*delta*update->dt);
       argstack[nargstack++] = value;
     }
 
@@ -3519,9 +3520,9 @@ int Variable::math_function(char *word, char *contents, Tree **tree,
     else {
       if (values[0] == 0.0)
         error->all(FLERR,"Invalid math function in variable formula");
-      double delta = update->ntimestep - update->beginstep;
-      double omega = 2.0*MY_PI/values[0];
-      double value = value1 + value2*(1.0-cos(omega*delta*update->dt));
+      sfloat delta = update->ntimestep - update->beginstep;
+      sfloat omega = 2.0*MY_PI/values[0];
+      sfloat value = value1 + value2*(1.0-cos(omega*delta*update->dt));
       argstack[nargstack++] = value;
     }
 
@@ -3586,9 +3587,9 @@ int Variable::math_function(char *word, char *contents, Tree **tree,
 
 int Variable::special_function(char *word, char *contents, Tree **tree,
                                Tree **treestack, int &ntreestack,
-                               double *argstack, int &nargstack)
+                               sfloat *argstack, int &nargstack)
 {
-  double value,xvalue,sx,sy,sxx,sxy;
+  sfloat value,xvalue,sx,sy,sxx,sxy;
 
   // word not a match to any special function
 
@@ -3724,7 +3725,7 @@ int Variable::special_function(char *word, char *contents, Tree **tree,
     if (method == XMAX) value = -BIG;
 
     if (compute) {
-      double *vec;
+      sfloat *vec;
       if (index) {
         if (compute->array) vec = &compute->array[0][index-1];
         else vec = NULL;
@@ -3738,7 +3739,7 @@ int Variable::special_function(char *word, char *contents, Tree **tree,
         else if (method == AVE) value += vec[j];
         else if (method == TRAP) value += vec[j];
         else if (method == SLOPE) {
-          if (nvec > 1) xvalue = (double) i / (nvec-1);
+          if (nvec > 1) xvalue = (sfloat) i / (nvec-1);
           else xvalue = 0.0;
           sx += xvalue;
           sy += vec[j];
@@ -3751,7 +3752,7 @@ int Variable::special_function(char *word, char *contents, Tree **tree,
     }
 
     if (fix) {
-      double one;
+      sfloat one;
       for (int i = 0; i < nvec; i++) {
         if (index) one = fix->compute_array(i,index-1);
         else one = fix->compute_vector(i);
@@ -3761,7 +3762,7 @@ int Variable::special_function(char *word, char *contents, Tree **tree,
         else if (method == AVE) value += one;
         else if (method == TRAP) value += one;
         else if (method == SLOPE) {
-          if (nvec > 1) xvalue = (double) i / (nvec-1);
+          if (nvec > 1) xvalue = (sfloat) i / (nvec-1);
           else xvalue = 0.0;
           sx += xvalue;
           sy += one;
@@ -3780,8 +3781,8 @@ int Variable::special_function(char *word, char *contents, Tree **tree,
     if (method == AVE) value /= nvec;
 
     if (method == SLOPE) {
-      double numerator = sxy - sx*sy;
-      double denominator = sxx - sx*sx;
+      sfloat numerator = sxy - sx*sy;
+      sfloat denominator = sxx - sx*sx;
       if (denominator != 0.0) value = numerator/denominator / nvec;
       else value = BIG;
     }
@@ -3809,7 +3810,7 @@ int Variable::special_function(char *word, char *contents, Tree **tree,
     // save value in tree or on argstack
 
     if (style[ivar] == SCALARFILE) {
-      double value = atof(data[ivar][0]);
+      sfloat value = atof(data[ivar][0]);
       int done = reader[ivar]->read_scalar(data[ivar][0]);
       if (done) remove(ivar);
 
@@ -4126,7 +4127,7 @@ int Variable::is_constant(char *word)
    customize by adding a constant: PI
 ------------------------------------------------------------------------- */
 
-double Variable::constant(char *word)
+sfloat Variable::constant(char *word)
 {
   if (strcmp(word,"PI") == 0) return MY_PI;
   return 0.0;
@@ -4182,12 +4183,12 @@ char *Variable::find_next_comma(char *str)
    return local ptr to copied vec
 ------------------------------------------------------------------------- */
 
-double *Variable::add_storage(double *cvec)
+sfloat *Variable::add_storage(sfloat *cvec)
 {
   if (nvec_storage == maxvec_storage) {
     maxvec_storage++;
-    vec_storage = (double **)
-      memory->srealloc(vec_storage,maxvec_storage*sizeof(double *),
+    vec_storage = (sfloat **)
+      memory->srealloc(vec_storage,maxvec_storage*sizeof(sfloat *),
                        "variable:vec_storage");
     maxlen_storage = (int *)
       memory->srealloc(maxlen_storage,maxvec_storage*sizeof(int),
@@ -4203,7 +4204,7 @@ double *Variable::add_storage(double *cvec)
     memory->create(vec_storage[nvec_storage],n,"variable:vec_storage");
   }
 
-  memcpy(vec_storage[nvec_storage],cvec,n*sizeof(double));
+  memcpy(vec_storage[nvec_storage],cvec,n*sizeof(sfloat));
   nvec_storage++;
 
   return vec_storage[nvec_storage-1];
@@ -4234,16 +4235,16 @@ void Variable::print_tree(Tree *tree, int level)
      math operation = (),x==y,x!=y,x<y,x<=y,x>y,x>=y,x&&y,x||y
 ------------------------------------------------------------------------- */
 
-double Variable::evaluate_boolean(char *str)
+sfloat Variable::evaluate_boolean(char *str)
 {
   int op,opprevious,flag1,flag2;
-  double value1,value2;
+  sfloat value1,value2;
   char onechar;
   char *str1,*str2;
 
   struct Arg {
     int flag;          // 0 for numeric value, 1 for string
-    double value;      // stored numeric value
+    sfloat value;      // stored numeric value
     char *str;         // stored string
   };
 

@@ -1,3 +1,4 @@
+/* AD-CONVERTED: double->sfloat by tools/ad_convert.py (see sfloat.h) */
 /* ----------------------------------------------------------------------
    SPARTA - Stochastic PArallel Rarefied-gas Time-accurate Analyzer
    http://sparta.github.io
@@ -36,7 +37,7 @@ class ComputeDistSurfGrid : public Compute {
 
  protected:
   int nglocal,groupbit,sgroupbit;
-  double sdir[3];
+  sfloat sdir[3];
 };
 
 }

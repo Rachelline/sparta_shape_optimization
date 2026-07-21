@@ -1,3 +1,4 @@
+/* AD-CONVERTED: double->sfloat by tools/ad_convert.py (see sfloat.h) */
 /* ----------------------------------------------------------------------
    SPARTA - Stochastic PArallel Rarefied-gas Time-accurate Analyzer
    http://sparta.github.io
@@ -96,7 +97,7 @@ ComputeCount::ComputeCount(SPARTA *sparta, int narg, char **arg) :
   else {
     vector_flag = 1;
     size_vector = nvalues;
-    vector = new double[nvalues];
+    vector = new sfloat[nvalues];
     onevec = new bigint[nvalues];
     sumvec = new bigint[nvalues];
   }
@@ -155,7 +156,7 @@ void ComputeCount::init()
 
 /* ---------------------------------------------------------------------- */
 
-double ComputeCount::compute_scalar()
+sfloat ComputeCount::compute_scalar()
 {
   invoked_scalar = update->ntimestep;
 

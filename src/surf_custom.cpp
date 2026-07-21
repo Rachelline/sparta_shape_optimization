@@ -1,3 +1,4 @@
+/* AD-CONVERTED: double->sfloat by tools/ad_convert.py (see sfloat.h) */
 /* ----------------------------------------------------------------------
    SPARTA - Stochastic PArallel Rarefied-gas Time-accurate Analyzer
    http://sparta.github.io
@@ -38,7 +39,7 @@ int Surf::find_custom(char *name)
 /* ----------------------------------------------------------------------
    add a custom attribute with name
    assumes name does not already exist, else error
-   type = 0/1 for int/double
+   type = 0/1 for int/sfloat
    size = 0 for vector, size > 0 for array with size columns
    return index of its location
 ------------------------------------------------------------------------- */
@@ -108,20 +109,20 @@ int Surf::add_custom(char *name, int type, int size)
   } else if (type == DOUBLE) {
     if (size == 0) {
       ewhich[index] = ncustom_dvec++;
-      edvec = (double **)
-        memory->srealloc(edvec,ncustom_dvec*sizeof(double *),"surf:edvec");
-      edvec_local = (double **)
-        memory->srealloc(edvec_local,ncustom_dvec*sizeof(double *),
+      edvec = (sfloat **)
+        memory->srealloc(edvec,ncustom_dvec*sizeof(sfloat *),"surf:edvec");
+      edvec_local = (sfloat **)
+        memory->srealloc(edvec_local,ncustom_dvec*sizeof(sfloat *),
                          "surf:edvec_local");
       memory->grow(icustom_dvec,ncustom_dvec,"surf:icustom_dvec");
       icustom_dvec[ncustom_dvec-1] = index;
     } else {
       ewhich[index] = ncustom_darray++;
-      edarray = (double ***)
-        memory->srealloc(edarray,ncustom_darray*sizeof(double **),
+      edarray = (sfloat ***)
+        memory->srealloc(edarray,ncustom_darray*sizeof(sfloat **),
                          "surf:edarray");
-      edarray_local = (double ***)
-        memory->srealloc(edarray_local,ncustom_darray*sizeof(double **),
+      edarray_local = (sfloat ***)
+        memory->srealloc(edarray_local,ncustom_darray*sizeof(sfloat **),
                          "surf:edarray_local");
       memory->grow(icustom_darray,ncustom_darray,"surf:icustom_darray");
       icustom_darray[ncustom_darray-1] = index;
@@ -161,13 +162,13 @@ void Surf::allocate_custom(int index)
 
   } else {
     if (esize[index] == 0) {
-      double *dvector = memory->create(edvec[ewhich[index]],n,"surf:edvec");
-      if (dvector) memset(dvector,0,n*sizeof(double));
+      sfloat *dvector = memory->create(edvec[ewhich[index]],n,"surf:edvec");
+      if (dvector) memset(dvector,0,n*sizeof(sfloat));
       edvec_local[ewhich[index]] = NULL;
     } else {
-      double **darray = memory->create(edarray[ewhich[index]],
+      sfloat **darray = memory->create(edarray[ewhich[index]],
                                        n,edcol[ewhich[index]],"surf:eearray");
-      if (darray) memset(&darray[0][0],0,n*edcol[ewhich[index]]*sizeof(double));
+      if (darray) memset(&darray[0][0],0,n*edcol[ewhich[index]]*sizeof(sfloat));
       edarray_local[ewhich[index]] = NULL;
     }
   }
@@ -203,13 +204,13 @@ void Surf::reallocate_custom()
 
     } else {
       if (esize[index] == 0) {
-        double *dvector = memory->grow(edvec[ewhich[index]],nnew,"surf:edvec");
-        if (nnew > nold) memset(&dvector[nold],0,(nnew-nold)*sizeof(double));
+        sfloat *dvector = memory->grow(edvec[ewhich[index]],nnew,"surf:edvec");
+        if (nnew > nold) memset(&dvector[nold],0,(nnew-nold)*sizeof(sfloat));
       } else {
-        double **darray = memory->grow(edarray[ewhich[index]],
+        sfloat **darray = memory->grow(edarray[ewhich[index]],
                                        nnew,edcol[ewhich[index]],"surf:eearray");
         if (nnew > nold)
-          memset(darray[nold],0,(nnew-nold)*edcol[ewhich[index]]*sizeof(double));
+          memset(darray[nold],0,(nnew-nold)*edcol[ewhich[index]]*sizeof(sfloat));
       }
     }
   }
@@ -348,7 +349,7 @@ void Surf::spread_custom(int index)
         else edarray_local[ewhich[index]] = NULL;
       }
 
-      double *in,*out;
+      sfloat *in,*out;
       if (nown == 0) in = NULL;
       else in = &edarray[ewhich[index]][0][0];
       if (size_custom_local[index] == 0) out = NULL;
@@ -387,7 +388,7 @@ void Surf::spread_inverse_custom(int index)
                        &edvec[ewhich[index]]);
 
     } else if (esize[index]) {
-      double *in,*out;
+      sfloat *in,*out;
       if (nown == 0) in = NULL;
       else in = &edarray_local[ewhich[index]][0][0];
       if (size_custom_local[index] == 0) out = NULL;
@@ -406,7 +407,7 @@ void Surf::spread_inverse_custom(int index)
    called by RemoveSurf
 ------------------------------------------------------------------------- */
 
-int Surf::extract_custom(double **&cvalues)
+int Surf::extract_custom(sfloat **&cvalues)
 {
   int i,j;
 
@@ -451,12 +452,12 @@ int Surf::extract_custom(double **&cvalues)
 
     } else if (etype[ic] == DOUBLE) {
       if (esize[ic] == 0) {
-        double *dvector = edvec[ewhich[ic]];
+        sfloat *dvector = edvec[ewhich[ic]];
         for (i = 0; i < nown; i++)
           cvalues[i][m] = dvector[i];
         m++;
       } else {
-        double **darray = edarray[ewhich[ic]];
+        sfloat **darray = edarray[ewhich[ic]];
         int n = esize[ic];
         for (i = 0; i < nown; i++)
           for (j = 0; j < n; j++)
@@ -582,10 +583,10 @@ int Surf::sizeof_custom()
 
   n = IROUNDUP(n);
 
-  n += ncustom_dvec*sizeof(double);
+  n += ncustom_dvec*sizeof(sfloat);
   if (ncustom_darray)
     for (int i = 0; i < ncustom_darray; i++)
-      n += edcol[i]*sizeof(double);
+      n += edcol[i]*sizeof(sfloat);
 
   return n;
 }
@@ -617,14 +618,14 @@ int Surf::pack_custom(int isurf, char *buf)
 
   if (ncustom_dvec) {
     for (i = 0; i < ncustom_dvec; i++) {
-      memcpy(ptr,&edvec[i][isurf],sizeof(double));
-      ptr += sizeof(double);
+      memcpy(ptr,&edvec[i][isurf],sizeof(sfloat));
+      ptr += sizeof(sfloat);
     }
   }
   if (ncustom_darray) {
     for (i = 0; i < ncustom_darray; i++) {
-      memcpy(ptr,edarray[i][isurf],edcol[i]*sizeof(double));
-      ptr += edcol[i]*sizeof(double);
+      memcpy(ptr,edarray[i][isurf],edcol[i]*sizeof(sfloat));
+      ptr += edcol[i]*sizeof(sfloat);
     }
   }
 
@@ -636,7 +637,7 @@ int Surf::pack_custom(int isurf, char *buf)
    this is done in order of 4 styles of vectors/arrays, not in ncustom order
 ------------------------------------------------------------------------- */
 
-int Surf::unpack_custom(char *buf, double *custom)
+int Surf::unpack_custom(char *buf, sfloat *custom)
 {
   int i,j;
   char *ptr = buf;
@@ -663,19 +664,19 @@ int Surf::unpack_custom(char *buf, double *custom)
   ptr = ROUNDUP(ptr);
 
   if (ncustom_dvec) {
-    double *dbuf = (double *) ptr;
+    sfloat *dbuf = (sfloat *) ptr;
     for (i = 0; i < ncustom_dvec; i++) {
       custom[ic++] = dbuf[i];
-      ptr += sizeof(double);
+      ptr += sizeof(sfloat);
     }
   }
   if (ncustom_darray) {
-    double *dbuf = (double *) ptr;
+    sfloat *dbuf = (sfloat *) ptr;
     int m = 0;
     for (i = 0; i < ncustom_darray; i++) {
       for (j = 0; j < edcol[i]; j++)
         custom[ic++] = dbuf[m++];
-      ptr += edcol[i]*sizeof(double);
+      ptr += edcol[i]*sizeof(sfloat);
     }
   }
 

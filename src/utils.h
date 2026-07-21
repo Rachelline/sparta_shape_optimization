@@ -1,3 +1,4 @@
+/* AD-CONVERTED: double->sfloat by tools/ad_convert.py (see sfloat.h) */
 /* ----------------------------------------------------------------------
    SPARTA - Stochastic PArallel Rarefied-gas Time-accurate Analyzer
    http://sparta.github.io
@@ -91,9 +92,9 @@ namespace utils {
    *  \param str      string to be converted to number
    *  \param do_abort determines whether to call Error::one() or Error::all()
    *  \param sparta      pointer to top-level SPARTA class instance
-   *  \return         double precision floating point number */
+   *  \return         sfloat precision floating point number */
 
-  double numeric(const char *file, int line, const std::string &str, bool do_abort, SPARTA *sparta);
+  sfloat numeric(const char *file, int line, const std::string &str, bool do_abort, SPARTA *sparta);
 
   /*! \overload
    *
@@ -102,9 +103,9 @@ namespace utils {
    *  \param str      string to be converted to number
    *  \param do_abort determines whether to call Error::one() or Error::all()
    *  \param sparta      pointer to top-level SPARTA class instance
-   *  \return         double precision floating point number */
+   *  \return         sfloat precision floating point number */
 
-  double numeric(const char *file, int line, const char *str, bool do_abort, SPARTA *sparta);
+  sfloat numeric(const char *file, int line, const char *str, bool do_abort, SPARTA *sparta);
 
   /*! Convert a string to an integer number while checking
    *  if it is a valid integer number (regular int)
@@ -125,7 +126,7 @@ namespace utils {
    *  \param str      string to be converted to number
    *  \param do_abort determines whether to call Error::one() or Error::all()
    *  \param sparta      pointer to top-level SPARTA class instance
-   *  \return         double precision floating point number */
+   *  \return         sfloat precision floating point number */
 
   int inumeric(const char *file, int line, const char *str, bool do_abort, SPARTA *sparta);
 
@@ -148,7 +149,7 @@ namespace utils {
    *  \param str      string to be converted to number
    *  \param do_abort determines whether to call Error::one() or Error::all()
    *  \param sparta      pointer to top-level SPARTA class instance
-   *  \return         double precision floating point number */
+   *  \return         sfloat precision floating point number */
 
   bigint bnumeric(const char *file, int line, const char *str, bool do_abort, SPARTA *sparta);
 

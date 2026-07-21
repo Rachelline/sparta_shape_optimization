@@ -1,3 +1,4 @@
+/* AD-CONVERTED: double->sfloat by tools/ad_convert.py (see sfloat.h) */
 /* ----------------------------------------------------------------------
    SPARTA - Stochastic PArallel Rarefied-gas Time-accurate Analyzer
    http://sparta.github.io
@@ -34,8 +35,8 @@ class FixAveHisto : public Fix {
   void init();
   void setup();
   virtual void end_of_step();
-  double compute_vector(int);
-  double compute_array(int,int);
+  sfloat compute_vector(int);
+  sfloat compute_array(int,int);
 
  protected:
   int me,nvalues;
@@ -44,21 +45,21 @@ class FixAveHisto : public Fix {
   int *which,*argindex,*value2index;
   char **ids;
   FILE *fp;
-  double lo,hi,binsize,bininv;
+  sfloat lo,hi,binsize,bininv;
   int regionflag,mixflag,groupflag;
   int iregion,imix,groupbit;
   int kind,beyond,overwrite;
   long filepos;
 
-  double stats[4],stats_total[4],stats_all[4];
-  double **stats_list;
+  sfloat stats[4],stats_total[4],stats_all[4];
+  sfloat **stats_list;
 
   int nbins;
-  double *bin,*bin_total,*bin_all;
-  double **bin_list;
-  double *coord;
+  sfloat *bin,*bin_total,*bin_all;
+  sfloat **bin_list;
+  sfloat *coord;
 
-  double *vector;
+  sfloat *vector;
   int maxvector;
 
   int ave,nwindow,startstep,mode;
@@ -68,18 +69,18 @@ class FixAveHisto : public Fix {
   // data used by ave/histo/weight
 
   int weightflag;
-  double weight;
-  double *weights;
-  double *vectorwt;
+  sfloat weight;
+  sfloat *weights;
+  sfloat *vectorwt;
   int maxvectorwt;
 
   // methods
 
-  virtual void bin_one(double);
-  virtual void bin_vector(int, double *, int);
+  virtual void bin_one(sfloat);
+  virtual void bin_vector(int, sfloat *, int);
   virtual void bin_particles(int, int);
-  virtual void bin_particles(double *, int);
-  virtual void bin_grid_cells(double *, int);
+  virtual void bin_particles(sfloat *, int);
+  virtual void bin_grid_cells(sfloat *, int);
 
   virtual void calculate_weights() {}
 

@@ -1,3 +1,4 @@
+/* AD-CONVERTED: double->sfloat by tools/ad_convert.py (see sfloat.h) */
 /* ----------------------------------------------------------------------
    SPARTA - Stochastic PArallel Rarefied-gas Time-accurate Analyzer
    http://sparta.github.io
@@ -35,7 +36,7 @@ class Input : protected Pointers {
                                  // substitute for variables in a string
   int expand_args(int, char **, int, char **&);  // expand args due to wildcard
 
-  double numeric(const char *, int, const char *);    // arg checking
+  sfloat numeric(const char *, int, const char *);    // arg checking
   int inumeric(const char *, int, char *);
   bigint bnumeric(const char *, int, char *);
   void bounds(char *, int, int &, int &, int nmin=1);
@@ -140,7 +141,7 @@ Self-explanatory.
 
 E: Unbalanced quotes in input line
 
-No matching end double quote was found following a leading double
+No matching end sfloat quote was found following a leading sfloat
 quote.
 
 E: Input line quote not followed by whitespace

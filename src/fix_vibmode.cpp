@@ -1,3 +1,4 @@
+/* AD-CONVERTED: double->sfloat by tools/ad_convert.py (see sfloat.h) */
 /* ----------------------------------------------------------------------
    SPARTA - Stochastic PArallel Rarefied-gas Time-accurate Analyzer
    http://sparta.github.io
@@ -41,7 +42,7 @@ FixVibmode::FixVibmode(SPARTA *sparta, int narg, char **arg) :
   // random = RNG for vibrational mode initialization
 
   random = new RanKnuth(update->ranmaster->uniform());
-  double seed = update->ranmaster->uniform();
+  sfloat seed = update->ranmaster->uniform();
   random->reset(seed,comm->me,100);
 
   // create per-particle array
@@ -103,9 +104,9 @@ void FixVibmode::init()
    populate all vibrational modes and set evib = sum of mode energies
 ------------------------------------------------------------------------- */
 
-void FixVibmode::update_custom(int index, double temp_thermal,
-                               double temp_rot, double temp_vib,
-                               double *vstream)
+void FixVibmode::update_custom(int index, sfloat temp_thermal,
+                               sfloat temp_rot, sfloat temp_vib,
+                               sfloat *vstream)
 {
   int **vibmode = particle->eiarray[particle->ewhich[vibmodeindex]];
 
@@ -130,7 +131,7 @@ void FixVibmode::update_custom(int index, double temp_thermal,
   // accumlate new total evib
 
   int ivib;
-  double evib = 0.0;
+  sfloat evib = 0.0;
 
   for (int imode = 0; imode < nmode; imode++) {
     ivib = static_cast<int> (-log(random->uniform()) * temp_vib /

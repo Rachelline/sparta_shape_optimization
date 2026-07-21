@@ -1,3 +1,4 @@
+/* AD-CONVERTED: double->sfloat by tools/ad_convert.py (see sfloat.h) */
 /* ----------------------------------------------------------------------
    SPARTA - Stochastic PArallel Rarefied-gas Time-accurate Analyzer
    http://sparta.github.io
@@ -31,12 +32,12 @@ class CreateParticles : protected Pointers {
   CreateParticles(class SPARTA *);
   void command(int, char **);
   int evib(int);
-  double erot(int);
+  sfloat erot(int);
 
  protected:
   int imix,single,cutflag,mspecies,twopass;
   bigint np;
-  double xp,yp,zp,vx,vy,vz;
+  sfloat xp,yp,zp,vx,vy,vz;
   class Region *region;
 
   int nrho_flag,temp_flag,vstream_flag,species_flag;
@@ -58,18 +59,18 @@ class CreateParticles : protected Pointers {
   int nrho_custom_flag,vstream_custom_flag,temp_custom_flag,fractions_custom_flag;
   char *nrho_custom_id,*vstream_custom_id,*temp_custom_id,*fractions_custom_id;
   int nrho_custom_index,vstream_custom_index,temp_custom_index,fractions_custom_index;
-  double *nrho_custom,*temp_custom;
-  double **vstream_custom,**fractions_custom;
+  sfloat *nrho_custom,*temp_custom;
+  sfloat **vstream_custom,**fractions_custom;
 
   virtual void create_single();
   void create_local();
   void create_local_twopass();
-  int species_variable(double *);
-  double nrho_variable(double *, double *);
-  double temperature_variable(double *);
-  void vstream_variable(double *, double *, double *);
-  int outside_region(int, double *, double *);
-  void fractions_to_cummulative(int, double *, double *);
+  int species_variable(sfloat *);
+  sfloat nrho_variable(sfloat *, sfloat *);
+  sfloat temperature_variable(sfloat *);
+  void vstream_variable(sfloat *, sfloat *, sfloat *);
+  int outside_region(int, sfloat *, sfloat *);
+  void fractions_to_cummulative(int, sfloat *, sfloat *);
 };
 
 }

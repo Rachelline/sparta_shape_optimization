@@ -1,3 +1,4 @@
+/* AD-CONVERTED: double->sfloat by tools/ad_convert.py (see sfloat.h) */
 /* ----------------------------------------------------------------------
    SPARTA - Stochastic PArallel Rarefied-gas Time-accurate Analyzer
    http://sparta.github.io
@@ -321,7 +322,7 @@ char *Input::one(const char *single)
    command = first word
    narg = # of args
    arg[] = individual args
-   treat text between single/double/triple quotes as one arg via nextword()
+   treat text between single/sfloat/triple quotes as one arg via nextword()
 ------------------------------------------------------------------------- */
 
 void Input::parse()
@@ -333,7 +334,7 @@ void Input::parse()
   strcpy(copy,line);
 
   // strip a # comment by replacing it with 0
-  // do not treat a # inside single/double/triple quotes as a comment
+  // do not treat a # inside single/sfloat/triple quotes as a comment
 
   char *ptrmatch;
   char *ptr = copy;
@@ -357,7 +358,7 @@ void Input::parse()
       } else {
         ptrmatch = strchr(ptr+1,'"');
         if (ptrmatch == nullptr)
-          error->all(FLERR,"Unmatched double quote in command");
+          error->all(FLERR,"Unmatched sfloat quote in command");
         ptr = ptrmatch + 1;
       }
     } else ptr++;
@@ -376,7 +377,7 @@ void Input::parse()
 
   // point arg[] at each subsequent arg in copy string
   // nextword() inserts string terminators into copy string to delimit args
-  // nextword() treats text between single/double quotes as one arg
+  // nextword() treats text between single/sfloat quotes as one arg
 
   narg = 0;
   ptr = next;
@@ -396,7 +397,7 @@ void Input::parse()
    find next word in str
    insert 0 at end of word
    ignore leading whitespace
-   treat text between single/double/triple quotes as one arg
+   treat text between single/sfloat/triple quotes as one arg
    matching quote must be followed by whitespace char if not end of string
    strip quotes from returned word
    return ptr to start of word or null pointer if no word in string
@@ -412,12 +413,12 @@ char *Input::nextword(char *str, char **next)
   start = &str[strspn(str," \t\n\v\f\r")];
   if (*start == '\0') return nullptr;
 
-  // if start is single/double/triple quote:
+  // if start is single/sfloat/triple quote:
   //   start = first char beyond quote
   //   stop = first char of matching quote
   //   next = first char beyond matching quote
   //   next must be null char or whitespace
-  // if start is not single/double/triple quote:
+  // if start is not single/sfloat/triple quote:
   //   stop = first whitespace char after start
   //   next = char after stop, or stop itself if stop is null char
 
@@ -458,7 +459,7 @@ void Input::substitute(char *&str, char *&str2, int &max, int &max2, int flag)
 {
   // use str2 as scratch space to expand str, then copy back to str
   // reallocate str and str2 as necessary
-  // do not replace $ inside single/double/triple quotes
+  // do not replace $ inside single/sfloat/triple quotes
   // var = pts at variable name, ended by NULL
   //   if $ is followed by '{', trailing '}' becomes NULL
   //   else $x becomes x followed by NULL
@@ -546,7 +547,7 @@ void Input::substitute(char *&str, char *&str2, int &max, int &max2, int flag)
         if (echo_log && logfile) fprintf(logfile,"%s%s\n",str2,beyond);
       }
 
-    // check for single/double/triple quotes and skip past them
+    // check for single/sfloat/triple quotes and skip past them
 
     } else if (*ptr == '\'') {
       ptrmatch = strchr(ptr+1,'\'');
@@ -568,7 +569,7 @@ void Input::substitute(char *&str, char *&str2, int &max, int &max2, int flag)
       } else {
         ptrmatch = strchr(ptr+1,'"');
         if (ptrmatch == nullptr)
-          error->all(FLERR,"Unmatched double quote in command");
+          error->all(FLERR,"Unmatched sfloat quote in command");
         nchars = ptrmatch+1 - ptr;
         strncpy(ptr2,ptr,nchars);
         ptr += nchars;
@@ -982,7 +983,7 @@ void Input::ifthenelse()
 
   // evaluate Boolean expression for "if"
 
-  double btest = variable->evaluate_boolean(line);
+  sfloat btest = variable->evaluate_boolean(line);
 
   // bound "then" commands
 
@@ -1661,7 +1662,7 @@ void Input::surf_react()
 void Input::timestep()
 {
   if (narg != 1) error->all(FLERR,"Illegal timestep command");
-  double dt = atof(arg[0]);
+  sfloat dt = atof(arg[0]);
   if (dt <= 0.0) error->all(FLERR,"Illegal timestep command");
   update->dt = dt;
 }
@@ -1710,7 +1711,7 @@ void Input::units()
    called by various commands to check validity of their arguments
 ------------------------------------------------------------------------- */
 
-double Input::numeric(const char *file, int line, const char *str)
+sfloat Input::numeric(const char *file, int line, const char *str)
 {
   if (!str)
     error->all(file,line,"Expected floating point parameter "

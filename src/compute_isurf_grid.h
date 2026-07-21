@@ -1,3 +1,4 @@
+/* AD-CONVERTED: double->sfloat by tools/ad_convert.py (see sfloat.h) */
 /* ----------------------------------------------------------------------
    SPARTA - Stochastic PArallel Rarefied-gas Time-accurate Analyzer
    http://sparta.github.io
@@ -35,7 +36,7 @@ class ComputeISurfGrid : public Compute {
   virtual void init();
   void compute_per_grid();
   virtual void clear();
-  virtual void surf_tally(double, int, int, int, Particle::OnePart *,
+  virtual void surf_tally(sfloat, int, int, int, Particle::OnePart *,
                           Particle::OnePart *, Particle::OnePart *);
   virtual int tallyinfo(surfint *&);
   void post_process_isurf_grid();
@@ -45,7 +46,7 @@ class ComputeISurfGrid : public Compute {
  protected:
   int groupbit,imix,nvalue,ngroup,ntotal;
   int maxgrid,combined;
-  double nfactor_inverse;
+  sfloat nfactor_inverse;
   int *which;
 
   int ntally;              // # of surfs I have tallied for
@@ -70,8 +71,8 @@ class ComputeISurfGrid : public Compute {
   Surf::Tri *tris;
 
   int weightflag;          // 1 if cell weighting is enabled
-  double weight;           // particle weight, based on initial cell
-  double *normflux;        // normalization factor for each surf element
+  sfloat weight;           // particle weight, based on initial cell
+  sfloat *normflux;        // normalization factor for each surf element
 
   void init_normflux();
   void grow_tally();

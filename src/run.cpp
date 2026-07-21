@@ -1,3 +1,4 @@
+/* AD-CONVERTED: double->sfloat by tools/ad_convert.py (see sfloat.h) */
 /* ----------------------------------------------------------------------
    SPARTA - Stochastic PArallel Rarefied-gas Time-accurate Analyzer
    http://sparta.github.io
@@ -190,7 +191,7 @@ void Run::command(int narg, char **arg)
   } else {
     int iter = 0;
     int nleft = nsteps;
-    double time_multiple_runs = 0.0;
+    sfloat time_multiple_runs = 0.0;
 
     while (nleft > 0 || iter == 0) {
       nsteps = MIN(nleft,nevery);

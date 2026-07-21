@@ -1,3 +1,4 @@
+/* AD-CONVERTED: double->sfloat by tools/ad_convert.py (see sfloat.h) */
 /* ----------------------------------------------------------------------
    SPARTA - Stochastic PArallel Rarefied-gas Time-accurate Analyzer
    http://sparta.github.io
@@ -24,17 +25,17 @@ namespace SPARTA_NS {
 class Image : protected Pointers {
  public:
   int width,height;             // size of image
-  double theta,phi;             // view image from theta,phi
-  double xctr,yctr,zctr;        // center of image in user coords
-  double up[3];                 // up direction in image
-  double zoom;                  // zoom factor
-  double persp;                 // perspective factor
-  double shiny;                 // shininess of objects
+  sfloat theta,phi;             // view image from theta,phi
+  sfloat xctr,yctr,zctr;        // center of image in user coords
+  sfloat up[3];                 // up direction in image
+  sfloat zoom;                  // zoom factor
+  sfloat persp;                 // perspective factor
+  sfloat shiny;                 // shininess of objects
   int ssao;                     // SSAO on or off
   int seed;                     // RN seed for SSAO
-  double ssaoint;               // strength of shading from 0 to 1
-  double *boxcolor;             // color to draw box outline with
-  double *gridcolor;            // color to draw grid lines with
+  sfloat ssaoint;               // strength of shading from 0 to 1
+  sfloat *boxcolor;             // color to draw box outline with
+  sfloat *gridcolor;            // color to draw grid lines with
   int background[3];            // RGB values of background
 
   Image(class SPARTA *, int);
@@ -45,26 +46,26 @@ class Image : protected Pointers {
   void write_JPG(FILE *);
   void write_PNG(FILE *);
   void write_PPM(FILE *);
-  void view_params(double, double, double, double, double, double);
+  void view_params(sfloat, sfloat, sfloat, sfloat, sfloat, sfloat);
 
-  void draw_line(double *, double *, double *, double);
-  void draw_box(double (*)[3], double *, double);
-  void draw_box2d(double (*)[3], double *, double);
-  void draw_axes(double (*)[3], double);
-  void draw_sphere(double *, double *, double);
-  void draw_brick(double *, double *, double *);
-  void draw_cylinder(double *, double *, double *, double, int);
-  void draw_triangle(double *, double *, double *, double *);
+  void draw_line(sfloat *, sfloat *, sfloat *, sfloat);
+  void draw_box(sfloat (*)[3], sfloat *, sfloat);
+  void draw_box2d(sfloat (*)[3], sfloat *, sfloat);
+  void draw_axes(sfloat (*)[3], sfloat);
+  void draw_sphere(sfloat *, sfloat *, sfloat);
+  void draw_brick(sfloat *, sfloat *, sfloat *);
+  void draw_cylinder(sfloat *, sfloat *, sfloat *, sfloat, int);
+  void draw_triangle(sfloat *, sfloat *, sfloat *, sfloat *);
 
   int map_dynamic(int);
   int map_reset(int, int, char **);
-  int map_minmax(int, double, double);
-  double *map_value2color(int, double);
+  int map_minmax(int, sfloat, sfloat);
+  sfloat *map_value2color(int, sfloat);
 
-  int addcolor(char *, double, double, double);
-  double *element2color(char *);
-  double element2diam(char *);
-  double *color2rgb(const char *, int index=0);
+  int addcolor(char *, sfloat, sfloat, sfloat);
+  sfloat *element2color(char *);
+  sfloat element2diam(char *);
+  sfloat *color2rgb(const char *, int index=0);
   int default_colors();
 
  private:
@@ -74,8 +75,8 @@ class Image : protected Pointers {
   class ColorMap **maps;
   int nmap;
 
-  double *depthBuffer,*surfaceBuffer;
-  double *depthcopy,*surfacecopy;
+  sfloat *depthBuffer,*surfaceBuffer;
+  sfloat *depthcopy,*surfacecopy;
   char *imageBuffer,*rgbcopy,*writeBuffer;
 
   // MPI_Gatherv
@@ -84,53 +85,53 @@ class Image : protected Pointers {
 
   // constant view params
 
-  double FOV;
-  double ambientColor[3];
+  sfloat FOV;
+  sfloat ambientColor[3];
 
-  double keyLightTheta;
-  double keyLightPhi;
-  double keyLightColor[3];
+  sfloat keyLightTheta;
+  sfloat keyLightPhi;
+  sfloat keyLightColor[3];
 
-  double fillLightTheta;
-  double fillLightPhi;
-  double fillLightColor[3];
+  sfloat fillLightTheta;
+  sfloat fillLightPhi;
+  sfloat fillLightColor[3];
 
-  double backLightTheta;
-  double backLightPhi;
-  double backLightColor[3];
+  sfloat backLightTheta;
+  sfloat backLightPhi;
+  sfloat backLightColor[3];
 
-  double specularHardness;
-  double specularIntensity;
+  sfloat specularHardness;
+  sfloat specularIntensity;
 
-  double SSAORadius;
+  sfloat SSAORadius;
   int SSAOSamples;
-  double SSAOJitter;
+  sfloat SSAOJitter;
 
   // dynamic view params
 
-  double zdist;
-  double tanPerPixel;
-  double camDir[3],camUp[3],camRight[4],camPos[3];
-  double keyLightDir[3],fillLightDir[3],backLightDir[3];
-  double keyHalfDir[3];
+  sfloat zdist;
+  sfloat tanPerPixel;
+  sfloat camDir[3],camUp[3],camRight[4],camPos[3];
+  sfloat keyLightDir[3],fillLightDir[3],backLightDir[3];
+  sfloat keyHalfDir[3];
 
   // color values
 
   int ncolors;
   char **username;
-  double **userrgb;
+  sfloat **userrgb;
 
   // color maps
 
   struct MapEntry {
     int single,lo,hi;              // NUMERIC or MINVALUE or MAXVALUE
-    double svalue,lvalue,hvalue;   // actual value
-    double *color;                 // RGB values
+    sfloat svalue,lvalue,hvalue;   // actual value
+    sfloat *color;                 // RGB values
   };
 
   MapEntry *mentry;
   int nentry;
-  double interpolate[3];
+  sfloat interpolate[3];
 
   // SSAO RNG
 
@@ -138,18 +139,18 @@ class Image : protected Pointers {
 
   // internal methods
 
-  void draw_pixel(int, int, double, double *, double*);
+  void draw_pixel(int, int, sfloat, sfloat *, sfloat*);
   void compute_SSAO();
 
   // inline functions
 
-  inline double saturate(double v) {
+  inline sfloat saturate(sfloat v) {
     if (v < 0.0) return 0.0;
     else if (v > 1.0) return 1.0;
     else return v;
   }
 
-  inline double distance(double* a, double* b) {
+  inline sfloat distance(sfloat* a, sfloat* b) {
     return sqrt((a[0] - b[0]) * (a[0] - b[0]) +
                 (a[1] - b[1]) * (a[1] - b[1]) +
                 (a[2] - b[2]) * (a[2] - b[2]));
@@ -165,22 +166,22 @@ class ColorMap : protected Pointers {
   ColorMap(class SPARTA *, class Image*);
   ~ColorMap();
   int reset(int, char **);
-  int minmax(double, double);
-  double *value2color(double);
+  int minmax(sfloat, sfloat);
+  sfloat *value2color(sfloat);
 
  private:
   class Image *image;              // caller with color2rgb() method
   int mstyle,mrange;               // 2-letter style/range of color map
   int mlo,mhi;                     // bounds = NUMERIC or MINVALUE or MAXVALUE
-  double mlovalue,mhivalue;        // user bounds if NUMERIC
-  double locurrent,hicurrent;      // current bounds for this snapshot
-  double mbinsize,mbinsizeinv;     // bin size for sequential color map
-  double interpolate[3];           // local storage for returned RGB color
+  sfloat mlovalue,mhivalue;        // user bounds if NUMERIC
+  sfloat locurrent,hicurrent;      // current bounds for this snapshot
+  sfloat mbinsize,mbinsizeinv;     // bin size for sequential color map
+  sfloat interpolate[3];           // local storage for returned RGB color
 
   struct MapEntry {
     int single,lo,hi;              // NUMERIC or MINVALUE or MAXVALUE
-    double svalue,lvalue,hvalue;   // actual value
-    double *color;                 // RGB values
+    sfloat svalue,lvalue,hvalue;   // actual value
+    sfloat *color;                 // RGB values
   };
 
   MapEntry *mentry;

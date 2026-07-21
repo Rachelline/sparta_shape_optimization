@@ -1,3 +1,4 @@
+/* AD-CONVERTED: double->sfloat by tools/ad_convert.py (see sfloat.h) */
 /* ----------------------------------------------------------------------
    SPARTA - Stochastic PArallel Rarefied-gas Time-accurate Analyzer
    http://sparta.github.io
@@ -36,15 +37,15 @@ class FixAveHistoWeight : public FixAveHisto {
 
   // local method
 
-  void bin_one_weight(double, double);
+  void bin_one_weight(sfloat, sfloat);
 
   // override these methods from ave/histo to use weights
 
-  void bin_one(double);
-  void bin_vector(int, double *, int);
+  void bin_one(sfloat);
+  void bin_vector(int, sfloat *, int);
   void bin_particles(int, int);
-  void bin_particles(double *, int);
-  void bin_grid_cells(double *, int);
+  void bin_particles(sfloat *, int);
+  void bin_grid_cells(sfloat *, int);
 
   void calculate_weights();
 };

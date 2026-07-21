@@ -1,3 +1,4 @@
+/* AD-CONVERTED: double->sfloat by tools/ad_convert.py (see sfloat.h) */
 /* ----------------------------------------------------------------------
    SPARTA - Stochastic PArallel Rarefied-gas Time-accurate Analyzer
    http://sparta.github.io
@@ -41,16 +42,16 @@ class Variable : protected Pointers {
   int internal_style(int);
 
   char *retrieve(char *);
-  double compute_equal(int);
-  double compute_equal(char *);
-  void compute_particle(int, double *, int, int);
-  void compute_grid(int, double *, int, int);
-  void compute_surf(int, double *, int, int);
-  void internal_set(int, double);
-  void internal_create(char *, double);
+  sfloat compute_equal(int);
+  sfloat compute_equal(char *);
+  void compute_particle(int, sfloat *, int, int);
+  void compute_grid(int, sfloat *, int, int);
+  void compute_surf(int, sfloat *, int, int);
+  void internal_set(int, sfloat);
+  void internal_create(char *, sfloat);
 
   int int_between_brackets(char *&, int, const char * = "variable");
-  double evaluate_boolean(char *);
+  sfloat evaluate_boolean(char *);
 
  protected:
   int me;
@@ -64,7 +65,7 @@ class Variable : protected Pointers {
   int *pyindex;                // indices to Python funcs for python-style vars
   class VarReader **reader;   // variable that reads from file
   char ***data;            // str value of each variable's values
-  double *dvalue;          // single numeric value for internal variables
+  sfloat *dvalue;          // single numeric value for internal variables
 
   int *eval_in_progress;   // flag if evaluation of variable is in progress
 
@@ -79,12 +80,12 @@ class Variable : protected Pointers {
                            // local copies of compute vector_grid vectors
   int nvec_storage;        // # of vectors currently stored locally
   int maxvec_storage;      // max # of vectors in vec_storage
-  double **vec_storage;    // list of vector copies
+  sfloat **vec_storage;    // list of vector copies
   int *maxlen_storage;     // allocated length of each vector
 
   struct Tree {            // parse tree for particle-style variables
-    double value;          // single scalar
-    double *array;         // ptr to vector of doubles with nstride
+    sfloat value;          // single scalar
+    sfloat *array;         // ptr to vector of doubles with nstride
     int *iarray;           // ptr to vector of integers with nstride
     char *carray;          // ptr into data struct with nstride = sizeof(struct)
     int type;              // operation, see enum{} in variable.cpp
@@ -106,25 +107,25 @@ class Variable : protected Pointers {
   void remove(int);
   void grow();
   void copy(int, char **, char **);
-  virtual double evaluate(char *, Tree **);
-  double collapse_tree(Tree *);
-  virtual double eval_tree(Tree *, int);
+  virtual sfloat evaluate(char *, Tree **);
+  sfloat collapse_tree(Tree *);
+  virtual sfloat eval_tree(Tree *, int);
   void free_tree(Tree *);
   int find_matching_paren(char *, int, char *&);
-  int math_function(char *, char *, Tree **, Tree **, int &, double *, int &);
+  int math_function(char *, char *, Tree **, Tree **, int &, sfloat *, int &);
   int special_function(char *, char *, Tree **, Tree **,
-                       int &, double *, int &);
+                       int &, sfloat *, int &);
 
   int is_particle_vector(char *);
   virtual void particle_vector(char *, Tree **, Tree **, int &);
   int is_grid_vector(char *);
   virtual void grid_vector(char *, Tree **, Tree **, int &);
   int is_constant(char *);
-  double constant(char *);
+  sfloat constant(char *);
   int parse_args(char *, char **);
   char *find_next_comma(char *);
   void print_tree(Tree *, int);
-  double *add_storage(double *);
+  sfloat *add_storage(sfloat *);
 };
 
 class VarReader : protected Pointers {

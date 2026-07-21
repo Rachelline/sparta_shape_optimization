@@ -1,3 +1,4 @@
+/* AD-CONVERTED: double->sfloat by tools/ad_convert.py (see sfloat.h) */
 /* ----------------------------------------------------------------------
    SPARTA - Stochastic PArallel Rarefied-gas Time-accurate Analyzer
    http://sparta.github.io
@@ -210,7 +211,7 @@ void ComputeReactISurfGrid::clear()
      except sum tally to to per-grid-cell array_grid
 ------------------------------------------------------------------------- */
 
-void ComputeReactISurfGrid::surf_tally(double dtremain,
+void ComputeReactISurfGrid::surf_tally(sfloat dtremain,
                                        int isurf, int icell, int reaction,
                                        Particle::OnePart *iorig,
                                        Particle::OnePart *ip,
@@ -237,7 +238,7 @@ void ComputeReactISurfGrid::surf_tally(double dtremain,
   // grow tally list if needed
 
   int itally;
-  double *vec;
+  sfloat *vec;
 
   surfint surfID;
   if (dim == 2) surfID = lines[isurf].id;
@@ -332,7 +333,7 @@ void ComputeReactISurfGrid::post_process_isurf_grid()
     csubs = sinfo[cells[icell].isplit].csubs;
     for (int j = 0; j < nsplit; j++) {
       jcell = csubs[j];
-      memcpy(array_grid[jcell],array_grid[icell],ntotal*sizeof(double));
+      memcpy(array_grid[jcell],array_grid[icell],ntotal*sizeof(sfloat));
     }
   }
 }
@@ -353,8 +354,8 @@ void ComputeReactISurfGrid::grow_tally()
 bigint ComputeReactISurfGrid::memory_usage()
 {
   bigint bytes = 0;
-  bytes += ntotal*maxgrid * sizeof(double);     // array_grid
-  bytes += ntotal*maxtally * sizeof(double);    // array_surf_tally
+  bytes += ntotal*maxgrid * sizeof(sfloat);     // array_grid
+  bytes += ntotal*maxtally * sizeof(sfloat);    // array_surf_tally
   bytes += maxtally * sizeof(surfint);          // tally2surf
   return bytes;
 }

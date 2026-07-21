@@ -1,3 +1,4 @@
+/* AD-CONVERTED: double->sfloat by tools/ad_convert.py (see sfloat.h) */
 /* ----------------------------------------------------------------------
    SPARTA - Stochastic PArallel Rarefied-gas Time-accurate Analyzer
    http://sparta.github.io
@@ -35,7 +36,7 @@ class ComputeReactISurfGrid : public Compute {
   virtual void init();
   void compute_per_grid();
   virtual void clear();
-  virtual void surf_tally(double, int, int, int, Particle::OnePart *,
+  virtual void surf_tally(sfloat, int, int, int, Particle::OnePart *,
                           Particle::OnePart *, Particle::OnePart *);
   virtual int tallyinfo(surfint *&);
   void post_process_isurf_grid();

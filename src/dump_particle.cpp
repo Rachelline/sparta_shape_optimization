@@ -1,3 +1,4 @@
+/* AD-CONVERTED: double->sfloat by tools/ad_convert.py (see sfloat.h) */
 /* ----------------------------------------------------------------------
    SPARTA - Stochastic PArallel Rarefied-gas Time-accurate Analyzer
    http://sparta.github.io
@@ -284,12 +285,12 @@ void DumpParticle::header_binary(bigint ndump)
   fwrite(&update->ntimestep,sizeof(bigint),1,fp);
   fwrite(&ndump,sizeof(bigint),1,fp);
   fwrite(domain->bflag,6*sizeof(int),1,fp);
-  fwrite(&boxxlo,sizeof(double),1,fp);
-  fwrite(&boxxhi,sizeof(double),1,fp);
-  fwrite(&boxylo,sizeof(double),1,fp);
-  fwrite(&boxyhi,sizeof(double),1,fp);
-  fwrite(&boxzlo,sizeof(double),1,fp);
-  fwrite(&boxzhi,sizeof(double),1,fp);
+  fwrite(&boxxlo,sizeof(sfloat),1,fp);
+  fwrite(&boxxhi,sizeof(sfloat),1,fp);
+  fwrite(&boxylo,sizeof(sfloat),1,fp);
+  fwrite(&boxyhi,sizeof(sfloat),1,fp);
+  fwrite(&boxzlo,sizeof(sfloat),1,fp);
+  fwrite(&boxzhi,sizeof(sfloat),1,fp);
   fwrite(&size_one,sizeof(int),1,fp);
   if (multiproc) fwrite(&nclusterprocs,sizeof(int),1,fp);
   else fwrite(&nprocs,sizeof(int),1,fp);
@@ -379,8 +380,8 @@ int DumpParticle::count()
   if (nthresh) {
     int ptrstyle,nstride;
     int *iptr;
-    double *ptr;
-    double value;
+    sfloat *ptr;
+    sfloat value;
 
     Particle::OnePart *particles = particle->particles;
     int nlocal = particle->nlocal;
@@ -421,22 +422,22 @@ int DumpParticle::count()
         nstride = 1;
 
       } else if (thresh_array[ithresh] == XS) {
-        double boxxlo = domain->boxlo[0];
-        double invxprd = 1.0/domain->xprd;
+        sfloat boxxlo = domain->boxlo[0];
+        sfloat invxprd = 1.0/domain->xprd;
         for (i = 0; i < nlocal; i++)
           dchoose[i] = (particles[i].x[0] - boxxlo) * invxprd;
         ptr = dchoose;
         nstride = 1;
       } else if (thresh_array[ithresh] == YS) {
-        double boxylo = domain->boxlo[1];
-        double invyprd = 1.0/domain->yprd;
+        sfloat boxylo = domain->boxlo[1];
+        sfloat invyprd = 1.0/domain->yprd;
         for (i = 0; i < nlocal; i++)
           dchoose[i] = (particles[i].x[1] - boxylo) * invyprd;
         ptr = dchoose;
         nstride = 1;
       } else if (thresh_array[ithresh] == ZS) {
-        double boxzlo = domain->boxlo[2];
-        double invzprd = 1.0/domain->zprd;
+        sfloat boxzlo = domain->boxlo[2];
+        sfloat invzprd = 1.0/domain->zprd;
         for (i = 0; i < nlocal; i++)
           dchoose[i] = (particles[i].x[2] - boxzlo) * invzprd;
         ptr = dchoose;
@@ -458,8 +459,8 @@ int DumpParticle::count()
       } else if (thresh_array[ithresh] == KE) {
         Particle::Species *species = particle->species;
         Particle::OnePart *p;
-        double *v;
-        double mvv2e = update->mvv2e;
+        sfloat *v;
+        sfloat mvv2e = update->mvv2e;
         for (i = 0; i < nlocal; i++) {
           p = &particles[i];
           v = p->v;
@@ -496,7 +497,7 @@ int DumpParticle::count()
             ptr = particle->edvec[particle->ewhich[index]];
             nstride = 1;
           } else {
-            double **ptrtmp = particle->edarray[particle->ewhich[index]];
+            sfloat **ptrtmp = particle->edarray[particle->ewhich[index]];
             if (ptrtmp) ptr = &ptrtmp[0][0];
             else ptr = NULL;
             nstride = particle->esize[index];
@@ -598,30 +599,30 @@ void DumpParticle::pack()
 
 /* ---------------------------------------------------------------------- */
 
-void DumpParticle::write_data(int n, double *mybuf)
+void DumpParticle::write_data(int n, sfloat *mybuf)
 {
   (this->*write_choice)(n,mybuf);
 }
 
 /* ---------------------------------------------------------------------- */
 
-void DumpParticle::write_binary(int n, double *mybuf)
+void DumpParticle::write_binary(int n, sfloat *mybuf)
 {
   n *= size_one;
   fwrite(&n,sizeof(int),1,fp);
-  fwrite(mybuf,sizeof(double),n,fp);
+  fwrite(mybuf,sizeof(sfloat),n,fp);
 }
 
 /* ---------------------------------------------------------------------- */
 
-void DumpParticle::write_string(int n, double *mybuf)
+void DumpParticle::write_string(int n, sfloat *mybuf)
 {
   fwrite(mybuf,sizeof(char),n,fp);
 }
 
 /* ---------------------------------------------------------------------- */
 
-void DumpParticle::write_text(int n, double *mybuf)
+void DumpParticle::write_text(int n, sfloat *mybuf)
 {
   int i,j;
 
@@ -941,7 +942,7 @@ int DumpParticle::add_variable(char *id)
   delete [] variable;
   variable = new int[nvariable+1];
   delete [] vbuf;
-  vbuf = new double*[nvariable+1];
+  vbuf = new sfloat*[nvariable+1];
   for (int i = 0; i <= nvariable; i++) vbuf[i] = NULL;
 
   int n = strlen(id) + 1;
@@ -1199,8 +1200,8 @@ bigint DumpParticle::memory_usage()
 
 void DumpParticle::pack_compute(int n)
 {
-  double *vector = compute[field2index[n]]->vector_particle;
-  double **array = compute[field2index[n]]->array_particle;
+  sfloat *vector = compute[field2index[n]]->vector_particle;
+  sfloat **array = compute[field2index[n]]->array_particle;
   int index = argindex[n];
 
   if (index == 0) {
@@ -1221,8 +1222,8 @@ void DumpParticle::pack_compute(int n)
 
 void DumpParticle::pack_fix(int n)
 {
-  double *vector = fix[field2index[n]]->vector_particle;
-  double **array = fix[field2index[n]]->array_particle;
+  sfloat *vector = fix[field2index[n]]->vector_particle;
+  sfloat **array = fix[field2index[n]]->array_particle;
   int index = argindex[n];
 
   if (index == 0) {
@@ -1243,7 +1244,7 @@ void DumpParticle::pack_fix(int n)
 
 void DumpParticle::pack_variable(int n)
 {
-  double *vector = vbuf[field2index[n]];
+  sfloat *vector = vbuf[field2index[n]];
 
   for (int i = 0; i < nchoose; i++) {
     buf[n] = vector[clist[i]];
@@ -1265,7 +1266,7 @@ void DumpParticle::pack_custom(int n)
       for (int i = 0; i < nchoose; i++) {
         // store bit-punned (ubuf), NOT numeric: write_text/write_binary decode
         // INT columns via ubuf(buf[m]).i. Numeric storage made every INT
-        // custom attribute print as 0 (low 32 bits of IEEE-754 double).
+        // custom attribute print as 0 (low 32 bits of IEEE-754 sfloat).
         buf[n] = ubuf(vector[clist[i]]).d;
         n += size_one;
       }
@@ -1280,14 +1281,14 @@ void DumpParticle::pack_custom(int n)
     }
   } else {
     if (particle->esize[index] == 0) {
-      double *vector = particle->edvec[particle->ewhich[index]];
+      sfloat *vector = particle->edvec[particle->ewhich[index]];
       for (int i = 0; i < nchoose; i++) {
         buf[n] = vector[clist[i]];
         n += size_one;
       }
     } else {
       int icol = argindex[n]-1;
-      double **array = particle->edarray[particle->ewhich[index]];
+      sfloat **array = particle->edarray[particle->ewhich[index]];
       for (int i = 0; i < nchoose; i++) {
         buf[n] = array[clist[i]][icol];
         n += size_one;
@@ -1347,7 +1348,7 @@ void DumpParticle::pack_cellid(int n)
     icell = particles[clist[i]].icell;
     // store bit-punned (ubuf), NOT numeric: write_text/write_binary decode
     // the cellid column via ubuf(buf[m]).i (vtype INT/BIGINT). Numeric storage
-    // printed 0/garbage and could not hold a cellint that overflows a double.
+    // printed 0/garbage and could not hold a cellint that overflows a sfloat.
     buf[n] = ubuf(cells[icell].id).d;
     n += size_one;
   }
@@ -1395,8 +1396,8 @@ void DumpParticle::pack_xs(int n)
 {
   Particle::OnePart *particles = particle->particles;
 
-  double boxxlo = domain->boxlo[0];
-  double invxprd = 1.0/domain->xprd;
+  sfloat boxxlo = domain->boxlo[0];
+  sfloat invxprd = 1.0/domain->xprd;
 
   for (int i = 0; i < nchoose; i++) {
     buf[n] = (particles[clist[i]].x[0] - boxxlo) * invxprd;
@@ -1410,8 +1411,8 @@ void DumpParticle::pack_ys(int n)
 {
   Particle::OnePart *particles = particle->particles;
 
-  double boxylo = domain->boxlo[1];
-  double invyprd = 1.0/domain->yprd;
+  sfloat boxylo = domain->boxlo[1];
+  sfloat invyprd = 1.0/domain->yprd;
 
   for (int i = 0; i < nchoose; i++) {
     buf[n] = (particles[clist[i]].x[1] - boxylo) * invyprd;
@@ -1425,8 +1426,8 @@ void DumpParticle::pack_zs(int n)
 {
   Particle::OnePart *particles = particle->particles;
 
-  double boxzlo = domain->boxlo[2];
-  double invzprd = 1.0/domain->zprd;
+  sfloat boxzlo = domain->boxlo[2];
+  sfloat invzprd = 1.0/domain->zprd;
 
   for (int i = 0; i < nchoose; i++) {
     buf[n] = (particles[clist[i]].x[2] - boxzlo) * invzprd;
@@ -1477,8 +1478,8 @@ void DumpParticle::pack_ke(int n)
   Particle::OnePart *particles = particle->particles;
   Particle::Species *species = particle->species;
   Particle::OnePart *p;
-  double *v;
-  double mvv2e = update->mvv2e;
+  sfloat *v;
+  sfloat mvv2e = update->mvv2e;
 
   for (int i = 0; i < nchoose; i++) {
     p = &particles[clist[i]];

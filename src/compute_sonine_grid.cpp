@@ -1,3 +1,4 @@
+/* AD-CONVERTED: double->sfloat by tools/ad_convert.py (see sfloat.h) */
 /* ----------------------------------------------------------------------
    SPARTA - Stochastic PArallel Rarefied-gas Time-accurate Analyzer
    http://sparta.github.io
@@ -163,9 +164,9 @@ void ComputeSonineGrid::compute_per_grid()
   int nlocal = particle->nlocal;
 
   int i,j,k,m,n,ispecies,igroup,icell;
-  double mass,norm,csq,value;
-  double *v,*vec;
-  double vthermal[3];
+  sfloat mass,norm,csq,value;
+  sfloat *v,*vec;
+  sfloat vthermal[3];
 
   // compute COM velocity on this timestep for each cell and group
 
@@ -262,7 +263,7 @@ void ComputeSonineGrid::compute_per_grid()
    also return cols = ptr to list of columns in tally for this index
 ------------------------------------------------------------------------- */
 
-int ComputeSonineGrid::query_tally_grid(int index, double **&array, int *&cols)
+int ComputeSonineGrid::query_tally_grid(int index, sfloat **&array, int *&cols)
 {
   index--;
   array = tally;
@@ -286,7 +287,7 @@ int ComputeSonineGrid::query_tally_grid(int index, double **&array, int *&cols)
 
 void ComputeSonineGrid::
 post_process_grid(int index, int /*nsample*/,
-                  double **etally, int *emap, double *vec, int nstride)
+                  sfloat **etally, int *emap, sfloat *vec, int nstride)
 {
   index--;
 
@@ -303,7 +304,7 @@ post_process_grid(int index, int /*nsample*/,
 
   // compute normalized final value for each grid cell
 
-  double norm;
+  sfloat norm;
   int numerator = emap[0];
   int mass = emap[1];
   for (int icell = lo; icell < hi; icell++) {
@@ -339,8 +340,8 @@ void ComputeSonineGrid::reallocate()
 bigint ComputeSonineGrid::memory_usage()
 {
   bigint bytes;
-  bytes = nglocal * sizeof(double);              // vector_grid
-  bytes = ntotal*nglocal * sizeof(double);       // tally array
-  bytes += nglocal*ngroup*4 * sizeof(double);    // vcom
+  bytes = nglocal * sizeof(sfloat);              // vector_grid
+  bytes = ntotal*nglocal * sizeof(sfloat);       // tally array
+  bytes += nglocal*ngroup*4 * sizeof(sfloat);    // vcom
   return bytes;
 }

@@ -1,3 +1,4 @@
+/* AD-CONVERTED: double->sfloat by tools/ad_convert.py (see sfloat.h) */
 /* ----------------------------------------------------------------------
    SPARTA - Stochastic PArallel Rarefied-gas Time-accurate Analyzer
    http://sparta.sandia.gov
@@ -158,7 +159,7 @@ void ComputeGasCollisionTally::gas_tally(int icell, int reaction,
   // tally all values associated with group into array
   // particle iorig,ip have same collision point but before/after velocities
 
-  double *vec = array_tally[ntally++];
+  sfloat *vec = array_tally[ntally++];
 
   for (int m = 0; m < nvalue; m++) {
     switch (which[m]) {
@@ -263,6 +264,6 @@ void ComputeGasCollisionTally::grow_tally()
 bigint ComputeGasCollisionTally::memory_usage()
 {
   bigint bytes = 0;
-  bytes += nvalue*maxtally * sizeof(double);    // array_tally
+  bytes += nvalue*maxtally * sizeof(sfloat);    // array_tally
   return bytes;
 }

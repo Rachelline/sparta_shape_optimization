@@ -1,3 +1,4 @@
+/* AD-CONVERTED: double->sfloat by tools/ad_convert.py (see sfloat.h) */
 /* ----------------------------------------------------------------------
    SPARTA - Stochastic PArallel Rarefied-gas Time-accurate Analyzer
    http://sparta.github.io
@@ -35,16 +36,16 @@ class FixController : public Fix {
   int setmask() override;
   void init() override;
   void end_of_step() override;
-  double compute_vector(int) override;
+  sfloat compute_vector(int) override;
 
  private:
-  double kp, ki, kd, alpha, tau;
-  double setpoint;
+  sfloat kp, ki, kd, alpha, tau;
+  sfloat setpoint;
   int pvwhich, pvindex;
   char *pvID, *cvID;
   int firsttime;
 
-  double control, err, olderr, deltaerr, sumerr;
+  sfloat control, err, olderr, deltaerr, sumerr;
 
   class Compute *pcompute;
   class Fix *pfix;

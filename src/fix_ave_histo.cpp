@@ -1,3 +1,4 @@
+/* AD-CONVERTED: double->sfloat by tools/ad_convert.py (see sfloat.h) */
 /* ----------------------------------------------------------------------
    SPARTA - Stochastic PArallel Rarefied-gas Time-accurate Analyzer
    http://sparta.github.io
@@ -412,10 +413,10 @@ FixAveHisto::FixAveHisto(SPARTA *spa, int narg, char **arg) :
   if (beyond == EXTRA) nbins += 2;
   size_array_rows = nbins;
 
-  bin = new double[nbins];
-  bin_total = new double[nbins];
-  bin_all = new double[nbins];
-  coord = new double[nbins];
+  bin = new sfloat[nbins];
+  bin_total = new sfloat[nbins];
+  bin_all = new sfloat[nbins];
+  coord = new sfloat[nbins];
 
   stats_list = NULL;
   bin_list = NULL;
@@ -712,10 +713,10 @@ void FixAveHisto::end_of_step()
   // merge histogram stats across procs if necessary
 
   if (kind == PERPARTICLE || kind == PERGRID) {
-    MPI_Allreduce(stats,stats_all,2,MPI_DOUBLE,MPI_SUM,world);
-    MPI_Allreduce(&stats[2],&stats_all[2],1,MPI_DOUBLE,MPI_MIN,world);
-    MPI_Allreduce(&stats[3],&stats_all[3],1,MPI_DOUBLE,MPI_MAX,world);
-    MPI_Allreduce(bin,bin_all,nbins,MPI_DOUBLE,MPI_SUM,world);
+    MPI_Allreduce(stats,stats_all,2,MPI_SFLOAT,MPI_SUM,world);
+    MPI_Allreduce(&stats[2],&stats_all[2],1,MPI_SFLOAT,MPI_MIN,world);
+    MPI_Allreduce(&stats[3],&stats_all[3],1,MPI_SFLOAT,MPI_MAX,world);
+    MPI_Allreduce(bin,bin_all,nbins,MPI_SFLOAT,MPI_SUM,world);
 
     stats[0] = stats_all[0];
     stats[1] = stats_all[1];
@@ -805,7 +806,7 @@ void FixAveHisto::end_of_step()
    return Ith vector value
 ------------------------------------------------------------------------- */
 
-double FixAveHisto::compute_vector(int i)
+sfloat FixAveHisto::compute_vector(int i)
 {
   return stats_total[i];
 }
@@ -814,7 +815,7 @@ double FixAveHisto::compute_vector(int i)
    return I,J array value
 ------------------------------------------------------------------------- */
 
-double FixAveHisto::compute_array(int i, int j)
+sfloat FixAveHisto::compute_array(int i, int j)
 {
   if (j == 0) return coord[i];
   else if (j == 1) return bin_total[i];
@@ -826,7 +827,7 @@ double FixAveHisto::compute_array(int i, int j)
    bin a single value
 ------------------------------------------------------------------------- */
 
-void FixAveHisto::bin_one(double value)
+void FixAveHisto::bin_one(sfloat value)
 {
   stats[2] = MIN(stats[2],value);
   stats[3] = MAX(stats[3],value);
@@ -855,7 +856,7 @@ void FixAveHisto::bin_one(double value)
    bin a vector of values with stride
 ------------------------------------------------------------------------- */
 
-void FixAveHisto::bin_vector(int n, double *values, int stride)
+void FixAveHisto::bin_vector(int n, sfloat *values, int stride)
 {
   int m = 0;
   for (int i = 0; i < n; i++) {
@@ -925,7 +926,7 @@ void FixAveHisto::bin_particles(int attribute, int index)
    bin a per-particle vector of values with stride
 ------------------------------------------------------------------------- */
 
-void FixAveHisto::bin_particles(double *values, int stride)
+void FixAveHisto::bin_particles(sfloat *values, int stride)
 {
   Particle::OnePart *particles = particle->particles;
   int nlocal = particle->nlocal;
@@ -965,7 +966,7 @@ void FixAveHisto::bin_particles(double *values, int stride)
    bin a per-grid vector of values with stride
 ------------------------------------------------------------------------- */
 
-void FixAveHisto::bin_grid_cells(double *values, int stride)
+void FixAveHisto::bin_grid_cells(sfloat *values, int stride)
 {
   Grid::ChildInfo *cinfo = grid->cinfo;
   int nglocal = grid->nlocal;

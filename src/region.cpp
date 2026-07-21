@@ -1,3 +1,4 @@
+/* AD-CONVERTED: double->sfloat by tools/ad_convert.py (see sfloat.h) */
 /* ----------------------------------------------------------------------
    SPARTA - Stochastic PArallel Rarefied-gas Time-accurate Analyzer
    http://sparta.github.io
@@ -55,7 +56,7 @@ Region::~Region()
    thus point on surface of exterior region will not match
 ------------------------------------------------------------------------- */
 
-int Region::match(double *x)
+int Region::match(sfloat *x)
 {
   return !(inside(x) ^ interior);
 }

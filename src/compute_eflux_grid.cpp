@@ -1,3 +1,4 @@
+/* AD-CONVERTED: double->sfloat by tools/ad_convert.py (see sfloat.h) */
 /* ----------------------------------------------------------------------
    SPARTA - Stochastic PArallel Rarefied-gas Time-accurate Analyzer
    http://sparta.github.io
@@ -171,8 +172,8 @@ void ComputeEFluxGrid::compute_per_grid()
   int nlocal = particle->nlocal;
 
   int i,j,k,m,ispecies,igroup,icell;
-  double mass;
-  double *v,*vec;
+  sfloat mass;
+  sfloat *v,*vec;
 
   // zero all accumulators - could do this with memset()
 
@@ -274,7 +275,7 @@ void ComputeEFluxGrid::compute_per_grid()
    also return cols = ptr to list of columns in tally for this index
 ------------------------------------------------------------------------- */
 
-int ComputeEFluxGrid::query_tally_grid(int index, double **&array, int *&cols)
+int ComputeEFluxGrid::query_tally_grid(int index, sfloat **&array, int *&cols)
 {
   index--;
   int ivalue = index % nvalue;
@@ -299,8 +300,8 @@ int ComputeEFluxGrid::query_tally_grid(int index, double **&array, int *&cols)
 ------------------------------------------------------------------------- */
 
 void ComputeEFluxGrid::post_process_grid(int index, int nsample,
-                                         double **etally, int *emap,
-                                         double *vec, int nstride)
+                                         sfloat **etally, int *emap,
+                                         sfloat *vec, int nstride)
 {
   index--;
 
@@ -335,10 +336,10 @@ void ComputeEFluxGrid::post_process_grid(int index, int nsample,
   //                             Sum(mVi) Sum(mV1^2) / M +
   //                             2 Sum(mVi) Sum(mV1)^2 / M^2
 
-  double summass,h,h1,h2,wt;
-  double *t;
+  sfloat summass,h,h1,h2,wt;
+  sfloat *t;
 
-  double fnum = update->fnum;
+  sfloat fnum = update->fnum;
   Grid::ChildInfo *cinfo = grid->cinfo;
 
   int mass = emap[0];
@@ -441,7 +442,7 @@ void ComputeEFluxGrid::reallocate()
 bigint ComputeEFluxGrid::memory_usage()
 {
   bigint bytes;
-  bytes = nglocal * sizeof(double);
-  bytes = ntotal*nglocal * sizeof(double);
+  bytes = nglocal * sizeof(sfloat);
+  bytes = ntotal*nglocal * sizeof(sfloat);
   return bytes;
 }

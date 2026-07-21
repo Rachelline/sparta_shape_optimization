@@ -1,3 +1,4 @@
+/* AD-CONVERTED: double->sfloat by tools/ad_convert.py (see sfloat.h) */
 /* ----------------------------------------------------------------------
    SPARTA - Stochastic PArallel Rarefied-gas Time-accurate Analyzer
    http://sparta.github.io
@@ -34,7 +35,7 @@ class Surf : protected Pointers {
   bigint localghost_changed_step;  // last timestep expl distributed surfs
                                    // were remapped due to LB or adaptation
 
-  double bblo[3],bbhi[3];   // bounding box around surfs
+  sfloat bblo[3],bbhi[3];   // bounding box around surfs
   int tally_comm;           // style of comm for explicit surf tallies
 
   int nreact_one;           // surface reactions in current step
@@ -64,9 +65,9 @@ class Surf : protected Pointers {
     int type,mask;          // type and mask of the surf
     int isc,isr;            // index of surface collision and reaction models
                             // -1 if unassigned
-    double p1[3],p2[3];     // end points of line segment
+    sfloat p1[3],p2[3];     // end points of line segment
                             // rhand rule: Z x (p2-p1) = outward normal
-    double norm[3];         // outward normal to line segment
+    sfloat norm[3];         // outward normal to line segment
     int transparent;        // 1 if surf is transparent
   };
 
@@ -76,9 +77,9 @@ class Surf : protected Pointers {
     int type,mask;          // type and mask of the surf
     int isc,isr;            // index of surface collision and reaction models
                             // -1 if unassigned
-    double p1[3],p2[3],p3[3];  // corner points of triangle
+    sfloat p1[3],p2[3],p3[3];  // corner points of triangle
                             // rhand rule: (p2-p1) x (p3-p1) = outward normal
-    double norm[3];         // outward normal to triangle
+    sfloat norm[3];         // outward normal to triangle
     int transparent;        // 1 if surf is transparent
   };
 
@@ -123,8 +124,8 @@ class Surf : protected Pointers {
   // settings for mapping surfs to grid cells
 
   int pushflag;             // set to 1 to push surf pts near grid cell faces
-  double pushlo,pushhi;     // lo/hi ranges to push on
-  double pushvalue;         // new position to push to
+  sfloat pushlo,pushhi;     // lo/hi ranges to push on
+  sfloat pushvalue;         // new position to push to
 
   // custom vectors/array for per-surf data
   // only for explicit surfs, all or distributed
@@ -142,13 +143,13 @@ class Surf : protected Pointers {
 
   int **eivec;              // pointer to each integer vector, owned surfs
   int ***eiarray;           // pointer to each integer array, owned surfs
-  double **edvec;           // pointer to each double vector, owned surfs
-  double ***edarray;        // pointer to each double array, owned surfs
+  sfloat **edvec;           // pointer to each sfloat vector, owned surfs
+  sfloat ***edarray;        // pointer to each sfloat array, owned surfs
 
   int **eivec_local;        // pointer to each integer vector, local+ghost surfs
   int ***eiarray_local;     // pointer to each integer array, local+ghost surfs
-  double **edvec_local;     // pointer to each double vector, local+ghost surfs
-  double ***edarray_local;  // pointer to each double array, local+ghost surfs
+  sfloat **edvec_local;     // pointer to each sfloat vector, local+ghost surfs
+  sfloat ***edarray_local;  // pointer to each sfloat array, local+ghost surfs
 
 #include "hash_options.h"
 
@@ -189,33 +190,33 @@ class Surf : protected Pointers {
   void clear_implicit();
   void remove_ghosts();
 
-  void add_line(surfint, int, double *, double *);
+  void add_line(surfint, int, sfloat *, sfloat *);
   void add_line_copy(int, Line *);
-  void add_tri(surfint, int, double *, double *, double *);
+  void add_tri(surfint, int, sfloat *, sfloat *, sfloat *);
   void add_tri_copy(int, Tri *);
-  void add_surfs(int, int, Line *, Tri *, int, int *, double **);
+  void add_surfs(int, int, Line *, Tri *, int, int *, sfloat **);
 
   void rehash();
   int all_transparent();
 
   void setup_owned();
   void bbox_all();
-  void bbox_one(void *, double *, double *);
+  void bbox_one(void *, sfloat *, sfloat *);
 
   void compute_line_normal(int);
   void compute_tri_normal(int);
-  void quad_corner_point(int, double *, double *, double *);
-  void hex_corner_point(int, double *, double *, double *);
+  void quad_corner_point(int, sfloat *, sfloat *, sfloat *);
+  void hex_corner_point(int, sfloat *, sfloat *, sfloat *);
   void extract_masks(int *);
 
-  double line_size(int);
-  double line_size(Line *);
-  double line_size(double *, double *);
-  double axi_line_size(int);
-  double axi_line_size(Line *);
-  double tri_size(int, double &);
-  double tri_size(Tri *, double &);
-  double tri_size(double *, double *, double *, double &);
+  sfloat line_size(int);
+  sfloat line_size(Line *);
+  sfloat line_size(sfloat *, sfloat *);
+  sfloat axi_line_size(int);
+  sfloat axi_line_size(Line *);
+  sfloat tri_size(int, sfloat &);
+  sfloat tri_size(Tri *, sfloat &);
+  sfloat tri_size(sfloat *, sfloat *, sfloat *, sfloat &);
 
   void check_watertight_2d();
   void check_watertight_3d();
@@ -224,8 +225,8 @@ class Surf : protected Pointers {
   void check_point_near_surf_3d();
 
   void output_extent(int);
-  double shortest_line(int);
-  void smallest_tri(int, double &, double &);
+  sfloat shortest_line(int);
+  void smallest_tri(int, sfloat &, sfloat &);
 
   void add_collide(int, char **);
   int find_collide(const char *);
@@ -250,13 +251,13 @@ class Surf : protected Pointers {
   // surf_collate.cpp
   // including callback functions
 
-  void collate_vector(int, surfint *, double *, int, double *);
-  void collate_vector_reduce(int, surfint *, double *, int, double *);
-  void collate_vector_rendezvous(int, surfint *, double *, int, double *);
+  void collate_vector(int, surfint *, sfloat *, int, sfloat *);
+  void collate_vector_reduce(int, surfint *, sfloat *, int, sfloat *);
+  void collate_vector_rendezvous(int, surfint *, sfloat *, int, sfloat *);
 
-  void collate_array(int, int, surfint *, double **, double **);
-  void collate_array_reduce(int, int, surfint *, double **, double **);
-  void collate_array_rendezvous(int, int, surfint *, double **, double **);
+  void collate_array(int, int, surfint *, sfloat **, sfloat **);
+  void collate_array_reduce(int, int, surfint *, sfloat **, sfloat **);
+  void collate_array_rendezvous(int, int, surfint *, sfloat **, sfloat **);
 
   static int rendezvous_vector(int, char *, int &, int *&, char *&, void *);
   static int rendezvous_array(int, char *, int &, int *&, char *&, void *);
@@ -265,7 +266,7 @@ class Surf : protected Pointers {
   // including callback functions
 
   void redistribute_surfs(int, Line *, Tri *,
-			  int, int *, double **, bigint, bigint);
+			  int, int *, sfloat **, bigint, bigint);
 
   void compress_explicit();
   void compress_implicit();
@@ -291,13 +292,13 @@ class Surf : protected Pointers {
 
   virtual void spread_custom(int);
   virtual void spread_inverse_custom(int);
-  int extract_custom(double **&);
+  int extract_custom(sfloat **&);
 
   void write_restart_custom(FILE *);
   void read_restart_custom(FILE *);
   int sizeof_custom();
   virtual int pack_custom(int, char *);
-  virtual int unpack_custom(char *, double *);
+  virtual int unpack_custom(char *, sfloat *);
 
  protected:
   int me,nprocs;
@@ -316,11 +317,11 @@ class Surf : protected Pointers {
   int *icustom_iarray;      // index into ncustom for each integer array
   int *eicol;               // # of columns in each integer array (esize)
 
-  int ncustom_dvec;         // # of double vector attributes
-  int ncustom_darray;       // # of double array attributes
-  int *icustom_dvec;        // index into ncustom for each double vector
-  int *icustom_darray;      // index into ncustom for each double array
-  int *edcol;               // # of columns in each double array (esize)
+  int ncustom_dvec;         // # of sfloat vector attributes
+  int ncustom_darray;       // # of sfloat array attributes
+  int *icustom_dvec;        // index into ncustom for each sfloat vector
+  int *icustom_darray;      // index into ncustom for each sfloat array
+  int *edcol;               // # of columns in each sfloat array (esize)
 
   // redezvous operation data and callback info
 
@@ -340,18 +341,18 @@ class Surf : protected Pointers {
 
   // collate rendezvous
 
-  double *out_rvous;
+  sfloat *out_rvous;
   int ncol_rvous;
 
   // watertight rendezvous
 
   struct InRvousPoint {
-    double x[2];            // 2d point coords
+    sfloat x[2];            // 2d point coords
     int which;              // 1 for first endpoint, 2 for second endpoint
   };
 
   struct InRvousEdge {
-    double x1[3],x2[3];     // 3d edge point coords
+    sfloat x1[3],x2[3];     // 3d edge point coords
     int which;              // 1 for forward order, 2 for reverse order
   };
 
@@ -362,14 +363,14 @@ class Surf : protected Pointers {
 
   // private methods
 
-  void point_line_compare(double *, double *, double *, double, int &, int &);
-  void point_tri_compare(double *, double *, double *, double *, double *,
-                         double, int &, int &, int, int, int);
+  void point_line_compare(sfloat *, sfloat *, sfloat *, sfloat, int &, int &);
+  void point_tri_compare(sfloat *, sfloat *, sfloat *, sfloat *, sfloat *,
+                         sfloat, int &, int &, int, int, int);
 
-  void collate_vector_allreduce(int, int *, double *, int, double *);
-  void collate_vector_irregular(int, int *, double *, int, double *);
-  void collate_array_allreduce(int, int, int *, double **, double **);
-  void collate_array_irregular(int, int, int *, double **, double **);
+  void collate_vector_allreduce(int, int *, sfloat *, int, sfloat *);
+  void collate_vector_irregular(int, int *, sfloat *, int, sfloat *);
+  void collate_array_allreduce(int, int, int *, sfloat **, sfloat **);
+  void collate_array_irregular(int, int, int *, sfloat **, sfloat **);
 
   void check_watertight_2d_all();
   void check_watertight_2d_distributed();
@@ -393,14 +394,14 @@ class Surf : protected Pointers {
   static int rendezvous_local2own(int, char *,
 				  int &, int *&, char *&, void *);
 
-  // union data struct for packing 32-bit and 64-bit ints into double bufs
-  // this avoids aliasing issues by having 3 pointers (double,int,uint)
+  // union data struct for packing 32-bit and 64-bit ints into sfloat bufs
+  // this avoids aliasing issues by having 3 pointers (sfloat,int,uint)
   //   to same buf memory
   // constructor for 32-bit int or uint prevents compiler
-  //   from possibly calling the double constructor when passed an int/uint
-  // copy to a double *buf:
+  //   from possibly calling the sfloat constructor when passed an int/uint
+  // copy to a sfloat *buf:
   //   buf[m++] = ubuf(foo).d, where foo is a 32-bit or 64-bit int or uint
-  // copy from a double *buf:
+  // copy from a sfloat *buf:
   //   foo = (int) ubuf(buf[m++]).i or foo = (cellint) ubuf(buf[m++]).u
   //         where (int) or (surfint) or (cellint) matches foo
   //   the cast prevents compiler warnings about possible truncation

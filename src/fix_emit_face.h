@@ -1,3 +1,4 @@
+/* AD-CONVERTED: double->sfloat by tools/ad_convert.py (see sfloat.h) */
 /* ----------------------------------------------------------------------
    SPARTA - Stochastic PArallel Rarefied-gas Time-accurate Analyzer
    http://sparta.github.io
@@ -38,19 +39,19 @@ class FixEmitFace : public FixEmit {
   // one insertion task for a cell and a face
 
   struct Task {
-    double lo[3];               // lower-left corner of face
-    double hi[3];               // upper-right corner of face
-    double normal[3];           // inward normal from external boundary
-    double area;                // area of cell face
-    double ntarget;             // # of mols to insert for all species
-    double nrho;                // from mixture or adjacent subsonic cell
-    double temp_thermal;        // from mixture or adjacent subsonic cell
-    double temp_rot;            // from mixture or subsonic temp_thermal
-    double temp_vib;            // from mixture or subsonic temp_thermal
-    double vstream[3];          // from mixture or adjacent subsonic cell
-    double *ntargetsp;          // # of mols to insert for each species,
+    sfloat lo[3];               // lower-left corner of face
+    sfloat hi[3];               // upper-right corner of face
+    sfloat normal[3];           // inward normal from external boundary
+    sfloat area;                // area of cell face
+    sfloat ntarget;             // # of mols to insert for all species
+    sfloat nrho;                // from mixture or adjacent subsonic cell
+    sfloat temp_thermal;        // from mixture or adjacent subsonic cell
+    sfloat temp_rot;            // from mixture or subsonic temp_thermal
+    sfloat temp_vib;            // from mixture or subsonic temp_thermal
+    sfloat vstream[3];          // from mixture or adjacent subsonic cell
+    sfloat *ntargetsp;          // # of mols to insert for each species,
                                 //   only defined for PERSPECIES
-    double *vscale;             // vscale for each species,
+    sfloat *vscale;             // vscale for each species,
                                 //   only defined for subsonic_style PONLY
 
     int icell;                  // associated cell index, unsplit or split cell
@@ -65,8 +66,8 @@ class FixEmitFace : public FixEmit {
   int imix,np,subsonic,subsonic_style,subsonic_warning;
   int faces[6];
   int npertask,nthresh,twopass;
-  double psubsonic,tsubsonic,nsubsonic;
-  double tprefactor,soundspeed_mixture;
+  sfloat psubsonic,tsubsonic,nsubsonic;
+  sfloat tprefactor,soundspeed_mixture;
 
   int imodvar;
   char *modvar;
@@ -74,8 +75,8 @@ class FixEmitFace : public FixEmit {
   // copies of data from other classes
 
   int dimension,nspecies;
-  double fnum,dt;
-  double *fraction,*cummulative;
+  sfloat fnum,dt;
+  sfloat *fraction,*cummulative;
 
                          // ntask = # of tasks is stored by parent class
   Task *tasks;           // list of particle insertion tasks

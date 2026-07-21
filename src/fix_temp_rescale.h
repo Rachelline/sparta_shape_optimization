@@ -1,3 +1,4 @@
+/* AD-CONVERTED: double->sfloat by tools/ad_convert.py (see sfloat.h) */
 /* ----------------------------------------------------------------------
    SPARTA - Stochastic PArallel Rarefied-gas Time-accurate Analyzer
    http://sparta.github.io
@@ -33,18 +34,18 @@ class FixTempRescale : public Fix {
   int setmask();
   void init();
   void end_of_step() override;
-  double memory_usage();
+  sfloat memory_usage();
 
  protected:
   int aveflag;
-  double tstart,tstop;
-  double tprefactor;
+  sfloat tstart,tstop;
+  sfloat tprefactor;
 
   int maxgrid;
-  double **vcom;
+  sfloat **vcom;
 
-  virtual void end_of_step_no_average(double);
-  virtual void end_of_step_average(double);
+  virtual void end_of_step_no_average(sfloat);
+  virtual void end_of_step_average(sfloat);
 };
 
 }

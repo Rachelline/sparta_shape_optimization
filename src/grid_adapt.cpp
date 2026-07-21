@@ -1,3 +1,4 @@
+/* AD-CONVERTED: double->sfloat by tools/ad_convert.py (see sfloat.h) */
 /* ----------------------------------------------------------------------
    SPARTA - Stochastic PArallel Rarefied-gas Time-accurate Analyzer
    http://sparta.github.io
@@ -37,8 +38,8 @@ void Grid::refine_cell(int icell, int *childlist, Cut2d *cut2d, Cut3d *cut3d)
   int i,m,ix,iy,iz,offset,ichild;
   int dim,ncorner,mark,ip,ipnew;
   cellint childID;
-  double lo[3],hi[3];
-  double *plo,*phi;
+  sfloat lo[3],hi[3];
+  sfloat *plo,*phi;
 
   dim = domain->dimension;
   ncorner = 8;
@@ -190,7 +191,7 @@ void Grid::refine_cell(int icell, int *childlist, Cut2d *cut2d, Cut3d *cut3d)
    use info from its nchild child cells
 ------------------------------------------------------------------------- */
 
-void Grid::coarsen_cell(cellint parentID, int plevel, double *plo, double *phi,
+void Grid::coarsen_cell(cellint parentID, int plevel, sfloat *plo, sfloat *phi,
                         int nchild, int *index,
                         int *nsurf_child, int *npart_child,
                         void **surf_child, char **part_child,

@@ -1,3 +1,4 @@
+/* AD-CONVERTED: double->sfloat by tools/ad_convert.py (see sfloat.h) */
 /* ----------------------------------------------------------------------
    SPARTA - Stochastic PArallel Rarefied-gas Time-accurate Analyzer
    http://sparta.github.io
@@ -46,33 +47,33 @@ class CreateISurf : protected Pointers {
   int ncorner;              // number of corners
   int nmulti;               // number of adjacent neighbors
   int nedge;                // number of cell edges
-  double thresh;            // lower threshold for corner values
-  double corner[3];         // corners of grid group
-  double xyzsize[3];        // size of lowest level cell (must be uniform grid)
+  sfloat thresh;            // lower threshold for corner values
+  sfloat corner[3];         // corners of grid group
+  sfloat xyzsize[3];        // size of lowest level cell (must be uniform grid)
   int nxyz[3], Nxyz;        // dimensions of grid
-  double **cvalues;         // array of corner point values
-  double ***mulvalues;      // array of multi values
-  double **tmp_cvalues;     // temporary array of corner point values
-  double ***tmp_mulvalues;  // temporary array of multi values
-  double **mvalues;         // minimum intersection value
+  sfloat **cvalues;         // array of corner point values
+  sfloat ***mulvalues;      // array of multi values
+  sfloat **tmp_cvalues;     // temporary array of corner point values
+  sfloat ***tmp_mulvalues;  // temporary array of multi values
+  sfloat **mvalues;         // minimum intersection value
   int **svalues;            // marks corners as in or out
-  double ***ivalues;        // point of intersection between corner points
+  sfloat ***ivalues;        // point of intersection between corner points
 
   // buffer between corner point and intersection
 
-  double surfbuffer;
+  sfloat surfbuffer;
 
-  double **icvalues;        // corner values for Fix Ablate
+  sfloat **icvalues;        // corner values for Fix Ablate
   int *tvalues;             // vector of per grid cell surf types
 
   Surf::Line *llines;       // local copy of Surf lines
   Surf::Tri *ltris;         // local copy of Surf tris
-  double **cuvalues;        // local copy of custom per-surf data
+  sfloat **cuvalues;        // local copy of custom per-surf data
 
   int ctype;                // flag for how corners in unknown cells are set
-  double mind;              // minimum cell length
-  double cin, cout;         // in and out corner values
-  double cbufmin, cbufmax;  // corner value buffer
+  sfloat mind;              // minimum cell length
+  sfloat cin, cout;         // in and out corner values
+  sfloat cbufmin, cbufmax;  // corner value buffer
   class FixAblate *ablate;  // ablate fix
 
   // for communicating
@@ -83,9 +84,9 @@ class CreateISurf : protected Pointers {
   // various arrays to pass to other processors
 
   int **sghost;
-  double **cghost;
-  double ***inghost;
-  double ***ighost;       // ditto for my ghost cells communicated to me
+  sfloat **cghost;
+  sfloat ***inghost;
+  sfloat ***ighost;       // ditto for my ghost cells communicated to me
   int maxgrid;            // max size of per-cell vectors/arrays
   int maxghost;           // max size of cdelta_ghost
 
@@ -94,7 +95,7 @@ class CreateISurf : protected Pointers {
   int *numsend;
   int maxsend;
 
-  double *sbuf;
+  sfloat *sbuf;
   int maxsbuf;
 
   union ubuf {
@@ -144,8 +145,8 @@ class CreateISurf : protected Pointers {
 
   // detects intersection between surfaces and cell edges
 
-  int corner_hit2d(double*, double*, Surf::Line*, double&, int&);
-  int corner_hit3d(double*, double*, Surf::Tri*, double&, int&);
+  int corner_hit2d(sfloat*, sfloat*, Surf::Line*, sfloat&, int&);
+  int corner_hit3d(sfloat*, sfloat*, Surf::Tri*, sfloat&, int&);
 
   // remove old surfaces
 
@@ -153,8 +154,8 @@ class CreateISurf : protected Pointers {
 
   // misc functions
 
-  double param2cval(double, double);
-  double interpolate(double, double);
+  sfloat param2cval(sfloat, sfloat);
+  sfloat interpolate(sfloat, sfloat);
 };
 
 }

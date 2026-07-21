@@ -1,3 +1,4 @@
+/* AD-CONVERTED: double->sfloat by tools/ad_convert.py (see sfloat.h) */
 /* ----------------------------------------------------------------------
    SPARTA - Stochastic PArallel Rarefied-gas Time-accurate Analyzer
    http://sparta.github.io
@@ -55,7 +56,7 @@ class CreateGrid : protected Pointers {
   struct Stack {
     cellint id;               // ID of grid cell
     int level;                // level of grid cell
-    double lo[3],hi[3];       // lo/hi bounds of grid cell
+    sfloat lo[3],hi[3];       // lo/hi bounds of grid cell
   };
 
   Level *levels;
@@ -70,7 +71,7 @@ class CreateGrid : protected Pointers {
   void recurse_levels(int);
 
   void bounds(char *, int, int &, int &);
-  int cell_in_region(double *, double *, class Region *);
+  int cell_in_region(sfloat *, sfloat *, class Region *);
   void procs2grid(int, int, int, int &, int &, int &);
 };
 

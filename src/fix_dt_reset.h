@@ -1,3 +1,4 @@
+/* AD-CONVERTED: double->sfloat by tools/ad_convert.py (see sfloat.h) */
 /* ----------------------------------------------------------------------
    SPARTA - Stochastic PArallel Rarefied-gas Time-accurate Analyzer
    http://sparta.github.io
@@ -32,21 +33,21 @@ class FixDtReset : public Fix {
   int setmask();
   void init();
   void end_of_step();
-  double compute_scalar();
-  double compute_vector(int);
+  sfloat compute_scalar();
+  sfloat compute_vector(int);
   void reallocate();
 
  protected:
   int step_which,step_index,resetflag;
   int maxgrid;
-  double weight;
-  double dtmin,dtmax,dtave,dtnew;
+  sfloat weight;
+  sfloat dtmin,dtmax,dtave,dtnew;
 
   char *id_step;
   class Compute *cstep;
   class Fix *fstep;
 
-  double *gridstep;
+  sfloat *gridstep;
 };
 
 }

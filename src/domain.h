@@ -1,3 +1,4 @@
+/* AD-CONVERTED: double->sfloat by tools/ad_convert.py (see sfloat.h) */
 /* ----------------------------------------------------------------------
    SPARTA - Stochastic PArallel Rarefied-gas Time-accurate Analyzer
    http://sparta.github.io
@@ -28,12 +29,12 @@ class Domain : protected Pointers {
   int boundary_collision_check;  // flag for whether init() check is required
                                  // for assign of collision models to boundaries
 
-  double boxlo[3],boxhi[3];         // box global bounds
-  double xprd,yprd,zprd;            // global box dimensions
-  double prd[3];                    // array form of dimensions
+  sfloat boxlo[3],boxhi[3];         // box global bounds
+  sfloat xprd,yprd,zprd;            // global box dimensions
+  sfloat prd[3];                    // array form of dimensions
 
   int bflag[6];                     // boundary flags
-  double norm[6][3];                // boundary normals
+  sfloat norm[6][3];                // boundary normals
 
   int surfreactany;                 // 1 if any boundary has surf reactions
 
@@ -56,9 +57,9 @@ class Domain : protected Pointers {
   void set_boundary(int, char **);
   int periodic(int *);
   void boundary_modify(int, char **);
-  virtual int collide(Particle::OnePart *&, int, int, double *, double &,
+  virtual int collide(Particle::OnePart *&, int, int, sfloat *, sfloat &,
                       Particle::OnePart *&, int &);
-  virtual void uncollide(int, double *);
+  virtual void uncollide(int, sfloat *);
   void add_region(int, char **);
   void delete_region(int, char **);
   int find_region(char *);

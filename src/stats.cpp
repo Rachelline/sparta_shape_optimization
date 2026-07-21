@@ -1,3 +1,4 @@
+/* AD-CONVERTED: double->sfloat by tools/ad_convert.py (see sfloat.h) */
 /* ----------------------------------------------------------------------
    SPARTA - Stochastic PArallel Rarefied-gas Time-accurate Analyzer
    http://sparta.github.io
@@ -834,12 +835,12 @@ int Stats::add_variable(const char *id)
 /* ----------------------------------------------------------------------
    compute a single stats value, word is any stats keyword
    called when a variable is evaluated by Variable class
-   return value as double in answer
+   return value as sfloat in answer
    return 0 if str is recoginzed keyword, 1 if unrecognized
    customize a new keyword by adding to if statement
 ------------------------------------------------------------------------- */
 
-int Stats::evaluate_keyword(char *word, double *answer)
+int Stats::evaluate_keyword(char *word, sfloat *answer)
 {
   // invoke a lo-level stats routine to compute the variable value
 
@@ -1019,7 +1020,7 @@ void Stats::compute_variable()
    one method for every keyword stats can output
    called by compute() or evaluate_keyword()
    compute will have already been called
-   set ivalue/dvalue/bivalue if value is int/double/bigint
+   set ivalue/dvalue/bivalue if value is int/sfloat/bigint
    customize a new keyword by adding a method
 ------------------------------------------------------------------------- */
 
@@ -1069,8 +1070,8 @@ void Stats::compute_cpu()
 
 void Stats::compute_tpcpu()
 {
-  double new_cpu;
-  double new_time = update->time +
+  sfloat new_cpu;
+  sfloat new_time = update->time +
    (update->ntimestep - update->time_last_update) * update->dt;
 
   if (firststep == 0) {
@@ -1078,8 +1079,8 @@ void Stats::compute_tpcpu()
     dvalue = 0.0;
   } else {
     new_cpu = timer->elapsed(TIME_LOOP);
-    double cpu_diff = new_cpu - last_tpcpu;
-    double time_diff = new_time - last_time;
+    sfloat cpu_diff = new_cpu - last_tpcpu;
+    sfloat time_diff = new_time - last_time;
     if (time_diff > 0.0 && cpu_diff > 0.0) dvalue = time_diff/cpu_diff;
     else dvalue = 0.0;
   }
@@ -1092,7 +1093,7 @@ void Stats::compute_tpcpu()
 
 void Stats::compute_spcpu()
 {
-  double new_cpu;
+  sfloat new_cpu;
   int new_step = update->ntimestep;
 
   if (firststep == 0) {
@@ -1100,7 +1101,7 @@ void Stats::compute_spcpu()
     dvalue = 0.0;
   } else {
     new_cpu = timer->elapsed(TIME_LOOP);
-    double cpu_diff = new_cpu - last_spcpu;
+    sfloat cpu_diff = new_cpu - last_spcpu;
     int step_diff = new_step - last_step;
     if (cpu_diff > 0.0) dvalue = step_diff/cpu_diff;
     else dvalue = 0.0;

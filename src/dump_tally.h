@@ -1,3 +1,4 @@
+/* AD-CONVERTED: double->sfloat by tools/ad_convert.py (see sfloat.h) */
 /* ----------------------------------------------------------------------
    SPARTA - Stochastic PArallel Rarefied-gas Time-accurate Analyzer
    http://sparta.sandia.gov
@@ -54,7 +55,7 @@ class DumpTally : public Dump {
   void write_header(bigint);
   int count();
   void pack();
-  void write_data(int, double *);
+  void write_data(int, sfloat *);
 
   int parse_fields(int, char **);
   int add_compute(char *);
@@ -64,11 +65,11 @@ class DumpTally : public Dump {
   void header_binary(bigint);
   void header_item(bigint);
 
-  typedef void (DumpTally::*FnPtrData)(int, double *);
+  typedef void (DumpTally::*FnPtrData)(int, sfloat *);
   FnPtrData write_choice;              // ptr to write data functions
-  void write_binary(int, double *);
-  void write_string(int, double *);
-  void write_text(int, double *);
+  void write_binary(int, sfloat *);
+  void write_string(int, sfloat *);
+  void write_text(int, sfloat *);
 
   // customize by adding a method prototype
 

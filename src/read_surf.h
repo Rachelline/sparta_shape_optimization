@@ -1,3 +1,4 @@
+/* AD-CONVERTED: double->sfloat by tools/ad_convert.py (see sfloat.h) */
 /* ----------------------------------------------------------------------
    SPARTA - Stochastic PArallel Rarefied-gas Time-accurate Analyzer
    http://sparta.github.io
@@ -53,13 +54,13 @@ class ReadSurf : protected Pointers {
 
   int ncustom;              // # of custom per-surf vecs/arrays
   int nvalues_custom;       // # of custom values per surf
-  double **cvalues;         // surfID + read-in per-surf custom values
+  sfloat **cvalues;         // surfID + read-in per-surf custom values
 
   int multiproc;            // 1 if multiple files to read from
   int nfiles;               // # of proc files in addition to base file
   int me_file,nprocs_file;  // info for cluster of procs that read a file
 
-  double origin[3];
+  sfloat origin[3];
 
   Surf::Line *lines;        // lines read from all files, distributed over procs
   Surf::Tri *tris;          // tris read from all files, distributed over procs
@@ -70,7 +71,7 @@ class ReadSurf : protected Pointers {
   int nsurf_file;           // # of surfs read-in from one file
 
   struct Point {
-    double x[3];            // point coords
+    sfloat x[3];            // point coords
   };
 
   int npoint_file;          // # of points in one file
@@ -92,21 +93,21 @@ class ReadSurf : protected Pointers {
   void read_lines();
   void read_tris();
 
-  void add_line(surfint, int, double *, double *);
-  void add_tri(surfint, int, double *, double *, double *);
-  void add_custom(surfint, double *);
+  void add_line(surfint, int, sfloat *, sfloat *);
+  void add_tri(surfint, int, sfloat *, sfloat *, sfloat *);
+  void add_custom(surfint, sfloat *);
 
   void process_args(int, int, char **);
 
-  void translate(double, double, double);
-  void scale(double, double, double);
-  void rotate(double, double, double, double);
+  void translate(sfloat, sfloat, sfloat);
+  void scale(sfloat, sfloat, sfloat);
+  void rotate(sfloat, sfloat, sfloat, sfloat);
   void invert();
   void clip2d();
   void clip3d();
 
   void check_bounds();
-  void push_points_to_boundary(double);
+  void push_points_to_boundary(sfloat);
   void check_neighbor_norm_2d();
   void check_neighbor_norm_3d();
 
@@ -115,14 +116,14 @@ class ReadSurf : protected Pointers {
   void parse_keyword(int);
   int count_words(char *);
 
-  // union data struct for packing 32-bit and 64-bit ints into double bufs
-  // this avoids aliasing issues by having 2 pointers (double,int)
+  // union data struct for packing 32-bit and 64-bit ints into sfloat bufs
+  // this avoids aliasing issues by having 2 pointers (sfloat,int)
   //   to same buf memory
   // constructor for 32-bit int prevents compiler
-  //   from possibly calling the double constructor when passed an int
-  // copy to a double *buf:
+  //   from possibly calling the sfloat constructor when passed an int
+  // copy to a sfloat *buf:
   //   buf[m++] = ubuf(foo).d, where foo is a 32-bit or 64-bit int
-  // copy from a double *buf:
+  // copy from a sfloat *buf:
   //   foo = (int) ubuf(buf[m++]).i;, where (int) or (tagint) match foo
   //   the cast prevents compiler warnings about possible truncation
 

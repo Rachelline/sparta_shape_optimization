@@ -1,3 +1,4 @@
+/* AD-CONVERTED: double->sfloat by tools/ad_convert.py (see sfloat.h) */
 /* ----------------------------------------------------------------------
    SPARTA - Stochastic PArallel Rarefied-gas Time-accurate Analyzer
    http://sparta.github.io
@@ -68,7 +69,7 @@ void Python::command(int narg, char **arg)
 
 /* ------------------------------------------------------------------ */
 
-void Python::invoke_function(int ifunc, char *result, double *dvalue)
+void Python::invoke_function(int ifunc, char *result, sfloat *dvalue)
 {
   init();
   impl->invoke_function(ifunc, result, dvalue);

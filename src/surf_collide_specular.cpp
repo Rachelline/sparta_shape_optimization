@@ -1,3 +1,4 @@
+/* AD-CONVERTED: double->sfloat by tools/ad_convert.py (see sfloat.h) */
 /* ----------------------------------------------------------------------
    SPARTA - Stochastic PArallel Rarefied-gas Time-accurate Analyzer
    http://sparta.github.io
@@ -56,8 +57,8 @@ SurfCollideSpecular::SurfCollideSpecular(SPARTA *sparta, int narg, char **arg) :
 ------------------------------------------------------------------------- */
 
 Particle::OnePart *SurfCollideSpecular::
-collide(Particle::OnePart *&ip, double &,
-        int isurf, double *norm, int isr, int &reaction)
+collide(Particle::OnePart *&ip, sfloat &,
+        int isurf, sfloat *norm, int isr, int &reaction)
 {
   nsingle++;
 
@@ -154,8 +155,8 @@ collide(Particle::OnePart *&ip, double &,
    called by SurfReactAdsorb
 ------------------------------------------------------------------------- */
 
-void SurfCollideSpecular::wrapper(Particle::OnePart *p, double *norm,
-                                  int *flags, double *coeffs)
+void SurfCollideSpecular::wrapper(Particle::OnePart *p, sfloat *norm,
+                                  int *flags, sfloat *coeffs)
 {
   if (flags)
     noslip_flag = flags[0];
@@ -167,7 +168,7 @@ void SurfCollideSpecular::wrapper(Particle::OnePart *p, double *norm,
    return flags and coeffs for this SurfCollide instance to caller
 ------------------------------------------------------------------------- */
 
-void SurfCollideSpecular::flags_and_coeffs(int *flags, double *coeffs)
+void SurfCollideSpecular::flags_and_coeffs(int *flags, sfloat *coeffs)
 {
   flags[0] = noslip_flag;
 }

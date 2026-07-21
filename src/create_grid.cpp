@@ -1,3 +1,4 @@
+/* AD-CONVERTED: double->sfloat by tools/ad_convert.py (see sfloat.h) */
 /* ----------------------------------------------------------------------
    SPARTA - Stochastic PArallel Rarefied-gas Time-accurate Analyzer
    http://sparta.github.io
@@ -250,7 +251,7 @@ void CreateGrid::command(int narg, char **arg)
   // create grid with specified partitioning style
 
   MPI_Barrier(world);
-  double time1 = MPI_Wtime();
+  sfloat time1 = MPI_Wtime();
 
   if (pstyle == BLOCK) create_block();
   else if (pstyle == CLUMP) create_clump();
@@ -258,7 +259,7 @@ void CreateGrid::command(int narg, char **arg)
   else if (pstyle == RANDOM) create_random();
 
   MPI_Barrier(world);
-  double time2 = MPI_Wtime();
+  sfloat time2 = MPI_Wtime();
 
   // invoke grid methods to complete grid setup
 
@@ -273,7 +274,7 @@ void CreateGrid::command(int narg, char **arg)
   comm->reset_neighbors();
 
   MPI_Barrier(world);
-  double time3 = MPI_Wtime();
+  sfloat time3 = MPI_Wtime();
 
   // clean up
 
@@ -282,7 +283,7 @@ void CreateGrid::command(int narg, char **arg)
 
   // stats
 
-  double time_total = time3-time1;
+  sfloat time_total = time3-time1;
 
   if (comm->me == 0) {
     if (screen) {
@@ -309,7 +310,7 @@ void CreateGrid::create_block()
 {
   int ix,iy,iz;
   cellint childID;
-  double lo[3],hi[3];
+  sfloat lo[3],hi[3];
   Stack *s;
 
   // partition single-level grid across procs
@@ -333,8 +334,8 @@ void CreateGrid::create_block()
 
   // create my subset of cells
 
-  double *boxlo = domain->boxlo;
-  double *boxhi = domain->boxhi;
+  sfloat *boxlo = domain->boxlo;
+  sfloat *boxhi = domain->boxhi;
 
   for (iz = izlo; iz <= izhi; iz++) {
     for (iy = iylo; iy <= iyhi; iy++) {
@@ -364,7 +365,7 @@ void CreateGrid::create_clump()
   int ix,iy,iz;
   int i1,i2,i3,n1,n2;
   cellint childID;
-  double lo[3],hi[3];
+  sfloat lo[3],hi[3];
   Stack *s;
 
   if (order == XYZ) {
@@ -383,8 +384,8 @@ void CreateGrid::create_clump()
 
   // loop over my clump of ordered cells in requested order
 
-  double *boxlo = domain->boxlo;
-  double *boxhi = domain->boxhi;
+  sfloat *boxlo = domain->boxlo;
+  sfloat *boxhi = domain->boxhi;
 
   cellint ntotal = (cellint) nx * ny * nz;
   cellint clumplo = static_cast<int> (1.0*me/nprocs * ntotal);
@@ -432,7 +433,7 @@ void CreateGrid::create_stride()
   int ix,iy,iz;
   int i1,i2,i3,n1,n2;
   cellint childID;
-  double lo[3],hi[3];
+  sfloat lo[3],hi[3];
   Stack *s;
 
   if (order == XYZ) {
@@ -451,8 +452,8 @@ void CreateGrid::create_stride()
 
   // stride over all ntotal cells in requested order
 
-  double *boxlo = domain->boxlo;
-  double *boxhi = domain->boxhi;
+  sfloat *boxlo = domain->boxlo;
+  sfloat *boxhi = domain->boxhi;
 
   cellint ntotal = (cellint) nx * ny * nz;
 
@@ -499,7 +500,7 @@ void CreateGrid::create_random()
 {
   int proc;
   cellint childID;
-  double lo[3],hi[3];
+  sfloat lo[3],hi[3];
   Stack *s;
 
   RanKnuth *random = new RanKnuth(update->ranmaster->uniform());
@@ -507,8 +508,8 @@ void CreateGrid::create_random()
   // loop over all ntotal cells
   // only add cell if this proc is the random owner
 
-  double *boxlo = domain->boxlo;
-  double *boxhi = domain->boxhi;
+  sfloat *boxlo = domain->boxlo;
+  sfloat *boxhi = domain->boxhi;
 
   cellint ntotal = (cellint) nx * ny * nz;
 
@@ -636,9 +637,9 @@ void CreateGrid::bounds(char *str, int nmax, int &nlo, int &nhi)
    return 1 if inside, 0 if not
 ------------------------------------------------------------------------- */
 
-int CreateGrid::cell_in_region(double *lo, double *hi, Region *region)
+int CreateGrid::cell_in_region(sfloat *lo, sfloat *hi, Region *region)
 {
-  double x[3];
+  sfloat x[3];
 
   int n = 0;
 
@@ -705,19 +706,19 @@ void CreateGrid::procs2grid(int nx, int ny, int nz, int &px, int &py, int &pz)
   // determine cross-sectional areas
   // area[0] = xy, area[1] = xz, area[2] = yz
 
-  double area[3];
+  sfloat area[3];
   area[0] = (bigint) nx*ny;
   area[1] = (bigint) nx*nz;
   area[2] = (bigint) ny*nz;
 
-  double bestsurf = 2.0 * (area[0]+area[1]+area[2]);
+  sfloat bestsurf = 2.0 * (area[0]+area[1]+area[2]);
 
   // loop thru all possible factorizations of nprocs
   // only consider valid cases that match procgrid settings
   // surf = surface area of a proc sub-domain
 
   int ipx,ipy,ipz,valid;
-  double surf;
+  sfloat surf;
 
   ipx = 1;
   while (ipx <= nprocs) {

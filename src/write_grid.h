@@ -1,3 +1,4 @@
+/* AD-CONVERTED: double->sfloat by tools/ad_convert.py (see sfloat.h) */
 /* ----------------------------------------------------------------------
    SPARTA - Stochastic PArallel Rarefied-gas Time-accurate Analyzer
    http://sparta.github.io
@@ -42,8 +43,8 @@ class WriteGrid : protected Pointers {
 
   void header();
   void write();
-  void pack_custom(int, double *);
-  void write_custom(double *);
+  void pack_custom(int, sfloat *);
+  void write_custom(sfloat *);
 };
 
 }

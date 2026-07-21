@@ -1,3 +1,4 @@
+/* AD-CONVERTED: double->sfloat by tools/ad_convert.py (see sfloat.h) */
 /* ----------------------------------------------------------------------
    SPARTA - Stochastic PArallel Rarefied-gas Time-accurate Analyzer
    http://sparta.github.io
@@ -29,13 +30,13 @@ class RegCylinder : public Region {
  public:
   RegCylinder(class SPARTA *, int, char **);
   RegCylinder(class SPARTA *sparta) : Region(sparta) {} // needed for Kokkos
-  int inside(double *);
+  int inside(sfloat *);
 
  protected:
   char axis;
-  double c1,c2;
-  double radius;
-  double lo,hi;
+  sfloat c1,c2;
+  sfloat radius;
+  sfloat lo,hi;
 };
 
 }
