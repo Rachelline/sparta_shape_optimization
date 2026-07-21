@@ -1922,7 +1922,7 @@ void Grid::type_check(int outflag)
       if (Geometry::point_on_hex(x,boxlo,boxhi)) {
         printf("BAD CORNER icell %d id " CELLINT_FORMAT"  type %d "
                "icorner %d x %g %g %g cflags %d %d %d %d\n",
-               icell,cells[icell].id,cinfo[icell].type,i,x[0],x[1],x[2],
+               icell,cells[icell].id,cinfo[icell].type,i,spval(x[0]),spval(x[1]),spval(x[2]),
                cinfo[icell].corner[0],
                cinfo[icell].corner[1],
                cinfo[icell].corner[2],
@@ -2465,9 +2465,9 @@ int Grid::check_uniform_group(int igroup, int *nxyz,
   corner[1] = alllo[1];
   corner[2] = alllo[2];
 
-  nxyz[0] = static_cast<int> ((allhi[0]-alllo[0])/xyzsize[0] + 0.5);
-  nxyz[1] = static_cast<int> ((allhi[1]-alllo[1])/xyzsize[1] + 0.5);
-  nxyz[2] = static_cast<int> ((allhi[2]-alllo[2])/xyzsize[2] + 0.5);
+  nxyz[0] = static_cast<int> (spval((allhi[0]-alllo[0])/xyzsize[0] + 0.5));
+  nxyz[1] = static_cast<int> (spval((allhi[1]-alllo[1])/xyzsize[1] + 0.5));
+  nxyz[2] = static_cast<int> (spval((allhi[2]-alllo[2])/xyzsize[2] + 0.5));
 
   bigint allbcount;
   bigint bcount = count;
@@ -2719,8 +2719,8 @@ void Grid::debug()
            cells[i].neigh[0],cells[i].neigh[1],cells[i].neigh[2],
            cells[i].neigh[3],cells[i].neigh[4],cells[i].neigh[5]);
     printf("  lohi %g %g %g: %g %g %g\n",
-           cells[i].lo[0],cells[i].lo[1],cells[i].lo[2],
-           cells[i].hi[0],cells[i].hi[1],cells[i].hi[2]);
+           spval(cells[i].lo[0]),spval(cells[i].lo[1]),spval(cells[i].lo[2]),
+           spval(cells[i].hi[0]),spval(cells[i].hi[1]),spval(cells[i].hi[2]));
     printf("  nsurf %d:",cells[i].nsurf);
     for (int j = 0; j < cells[i].nsurf; j++)
       printf(" " SURFINT_FORMAT,cells[i].csurfs[j]);
@@ -2731,6 +2731,6 @@ void Grid::debug()
            cinfo[i].corner[0],cinfo[i].corner[1],cinfo[i].corner[2],
            cinfo[i].corner[3],cinfo[i].corner[4],cinfo[i].corner[5],
            cinfo[i].corner[6],cinfo[i].corner[7]);
-    printf("  volume %g\n",cinfo[i].volume);
+    printf("  volume %g\n",spval(cinfo[i].volume));
   }
 }

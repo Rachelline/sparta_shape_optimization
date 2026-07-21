@@ -439,7 +439,7 @@ void ReadSurf::command(int narg, char **arg)
     if (screen) {
       if (particle->exist)
         fprintf(screen,"  " BIGINT_FORMAT " deleted particles\n",ndeleted);
-      fprintf(screen,"  CPU time = %g secs\n",time_total);
+      fprintf(screen,"  CPU time = %g secs\n",spval(time_total));
       fprintf(screen,"  read/check/sort/surf2grid/ghost/"
               "inout/particle percent = "
               "%g %g %g %g %g %g %g\n",
@@ -447,7 +447,7 @@ void ReadSurf::command(int narg, char **arg)
               100.0*(time4-time3)/time_total,100.0*(time5-time4)/time_total,
               100.0*(time6-time5)/time_total,100.0*(time7-time6)/time_total,
               100.0*(time8-time7)/time_total);
-      fprintf(screen,"  surf2grid time = %g secs\n",time_s2g);
+      fprintf(screen,"  surf2grid time = %g secs\n",spval(time_s2g));
       fprintf(screen,"  map/comm1/comm2/comm3/comm4/split percent = "
               "%g %g %g %g %g %g\n",
               100.0*grid->tmap/time_s2g,100.0*grid->tcomm1/time_s2g,
@@ -458,7 +458,7 @@ void ReadSurf::command(int narg, char **arg)
     if (logfile) {
       if (particle->exist)
         fprintf(logfile,"  " BIGINT_FORMAT " deleted particles\n",ndeleted);
-      fprintf(logfile,"  CPU time = %g secs\n",time_total);
+      fprintf(logfile,"  CPU time = %g secs\n",spval(time_total));
       fprintf(logfile,"  read/check/sort/surf2grid/ghost/"
               "inout/particle percent = "
               "%g %g %g %g %g %g %g\n",
@@ -466,7 +466,7 @@ void ReadSurf::command(int narg, char **arg)
               100.0*(time4-time3)/time_total,100.0*(time5-time4)/time_total,
               100.0*(time6-time5)/time_total,100.0*(time7-time6)/time_total,
               100.0*(time8-time7)/time_total);
-      fprintf(logfile,"  surf2grid time = %g secs\n",time_s2g);
+      fprintf(logfile,"  surf2grid time = %g secs\n",spval(time_s2g));
       fprintf(logfile,"  map/comm1/comm2/comm3/comm4/split percent = "
               "%g %g %g %g %g %g\n",
               100.0*grid->tmap/time_s2g,100.0*grid->tcomm1/time_s2g,

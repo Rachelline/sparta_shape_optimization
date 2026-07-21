@@ -762,13 +762,13 @@ bigint Custom::set_particle(Mixture *mixture, Region *region,
   // set custom values via scalar or vector
 
   if (ctype == INT) {
-    int iscalar = static_cast<int> (scalar);
+    int iscalar = static_cast<int> (spval(scalar));
 
     if (csize == 0) {
       int *cvector = particle->eivec[particle->ewhich[cindex]];
       if (vector) {
 	for (int i = 0 ; i < nlocal; i++) {
-	  if (choose[i]) cvector[i] = static_cast<int> (vector[i]);
+	  if (choose[i]) cvector[i] = static_cast<int> (spval(vector[i]));
 	}
       } else {
 	for (int i = 0 ; i < nlocal; i++) {
@@ -781,7 +781,7 @@ bigint Custom::set_particle(Mixture *mixture, Region *region,
       ccol--;
       if (vector) {
 	for (int i = 0 ; i < nlocal; i++) {
-	  if (choose[i]) carray[i][ccol] = static_cast<int> (vector[i]);
+	  if (choose[i]) carray[i][ccol] = static_cast<int> (spval(vector[i]));
 	}
       } else {
 	for (int i = 0 ; i < nlocal; i++) {
@@ -867,13 +867,13 @@ bigint Custom::set_grid(int groupbit, Region *region,
   // set custom values via scalar or vector
 
   if (ctype == INT) {
-    int iscalar = static_cast<int> (scalar);
+    int iscalar = static_cast<int> (spval(scalar));
 
     if (csize == 0) {
       int *cvector = grid->eivec[grid->ewhich[cindex]];
       if (vector) {
 	for (int i = 0 ; i < nglocal; i++) {
-	  if (choose[i]) cvector[i] = static_cast<int> (vector[i]);
+	  if (choose[i]) cvector[i] = static_cast<int> (spval(vector[i]));
 	}
       } else {
 	for (int i = 0 ; i < nglocal; i++) {
@@ -886,7 +886,7 @@ bigint Custom::set_grid(int groupbit, Region *region,
       ccol--;
       if (vector) {
 	for (int i = 0 ; i < nglocal; i++) {
-	  if (choose[i]) carray[i][ccol] = static_cast<int> (vector[i]);
+	  if (choose[i]) carray[i][ccol] = static_cast<int> (spval(vector[i]));
 	}
       } else {
 	for (int i = 0 ; i < nglocal; i++) {
@@ -1001,13 +1001,13 @@ bigint Custom::set_surf(int groupbit, Region *region,
   // set custom values via scalar or vector
 
   if (ctype == INT) {
-    int iscalar = static_cast<int> (scalar);
+    int iscalar = static_cast<int> (spval(scalar));
 
     if (csize == 0) {
       int *cvector = surf->eivec[surf->ewhich[cindex]];
       if (vector) {
 	for (int i = 0 ; i < nsown; i++) {
-	  if (choose[i]) cvector[i] = static_cast<int> (vector[i]);
+	  if (choose[i]) cvector[i] = static_cast<int> (spval(vector[i]));
 	}
       } else {
 	for (int i = 0 ; i < nsown; i++) {
@@ -1020,7 +1020,7 @@ bigint Custom::set_surf(int groupbit, Region *region,
       ccol--;
       if (vector) {
 	for (int i = 0 ; i < nsown; i++) {
-	  if (choose[i]) carray[i][ccol] = static_cast<int> (vector[i]);
+	  if (choose[i]) carray[i][ccol] = static_cast<int> (spval(vector[i]));
 	}
       } else {
 	for (int i = 0 ; i < nsown; i++) {
@@ -1601,13 +1601,13 @@ bigint Custom::coarse_tree_neighbor_assign(int external, int colcount,
       for (int j = 0; j < colcount; j++) {
         if (ctype[j] == INT) {
           if (csize[j] == 0) {
-            if (!ic) ivec[j][i] = (int) values_coarse[plist[ic]][j];
-            else ivec[j][i] += (int) values_coarse[plist[ic]][j];
+            if (!ic) ivec[j][i] = spval(spval(spval(spval(spval(spval(spval(spval(spval(spval(spval(spval(spval(spval(spval(spval(spval(spval(spval(spval(spval(spval(spval(spval((int) values_coarse[plist[ic]][j]))))))))))))))))))))))));
+            else ivec[j][i] += spval(spval(spval(spval(spval(spval(spval(spval(spval(spval(spval(spval(spval(spval(spval(spval(spval(spval(spval(spval(spval(spval(spval(spval((int) values_coarse[plist[ic]][j]))))))))))))))))))))))));
           } else {
             if (!ic) iarray[j][i][ccol[j]-1] =
-                       (int) values_coarse[plist[ic]][j];
+                       spval(spval(spval(spval(spval(spval(spval(spval(spval(spval(spval(spval(spval(spval(spval(spval(spval(spval(spval(spval(spval(spval((int) values_coarse[plist[ic]][j]))))))))))))))))))))));
             else iarray[j][i][ccol[j]-1] +=
-                   (int) values_coarse[plist[ic]][j];
+                   spval(spval(spval(spval(spval(spval(spval(spval(spval(spval(spval(spval(spval(spval(spval(spval(spval(spval(spval(spval(spval(spval(spval(spval((int) values_coarse[plist[ic]][j]))))))))))))))))))))))));
           }
         } else if (ctype[j] == DOUBLE) {
           if (csize[j] == 0) {
@@ -2006,15 +2006,15 @@ void KDTree::stats_search()
   if (comm->me == 0) {
     if (screen) {
       fprintf(screen,"    %d = number of grid cell searches\n",nsearch_all);
-      fprintf(screen,"    %g = ave distance of nearest points\n",avedist_all);
-      fprintf(screen,"    %g = ave node count to find nearest points\n",avecount_node);
-      fprintf(screen,"    %g = ave leaf count to find nearest points\n",avecount_leaf);
+      fprintf(screen,"    %g = ave distance of nearest points\n",spval(avedist_all));
+      fprintf(screen,"    %g = ave node count to find nearest points\n",spval(avecount_node));
+      fprintf(screen,"    %g = ave leaf count to find nearest points\n",spval(avecount_leaf));
     }
     if (logfile) {
       fprintf(logfile,"    %d = number of grid cell searches\n",nsearch_all);
-      fprintf(logfile,"    %g = ave distance of nearest points\n",avedist_all);
-      fprintf(logfile,"    %g = ave node count to find nearest points\n",avecount_node);
-      fprintf(logfile,"    %g = ave leaf count to find nearest points\n",avecount_leaf);
+      fprintf(logfile,"    %g = ave distance of nearest points\n",spval(avedist_all));
+      fprintf(logfile,"    %g = ave node count to find nearest points\n",spval(avecount_node));
+      fprintf(logfile,"    %g = ave leaf count to find nearest points\n",spval(avecount_leaf));
     }
   }
 
@@ -2043,13 +2043,13 @@ void KDTree::stats_neighbor()
   if (comm->me == 0) {
     if (screen) {
       fprintf(screen,"    %g = ave count of neighbor points\n",(sfloat) nneigh_all/nsearch_all);
-      fprintf(screen,"    %g = ave node count to find neighbor points\n",avecount_node);
-      fprintf(screen,"    %g = ave leaf count to find neighbor points\n",avecount_leaf);
+      fprintf(screen,"    %g = ave node count to find neighbor points\n",spval(avecount_node));
+      fprintf(screen,"    %g = ave leaf count to find neighbor points\n",spval(avecount_leaf));
     }
     if (logfile) {
       fprintf(logfile,"    %g = ave count of neighbor points\n",(sfloat) nneigh_all/nsearch_all);
-      fprintf(logfile,"    %g = ave node count to find neighbor points\n",avecount_node);
-      fprintf(logfile,"    %g = ave leaf count to find neighbor points\n",avecount_leaf);
+      fprintf(logfile,"    %g = ave node count to find neighbor points\n",spval(avecount_node));
+      fprintf(logfile,"    %g = ave leaf count to find neighbor points\n",spval(avecount_leaf));
     }
   }
 }

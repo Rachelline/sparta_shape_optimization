@@ -118,7 +118,7 @@ SurfReactAdsorb::SurfReactAdsorb(SPARTA *sparta, int narg, char **arg) :
 
   if (strcmp(arg[iarg],"nsync") != 0)
     error->all(FLERR,"Illegal surf_react adsorb command");
-  nsync = input->numeric(FLERR,arg[iarg+1]);
+  nsync = spval(input->numeric(FLERR,arg[iarg+1]));
   if (nsync < 1) error->all(FLERR,"Illegal surf_react adsorb command");
 
   if (strcmp(arg[iarg+2],"face") == 0) mode = FACE;
@@ -201,7 +201,7 @@ SurfReactAdsorb::SurfReactAdsorb(SPARTA *sparta, int narg, char **arg) :
 
   random = new RanKnuth(update->ranmaster->uniform());
   sfloat seed = update->ranmaster->uniform();
-  random->reset(seed,me,100);
+  random->reset(spval(seed),me,100);
 
   // create and initialize per-face or custom per-surf attributes
 
@@ -653,7 +653,7 @@ int SurfReactAdsorb::react(Particle::OnePart *&ip, int isurf, sfloat *norm,
   if (n == 0) return 0;
 
   sfloat fnum = update->fnum;
-  long int maxstick = ceil(max_cover*area[isurf] / (fnum*weight[isurf]));
+  long int maxstick = spval(ceil(max_cover*area[isurf] / (fnum*weight[isurf])));
   sfloat factor = fnum * weight[isurf] / area[isurf];
   sfloat ms_inv = factor / max_cover;
 
@@ -2945,7 +2945,7 @@ void SurfReactAdsorb::PS_react(int isurf, int isc, sfloat *norm)
         */
 
         //nu_tau[i] = MAX(floor(nu_react[i] * tau[isurf][react_num]),0);
-        nu_tau[i] = MAX(floor(nu_react[i] * tau[isurf][i]),0);
+        nu_tau[i] = spval(MAX(floor(nu_react[i] * tau[isurf][i]),0));
         sum_nu_tau += nu_tau[i];
       }
     }

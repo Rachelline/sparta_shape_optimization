@@ -262,7 +262,7 @@ void Stats::compute(int flag)
   for (ifield = 0; ifield < nfield; ifield++) {
     (this->*vfunc[ifield])();
     if (vtype[ifield] == FLOAT)
-      loc += sprintf(&line[loc],format[ifield],dvalue);
+      loc += sprintf(&line[loc],format[ifield],spval(dvalue));
     else if (vtype[ifield] == INT)
       loc += sprintf(&line[loc],format[ifield],ivalue);
     else if (vtype[ifield] == BIGINT) {

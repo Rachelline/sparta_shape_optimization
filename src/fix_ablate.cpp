@@ -397,11 +397,11 @@ void FixAblate::store_corners(int nx_caller, int ny_caller, int nz_caller,
     if (cells[icell].nsplit <= 0) continue;
 
     ixyz[icell][0] =
-      static_cast<int> ((cells[icell].lo[0]-cornerlo[0]) / xyzsize[0] + 0.5) + 1;
+      static_cast<int> (spval((cells[icell].lo[0]-cornerlo[0]) / xyzsize[0] + 0.5)) + 1;
     ixyz[icell][1] =
-      static_cast<int> ((cells[icell].lo[1]-cornerlo[1]) / xyzsize[1] + 0.5) + 1;
+      static_cast<int> (spval((cells[icell].lo[1]-cornerlo[1]) / xyzsize[1] + 0.5)) + 1;
     ixyz[icell][2] =
-      static_cast<int> ((cells[icell].lo[2]-cornerlo[2]) / xyzsize[2] + 0.5) + 1;
+      static_cast<int> (spval((cells[icell].lo[2]-cornerlo[2]) / xyzsize[2] + 0.5)) + 1;
   }
 
   // push corner pt values with fully external/internal neighbors to 0 or 255
@@ -1447,7 +1447,7 @@ void FixAblate::comm_neigh_corners(int which)
 
   m = 0;
   for (i = 0; i < nrecv; i++) {
-    cellID = (cellint) ubuf(rbuf[m++]).u;
+    cellID = (cellint) ubuf(spval(rbuf[m++])).u;
     ilocal = (*hash)[cellID];
     icell = ilocal - nglocal;
     if (which == NVERT) {
@@ -1609,21 +1609,21 @@ int FixAblate::unpack_grid_one(int icell, char *buf)
 
   if (tvalues_flag) {
     sfloat *dbuf = (sfloat *) ptr;
-    tvalues[icell] = static_cast<int> (dbuf[0]);
+    tvalues[icell] = static_cast<int> (spval(dbuf[0]));
     ptr += sizeof(sfloat);
   }
 
   sfloat *dbuf = (sfloat *) ptr;
-  ixyz[icell][0] = static_cast<int> (dbuf[0]);
-  ixyz[icell][1] = static_cast<int> (dbuf[1]);
-  ixyz[icell][2] = static_cast<int> (dbuf[2]);
+  ixyz[icell][0] = static_cast<int> (spval(dbuf[0]));
+  ixyz[icell][1] = static_cast<int> (spval(dbuf[1]));
+  ixyz[icell][2] = static_cast<int> (spval(dbuf[2]));
   ptr += 3*sizeof(sfloat);
 
   dbuf = (sfloat *) ptr;
-  mcflags[icell][0] = static_cast<int> (dbuf[0]);
-  mcflags[icell][1] = static_cast<int> (dbuf[1]);
-  mcflags[icell][2] = static_cast<int> (dbuf[2]);
-  mcflags[icell][3] = static_cast<int> (dbuf[3]);
+  mcflags[icell][0] = static_cast<int> (spval(dbuf[0]));
+  mcflags[icell][1] = static_cast<int> (spval(dbuf[1]));
+  mcflags[icell][2] = static_cast<int> (spval(dbuf[2]));
+  mcflags[icell][3] = static_cast<int> (spval(dbuf[3]));
   ptr += 4*sizeof(sfloat);
 
   nglocal++;

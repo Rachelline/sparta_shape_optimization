@@ -2182,14 +2182,14 @@ void Grid::surf2grid_stats()
       fprintf(screen,"  " BIGINT_FORMAT
               " = total surfs in all grid cells\n",stotalall);
       fprintf(screen,"  %d = max surfs in one grid cell\n",smaxall);
-      fprintf(screen,"  %g = min surf-size/cell-size ratio\n",sratioall);
+      fprintf(screen,"  %g = min surf-size/cell-size ratio\n",spval(sratioall));
     }
     if (logfile) {
       fprintf(logfile,"  " BIGINT_FORMAT " = cells with surfs\n",scountall);
       fprintf(logfile,"  " BIGINT_FORMAT
               " = total surfs in all grid cells\n",stotalall);
       fprintf(logfile,"  %d = max surfs in one grid cell\n",smaxall);
-      fprintf(logfile,"  %g = min surf-size/cell-size ratio\n",sratioall);
+      fprintf(logfile,"  %g = min surf-size/cell-size ratio\n",spval(sratioall));
     }
   }
 }
@@ -2253,7 +2253,7 @@ void Grid::flow_stats()
       for (i = 0; i < maxsplitall; i++) fprintf(screen," %d",tallyall[i]);
       fprintf(screen," = surf cells with 1,2,etc splits\n");
       fprintf(screen,"  %.15g %.15g = cell-wise and global flow volume\n",
-              cellvolumeall,flowvolume);
+              spval(cellvolumeall),spval(flowvolume));
     }
     if (logfile) {
       fprintf(logfile,"  %d %d %d = cells outside/inside/overlapping surfs\n",
@@ -2262,7 +2262,7 @@ void Grid::flow_stats()
       for (i = 0; i < maxsplitall; i++) fprintf(logfile," %d",tallyall[i]);
       fprintf(logfile," = surf cells with 1,2,etc splits\n");
       fprintf(logfile,"  %g %g = cell-wise and global flow volume\n",
-              cellvolumeall,flowvolume);
+              spval(cellvolumeall),spval(flowvolume));
     }
   }
 

@@ -278,7 +278,7 @@ void FixAveHistoWeight::bin_one_weight(sfloat value, sfloat wt)
       return;
     } else bin[nbins-1] += wt;
   } else {
-    int ibin = static_cast<int> ((value-lo)*bininv);
+    int ibin = static_cast<int> (spval((value-lo)*bininv));
     ibin = MIN(ibin,nbins-1);
     if (beyond == EXTRA) ibin++;
     bin[ibin] += wt;

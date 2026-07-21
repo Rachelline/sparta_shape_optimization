@@ -43,7 +43,7 @@ FixVibmode::FixVibmode(SPARTA *sparta, int narg, char **arg) :
 
   random = new RanKnuth(update->ranmaster->uniform());
   sfloat seed = update->ranmaster->uniform();
-  random->reset(seed,comm->me,100);
+  random->reset(spval(seed),comm->me,100);
 
   // create per-particle array
 
@@ -122,8 +122,8 @@ void FixVibmode::update_custom(int index, sfloat temp_thermal,
 
   if (nmode == 1) {
     vibmode[index][0] = static_cast<int>
-      (particle->particles[index].evib / update->boltz /
-       particle->species[isp].vibtemp[0]);
+      (spval(particle->particles[index].evib / update->boltz /
+       particle->species[isp].vibtemp[0]));
     return;
   }
 
@@ -134,8 +134,8 @@ void FixVibmode::update_custom(int index, sfloat temp_thermal,
   sfloat evib = 0.0;
 
   for (int imode = 0; imode < nmode; imode++) {
-    ivib = static_cast<int> (-log(random->uniform()) * temp_vib /
-                             particle->species[isp].vibtemp[imode]);
+    ivib = static_cast<int> (spval(-log(random->uniform()) * temp_vib /
+                             particle->species[isp].vibtemp[imode]));
     vibmode[index][imode] = ivib;
     evib += ivib * update->boltz * particle->species[isp].vibtemp[imode];
   }

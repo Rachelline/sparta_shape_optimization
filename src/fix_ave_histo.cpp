@@ -782,14 +782,14 @@ void FixAveHisto::end_of_step()
     clearerr(fp);
     if (overwrite) fseek(fp,filepos,SEEK_SET);
     fprintf(fp,BIGINT_FORMAT " %d %g %g %g %g\n",ntimestep,nbins,
-            stats_total[0],stats_total[1],stats_total[2],stats_total[3]);
+            spval(stats_total[0]),spval(stats_total[1]),spval(stats_total[2]),spval(stats_total[3]));
     if (stats_total[0] != 0.0)
       for (i = 0; i < nbins; i++)
         fprintf(fp,"%d %g %g %g\n",
-                i+1,coord[i],bin_total[i],bin_total[i]/stats_total[0]);
+                i+1,spval(coord[i]),spval(bin_total[i]),bin_total[i]/stats_total[0]);
     else
       for (i = 0; i < nbins; i++)
-        fprintf(fp,"%d %g %g %g\n",i+1,coord[i],0.0,0.0);
+        fprintf(fp,"%d %g %g %g\n",i+1,spval(coord[i]),0.0,0.0);
 
     if (ferror(fp))
       error->one(FLERR,"Error writing out histogram data");
@@ -843,7 +843,7 @@ void FixAveHisto::bin_one(sfloat value)
       return;
     } else bin[nbins-1] += 1.0;
   } else {
-    int ibin = static_cast<int> ((value-lo)*bininv);
+    int ibin = static_cast<int> (spval((value-lo)*bininv));
     ibin = MIN(ibin,nbins-1);
     if (beyond == EXTRA) ibin++;
     bin[ibin] += 1.0;

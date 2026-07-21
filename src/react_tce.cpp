@@ -116,7 +116,7 @@ int ReactTCE::attempt(Particle::OnePart *ip, Particle::OnePart *jp,
             //Instantaneous z for diatomic molecules
             if (inmode == 1) {
                 avei = static_cast<int>
-                        (ievib / (update->boltz * species[isp].vibtemp[0]));
+                        (spval(ievib / (update->boltz * species[isp].vibtemp[0])));
                 if (avei > 0) zi = 2.0 * avei * log(1.0 / avei + 1.0);
                 else zi = 0.0;
             } else if (inmode > 1) {
@@ -130,7 +130,7 @@ int ReactTCE::attempt(Particle::OnePart *ip, Particle::OnePart *jp,
 
             if (jnmode == 1) {
                 avej = static_cast<int>
-                        (jevib / (update->boltz * species[jsp].vibtemp[0]));
+                        (spval(jevib / (update->boltz * species[jsp].vibtemp[0])));
                 if (avej > 0) zj = 2.0 * avej * log(1.0 / avej + 1.0);
                 else zj = 0.0;
             } else if (jnmode > 1) {

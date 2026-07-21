@@ -156,7 +156,7 @@ void Grid::refine_cell(int icell, int *childlist, Cut2d *cut2d, Cut3d *cut3d)
 
     if (ichild < 0) {
       printf("BAD CHILD %d: %d " CELLINT_FORMAT ": %g %g %g\n",
-             me,icell,parentID,p->x[0],p->x[1],p->x[2]);
+             me,icell,parentID,spval(p->x[0]),spval(p->x[1]),spval(p->x[2]));
       error->one(FLERR,"Adapt refine particle could not be mapped to child cell");
     }
 

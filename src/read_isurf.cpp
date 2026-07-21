@@ -100,7 +100,7 @@ void ReadISurf::command(int narg, char **arg)
   thresh = input->numeric(FLERR,arg[5]);
   if (thresh <= 0 || thresh >= 255)
     error->all(FLERR,"Read_isurf thresh must be bounded as (0,255)");
-  int ithresh = static_cast<int> (thresh);
+  int ithresh = static_cast<int> (spval(thresh));
   if (ithresh == thresh)
     error->all(FLERR,"An integer value for read_isurf thresh is not allowed");
 
@@ -189,12 +189,12 @@ void ReadISurf::command(int narg, char **arg)
 
   if (comm->me == 0) {
     if (screen) {
-      fprintf(screen,"  CPU time = %g secs\n",time_total);
+      fprintf(screen,"  CPU time = %g secs\n",spval(time_total));
       fprintf(screen,"  read/create-surfs percent = %g %g\n",
               100.0*(time2-time1)/time_total,100.0*(time3-time2)/time_total);
     }
     if (logfile) {
-      fprintf(logfile,"  CPU time = %g secs\n",time_total);
+      fprintf(logfile,"  CPU time = %g secs\n",spval(time_total));
       fprintf(logfile,"  read/create-surfs percent = %g %g\n",
               100.0*(time2-time1)/time_total,100.0*(time3-time2)/time_total);
     }
@@ -223,9 +223,9 @@ void ReadISurf::create_hash(int count)
 
   for (int icell = 0; icell < nglocal; icell++) {
     if (!(cinfo[icell].mask & groupbit)) continue;
-    ix = static_cast<int> ((cells[icell].lo[0]-corner[0]) / xyzsize[0] + 0.5);
-    iy = static_cast<int> ((cells[icell].lo[1]-corner[1]) / xyzsize[1] + 0.5);
-    iz = static_cast<int> ((cells[icell].lo[2]-corner[2]) / xyzsize[2] + 0.5);
+    ix = static_cast<int> (spval((cells[icell].lo[0]-corner[0]) / xyzsize[0] + 0.5));
+    iy = static_cast<int> (spval((cells[icell].lo[1]-corner[1]) / xyzsize[1] + 0.5));
+    iz = static_cast<int> (spval((cells[icell].lo[2]-corner[2]) / xyzsize[2] + 0.5));
     index = (bigint) nx * ny*iz + nx*iy + ix;
     (*hash)[index] = icell;
   }
@@ -601,9 +601,9 @@ void ReadISurf::read_corners_parallel(char *gridfile)
   nrvous = 0;
   for (int icell = 0; icell < nglocal; icell++) {
     if (!(cinfo[icell].mask & groupbit)) continue;
-    ix = static_cast<int> ((cells[icell].lo[0]-corner[0]) / xyzsize[0] + 0.5);
-    iy = static_cast<int> ((cells[icell].lo[1]-corner[1]) / xyzsize[1] + 0.5);
-    iz = static_cast<int> ((cells[icell].lo[2]-corner[2]) / xyzsize[2] + 0.5);
+    ix = static_cast<int> (spval((cells[icell].lo[0]-corner[0]) / xyzsize[0] + 0.5));
+    iy = static_cast<int> (spval((cells[icell].lo[1]-corner[1]) / xyzsize[1] + 0.5));
+    iz = static_cast<int> (spval((cells[icell].lo[2]-corner[2]) / xyzsize[2] + 0.5));
 
     index = (bigint) iz * (ny+1)*(nx+1) + (bigint) iy * (nx+1) + ix;
 
@@ -717,7 +717,7 @@ void ReadISurf::read_corners_parallel(char *gridfile)
     int icell = rdatum[i].icell;
     int icorner = rdatum[i].icorner;
     if (precision == INT)
-      cvalues[icell][icorner] = static_cast<int> (rdatum[i].cvalue);
+      cvalues[icell][icorner] = static_cast<int> (spval(rdatum[i].cvalue));
     else cvalues[icell][icorner] = rdatum[i].cvalue;
   }
 

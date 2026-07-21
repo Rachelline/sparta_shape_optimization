@@ -209,8 +209,8 @@ int ReactTCEQK::attempt_qk(Particle::OnePart *ip, Particle::OnePart *jp,
   case DISSOCIATION:
     {
       ecc = pre_etrans + ip->evib;
-      maxlev = static_cast<int> (ecc * inverse_kT);
-      limlev = static_cast<int> (fabs(r->coeff[1]) * inverse_kT);
+      maxlev = static_cast<int> (spval(ecc * inverse_kT));
+      limlev = static_cast<int> (spval(fabs(r->coeff[1]) * inverse_kT));
       if (maxlev > limlev) react_prob = 1.0;
       break;
     }
@@ -221,7 +221,7 @@ int ReactTCEQK::attempt_qk(Particle::OnePart *ip, Particle::OnePart *jp,
         // endothermic reaction
 
         ecc = pre_etrans + ip->evib;
-        maxlev = static_cast<int> (ecc * inverse_kT);
+        maxlev = static_cast<int> (spval(ecc * inverse_kT));
         if (ecc > r->coeff[1]) {
 
           // PROB is the probability ratio of eqn (5.61)
@@ -233,7 +233,7 @@ int ReactTCEQK::attempt_qk(Particle::OnePart *ip, Particle::OnePart *jp,
             if (evib < ecc) react_prob = pow(1.0-evib/ecc,1.5-omega);
           } while (random->uniform() < react_prob);
 
-          ilevel = static_cast<int> (fabs(r->coeff[4]) * inverse_kT);
+          ilevel = static_cast<int> (spval(fabs(r->coeff[4]) * inverse_kT));
           if (iv >= ilevel) react_prob = 1.0;
         }
 
@@ -255,7 +255,7 @@ int ReactTCEQK::attempt_qk(Particle::OnePart *ip, Particle::OnePart *jp,
         // potential post-collision energy
 
         ecc += r->coeff[4];
-        maxlev = static_cast<int> (ecc * inverse_kT);
+        maxlev = static_cast<int> (spval(ecc * inverse_kT));
         do {
           iv = random->uniform()*(maxlev+0.99999999);
           evib = static_cast<sfloat>
@@ -264,7 +264,7 @@ int ReactTCEQK::attempt_qk(Particle::OnePart *ip, Particle::OnePart *jp,
         } while (random->uniform() < prob);
 
         ilevel = static_cast<int>
-          (fabs(r->coeff[4]/update->boltz/species[mspec].vibtemp[0]));
+          (spval(fabs(r->coeff[4]/update->boltz/species[mspec].vibtemp[0])));
         if (iv >= ilevel) react_prob = 1.0;
       }
 

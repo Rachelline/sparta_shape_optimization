@@ -264,7 +264,7 @@ void BalanceGrid::command(int narg, char **arg, int outflag)
     int newproc;
     RanKnuth *random = new RanKnuth(update->ranmaster->uniform());
     sfloat seed = update->ranmaster->uniform();
-    random->reset(seed,comm->me,100);
+    random->reset(spval(seed),comm->me,100);
 
     for (int icell = 0; icell < nglocal; icell++) {
       if (cells[icell].nsplit <= 0) continue;
@@ -460,7 +460,7 @@ void BalanceGrid::command(int narg, char **arg, int outflag)
     if (screen) {
       fprintf(screen,"Balance grid migrated " BIGINT_FORMAT " cells\n",
               nmigrate_all);
-      fprintf(screen,"  CPU time = %g secs\n",time_total);
+      fprintf(screen,"  CPU time = %g secs\n",spval(time_total));
       fprintf(screen,"  reassign/sort/migrate/ghost percent = %g %g %g %g\n",
               100.0*(time2-time1)/time_total,100.0*(time3-time2)/time_total,
               100.0*(time4-time3)/time_total,100.0*(time5-time4)/time_total);
@@ -468,7 +468,7 @@ void BalanceGrid::command(int narg, char **arg, int outflag)
     if (logfile) {
       fprintf(logfile,"Balance grid migrated " BIGINT_FORMAT " cells\n",
               nmigrate_all);
-      fprintf(logfile,"  CPU time = %g secs\n",time_total);
+      fprintf(logfile,"  CPU time = %g secs\n",spval(time_total));
       fprintf(logfile,"  reassign/sort/migrate/ghost percent = %g %g %g %g\n",
               100.0*(time2-time1)/time_total,100.0*(time3-time2)/time_total,
               100.0*(time4-time3)/time_total,100.0*(time5-time4)/time_total);

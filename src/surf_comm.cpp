@@ -182,7 +182,7 @@ void Surf::redistribute_surfs(int n, Line *newlines, Tri *newtris,
   memory->create(proclist,n,"surf:proclist");
 
   for (int i = 0; i < n; i++) {
-    id = (surfint) ubuf(cvalues[i][0]).i;
+    id = (surfint) ubuf(spval(cvalues[i][0])).i;
     proclist[i] = (id-1) % nprocs;
   }
 
@@ -329,9 +329,9 @@ int Surf::rendezvous_redistribute_custom(int n, char *inbuf, int &flag,
 
 	m = 0;
 	for (i = 0; i < n; i++) {
-	  id = (surfint) ubuf(in_custom[m]).i;
+	  id = (surfint) ubuf(spval(in_custom[m])).i;
 	  j = (id-1) / nprocs;
-	  ivector[j] = static_cast<int> (in_custom[m+offset]);
+	  ivector[j] = static_cast<int> (spval(in_custom[m+offset]));
 	  m += skip;
 	}
 
@@ -340,10 +340,10 @@ int Surf::rendezvous_redistribute_custom(int n, char *inbuf, int &flag,
 
 	m = 0;
 	for (i = 0; i < n; i++) {
-	  id = (surfint) ubuf(in_custom[m]).i;
+	  id = (surfint) ubuf(spval(in_custom[m])).i;
 	  j = (id-1) / nprocs;
 	  for (k = 0; k < size; k++)
-	    iarray[j][k] = static_cast<int> (in_custom[m+offset+k]);
+	    iarray[j][k] = static_cast<int> (spval(in_custom[m+offset+k]));
 	  m += skip;
 	}
       }
@@ -354,7 +354,7 @@ int Surf::rendezvous_redistribute_custom(int n, char *inbuf, int &flag,
 
 	m = 0;
 	for (i = 0; i < n; i++) {
-	  id = (surfint) ubuf(in_custom[m]).i;
+	  id = (surfint) ubuf(spval(in_custom[m])).i;
 	  j = (id-1) / nprocs;
 	  dvector[j] = in_custom[m+offset];
 	  m += skip;
@@ -365,7 +365,7 @@ int Surf::rendezvous_redistribute_custom(int n, char *inbuf, int &flag,
 
 	m = 0;
 	for (i = 0; i < n; i++) {
-	  id = (surfint) ubuf(in_custom[m]).i;
+	  id = (surfint) ubuf(spval(in_custom[m])).i;
 	  j = (id-1) / nprocs;
 	  for (k = 0; k < size; k++)
 	    darray[j][k] = in_custom[m+offset+k];
@@ -711,7 +711,7 @@ void Surf::spread_own2local_rendezvous(int n, int type, void *in, void *out)
 
   } else if (type == DOUBLE) {
     for (i = 0; i < nreturn; i++) {
-      index = (int) ubuf(dbuf[m++]).i;
+      index = (int) ubuf(spval(dbuf[m++])).i;
       if (n == 1)
 	doutbuf[index] = dbuf[m++];
       else {
@@ -828,7 +828,7 @@ void Surf::assign_unique()
   if (!urandom) {
     urandom = new RanKnuth(update->ranmaster->uniform());
     sfloat seed = update->ranmaster->uniform();
-    urandom->reset(seed,me,100);
+    urandom->reset(spval(seed),me,100);
   }
 
   // allocate memory for rvous input
@@ -1099,7 +1099,7 @@ int Surf::rendezvous_local2own(int n, char *inbuf,
     }
   } else if (type == DOUBLE) {
     for (int i = 0; i < n; i++) {
-      index = static_cast<int> (dbuf[m++]);
+      index = static_cast<int> (spval(dbuf[m++]));
       if (size == 1)
 	dout[index] = dbuf[m++];
       else {

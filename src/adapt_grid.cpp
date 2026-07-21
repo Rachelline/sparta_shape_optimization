@@ -196,7 +196,7 @@ void AdaptGrid::command(int narg, char **arg)
       fprintf(screen,"  " BIGINT_FORMAT " cells refined, " BIGINT_FORMAT
               " cells coarsened\n",nrefine_total,ncoarsen_total);
       fprintf(screen,"  adapted to " BIGINT_FORMAT " grid cells\n",grid->ncell);
-      fprintf(screen,"  CPU time = %g secs\n",time_total);
+      fprintf(screen,"  CPU time = %g secs\n",spval(time_total));
       fprintf(screen,"  adapt/redo percent = %g %g\n",
               100.0*(time2-time1)/time_total,100.0*(time3-time2)/time_total);
     }
@@ -205,7 +205,7 @@ void AdaptGrid::command(int narg, char **arg)
       fprintf(logfile,"  " BIGINT_FORMAT " cells refined, " BIGINT_FORMAT
               " cells coarsened\n",nrefine_total,ncoarsen_total);
       fprintf(logfile,"  adapted to " BIGINT_FORMAT " grid cells\n",grid->ncell);
-      fprintf(logfile,"  CPU time = %g secs\n",time_total);
+      fprintf(logfile,"  CPU time = %g secs\n",spval(time_total));
       fprintf(logfile,"  adapt/redo percent = %g %g\n",
               100.0*(time2-time1)/time_total,100.0*(time3-time2)/time_total);
     }
@@ -516,7 +516,7 @@ void AdaptGrid::setup(int iter)
   if (style == RANDOM) {
     random = new RanKnuth(update->ranmaster->uniform());
     sfloat seed = update->ranmaster->uniform();
-    random->reset(seed,comm->me,100);
+    random->reset(spval(seed),comm->me,100);
   } else random = NULL;
 
   // list of new cell indices for one refined cell
@@ -1207,7 +1207,7 @@ void AdaptGrid::coarsen_particle()
     nchild = clist[i].nchild;
 
     np = 0;
-    for (m = 0; m < nchild; m++) np += static_cast<int> (values[m]);
+    for (m = 0; m < nchild; m++) np += static_cast<int> (spval(values[m]));
     if (np < ccount) clist[i].flag = 1;
     else clist[i].flag = 0;
   }
@@ -1231,7 +1231,7 @@ void AdaptGrid::coarsen_surf()
     nchild = clist[i].nchild;
 
     anysurf = 0;
-    for (m = 0; m < nchild; m++) anysurf += static_cast<int> (values[m]);
+    for (m = 0; m < nchild; m++) anysurf += static_cast<int> (spval(values[m]));
     if (anysurf) clist[i].flag = 1;
     else clist[i].flag = 0;
   }

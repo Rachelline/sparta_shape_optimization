@@ -182,14 +182,14 @@ void ReadGrid::read(char *filename, int external)
   if (comm->me == 0) {
     if (screen) {
       fprintf(screen,"  grid cells = " BIGINT_FORMAT "\n",grid->ncell);
-      fprintf(screen,"  CPU time = %g secs\n",time_total);
+      fprintf(screen,"  CPU time = %g secs\n",spval(time_total));
       fprintf(screen,"  read/setup percent = %g %g\n",
               100.0*(time2-time1)/time_total,100.0*(time3-time2)/time_total);
     }
 
     if (logfile) {
       fprintf(logfile,"  grid cells = " BIGINT_FORMAT "\n",grid->ncell);
-      fprintf(logfile,"  CPU time = %g secs\n",time_total);
+      fprintf(logfile,"  CPU time = %g secs\n",spval(time_total));
       fprintf(logfile,"  read/setup percent = %g %g\n",
               100.0*(time2-time1)/time_total,100.0*(time3-time2)/time_total);
     }
@@ -363,13 +363,13 @@ void ReadGrid::create_custom()
       if (size_custom[ic] == 0) {
 	int *ivector = grid->eivec[grid->ewhich[index]];
 	for (i = 0; i < nlocal; i++)
-	  ivector[i] = static_cast<int> (cvalues[i][icvalue]);
+	  ivector[i] = static_cast<int> (spval(cvalues[i][icvalue]));
 	icvalue++;
       } else {
 	int **iarray = grid->eiarray[grid->ewhich[index]];
 	for (i = 0; i < nlocal; i++)
 	  for (j = 0; j < size_custom[ic]; j++)
-	    iarray[i][j] = static_cast<int> (cvalues[i][icvalue+j]);
+	    iarray[i][j] = static_cast<int> (spval(cvalues[i][icvalue+j]));
 	icvalue += size_custom[ic];
       }
 

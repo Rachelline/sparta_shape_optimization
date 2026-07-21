@@ -294,7 +294,7 @@ void *sparta_extract_variable(void *ptr, char *name)
 
   if (sparta->input->variable->equal_style(ivar)) {
     double *dptr = (double *) malloc(sizeof(double));
-    *dptr = sparta->input->variable->compute_equal(ivar);
+    *dptr = spval(sparta->input->variable->compute_equal(ivar));
     return (void *) dptr;
   }
 

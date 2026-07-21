@@ -891,7 +891,7 @@ void ReactBird::print_reaction_ambipolar(OneReaction *r)
   printf("\n");
   printf("  ncoeff %d:",r->ncoeff);
   for (int i = 0; i < r->ncoeff; i++)
-    printf(" %g",r->coeff[i]);
+    printf(" %g",spval(r->coeff[i]));
   printf("\n");
 };
 

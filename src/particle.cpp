@@ -162,7 +162,7 @@ void Particle::init()
   if (!wrandom) {
     wrandom = new RanKnuth(update->ranmaster->uniform());
     sfloat seed = update->ranmaster->uniform();
-    wrandom->reset(seed,me,100);
+    wrandom->reset(spval(seed),me,100);
   }
 
   // if vibstyle = DISCRETE,
@@ -545,7 +545,7 @@ void Particle::post_weight()
     // ratio > 1.0 is candidate for cloning
     // create Nclone new particles each with unique ID
 
-    nclone = static_cast<int> (ratio);
+    nclone = static_cast<int> (spval(ratio));
     fraction = ratio - nclone;
     nclone--;
     if (wrandom->uniform() < fraction) nclone++;

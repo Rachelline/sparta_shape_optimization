@@ -721,7 +721,7 @@ void FixEmitSurf::perform_task_onepass()
       for (isp = 0; isp < nspecies; isp++) {
         ispecies = species[isp];
         ntarget = tasks[i].ntargetsp[isp]+random->uniform();
-        ninsert = static_cast<int> (ntarget);
+        ninsert = static_cast<int> (spval(ntarget));
         scosine = indot / vscale[isp];
 
         // loop over ninsert for each species
@@ -823,7 +823,7 @@ void FixEmitSurf::perform_task_onepass()
       if (npmode == FLOW) ntarget = tasks[i].ntarget;
       else if (npmode == CONSTANT) ntarget = np * tasks[i].ntarget;
       else if (npmode == VARIABLE) ntarget = npcurrent * tasks[i].ntarget;
-      ninsert = static_cast<int> (ntarget + random->uniform());
+      ninsert = static_cast<int> (spval(ntarget + random->uniform()));
 
       // loop over ninsert for all species
       // use cummulative fractions to assign species for each insertion
@@ -988,7 +988,7 @@ void FixEmitSurf::perform_task_twopass()
     if (perspecies) {
       for (isp = 0; isp < nspecies; isp++) {
         ntarget = tasks[i].ntargetsp[isp]+random->uniform();
-        ninsert = static_cast<int> (ntarget);
+        ninsert = static_cast<int> (spval(ntarget));
         ninsert_values[i][isp] = ninsert;
       }
     } else {
@@ -1001,7 +1001,7 @@ void FixEmitSurf::perform_task_twopass()
       if (npmode == FLOW) ntarget = tasks[i].ntarget;
       else if (npmode == CONSTANT) ntarget = np * tasks[i].ntarget;
       else if (npmode == VARIABLE) ntarget = npcurrent * tasks[i].ntarget;
-      ninsert = static_cast<int> (ntarget + random->uniform());
+      ninsert = static_cast<int> (spval(ntarget + random->uniform()));
       ninsert_values[i][0] = ninsert;
     }
   }

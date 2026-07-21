@@ -397,7 +397,7 @@ void FixEmitFaceFile::perform_task()
       for (isp = 0; isp < nspecies; isp++) {
         ispecies = species[isp];
         ntarget = tasks[i].ntargetsp[isp]+random->uniform();
-        ninsert = static_cast<int> (ntarget);
+        ninsert = static_cast<int> (spval(ntarget));
         scosine = indot / vscale[isp];
 
         nactual = 0;
@@ -446,7 +446,7 @@ void FixEmitFaceFile::perform_task()
     } else {
       cummulative = tasks[i].cummulative;
       ntarget = tasks[i].ntarget+random->uniform();
-      ninsert = static_cast<int> (ntarget);
+      ninsert = static_cast<int> (spval(ntarget));
 
       nactual = 0;
       for (int m = 0; m < ninsert; m++) {
@@ -1310,11 +1310,11 @@ void FixEmitFaceFile::print_task(int i)
          comm->me,i,tasks[i].pcell,tasks[i].icell);
   printf("TASK: proc %d index %d lo %g %g %g hi %g %g %g\n",
          comm->me,i,
-         tasks[i].lo[0],tasks[i].lo[1],tasks[i].lo[2],
-         tasks[i].hi[0],tasks[i].hi[1],tasks[i].hi[2]);
+         spval(tasks[i].lo[0]),spval(tasks[i].lo[1]),spval(tasks[i].lo[2]),
+         spval(tasks[i].hi[0]),spval(tasks[i].hi[1]),spval(tasks[i].hi[2]));
   printf("TASK: proc %d index %d ntarget %g %g %g nrho %g vstream %g %g %g\n",
-         comm->me,i,tasks[i].ntarget,
-         tasks[i].ntargetsp[0],tasks[i].ntargetsp[1],
-         tasks[i].nrho,
-         tasks[i].vstream[0],tasks[i].vstream[1],tasks[i].vstream[2]);
+         comm->me,i,spval(tasks[i].ntarget),
+         spval(tasks[i].ntargetsp[0]),spval(tasks[i].ntargetsp[1]),
+         spval(tasks[i].nrho),
+         spval(tasks[i].vstream[0]),spval(tasks[i].vstream[1]),spval(tasks[i].vstream[2]));
 }

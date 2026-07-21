@@ -38,14 +38,14 @@ namespace MathExtra {
   void snormalize3(const T, const T *v, T *ans);
   template <typename T>
   void negate3(T *v);
-  template <typename T>
-  void scale3(T s, T *v);
-  template <typename T>
-  void scale3(T s, const T *v, T *ans);
-  template <typename T>
-  void axpy3(T alpha, const T *x, T *y);
-  template <typename T>
-  void axpy3(T alpha, const T *x, const T *y,
+  template <typename S, typename T>
+  void scale3(S s, T *v);
+  template <typename S, typename T>
+  void scale3(S s, const T *v, T *ans);
+  template <typename S, typename T>
+  void axpy3(S alpha, const T *x, T *y);
+  template <typename S, typename T>
+  void axpy3(S alpha, const T *x, const T *y,
              T *ynew);
   template <typename T>
   void add3(const T *v1, const T *v2, T *ans);
@@ -192,8 +192,8 @@ void MathExtra::negate3(T *v)
    scale vector v by s in place
 ------------------------------------------------------------------------- */
 
-template <typename T>
-void MathExtra::scale3(T s, T *v)
+template <typename S, typename T>
+void MathExtra::scale3(S s, T *v)
 {
   v[0] *= s;
   v[1] *= s;
@@ -204,8 +204,8 @@ void MathExtra::scale3(T s, T *v)
    scale vector v by s, return in ans
 ------------------------------------------------------------------------- */
 
-template <typename T>
-void MathExtra::scale3(T s, const T *v, T *ans)
+template <typename S, typename T>
+void MathExtra::scale3(S s, const T *v, T *ans)
 {
   ans[0] = s*v[0];
   ans[1] = s*v[1];
@@ -217,8 +217,8 @@ void MathExtra::scale3(T s, const T *v, T *ans)
    y is replaced by result
 ------------------------------------------------------------------------- */
 
-template <typename T>
-void MathExtra::axpy3(T alpha, const T *x, T *y)
+template <typename S, typename T>
+void MathExtra::axpy3(S alpha, const T *x, T *y)
 {
   y[0] += alpha*x[0];
   y[1] += alpha*x[1];
@@ -229,8 +229,8 @@ void MathExtra::axpy3(T alpha, const T *x, T *y)
    axpy: ynew = alpha*x + y
 ------------------------------------------------------------------------- */
 
-template <typename T>
-void MathExtra::axpy3(T alpha, const T *x, const T *y,
+template <typename S, typename T>
+void MathExtra::axpy3(S alpha, const T *x, const T *y,
                       T *ynew)
 {
   ynew[0] += alpha*x[0] + y[0];

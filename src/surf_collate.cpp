@@ -178,7 +178,7 @@ int Surf::rendezvous_vector(int n, char *inbuf, int &flag, int *&proclist,
 
   k = 0;
   for (i = 0; i < n; i++) {
-    id = (surfint) ubuf(dbuf[k++]).i;
+    id = (surfint) ubuf(spval(dbuf[k++])).i;
     m = (id-1) / nprocs;
     out[m] += dbuf[k++];
   }
@@ -343,7 +343,7 @@ int Surf::rendezvous_array(int n, char *inbuf,
 
   m = 0;
   for (int i = 0; i < n; i++) {
-    id = (surfint) ubuf(in_rvous[m++]).i;
+    id = (surfint) ubuf(spval(in_rvous[m++])).i;
     k = (id-1) / nprocs * ncol;
     for (j = 0; j < ncol; j++)
       out[k++] += in_rvous[m++];

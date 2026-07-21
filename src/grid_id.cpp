@@ -44,9 +44,9 @@ void Grid::id_point_child(sfloat *x, sfloat *lo, sfloat *hi,
   // inverse of master equation in id_child_lohi() for cell boundaries
   // for point on or eps from cell boundary, can produce round-off error
 
-  ix = static_cast<int> ((x[0]-lo[0]) * nx/(hi[0]-lo[0]));
-  iy = static_cast<int> ((x[1]-lo[1]) * ny/(hi[1]-lo[1]));
-  iz = static_cast<int> ((x[2]-lo[2]) * nz/(hi[2]-lo[2]));
+  ix = static_cast<int> (spval((x[0]-lo[0]) * nx/(hi[0]-lo[0])));
+  iy = static_cast<int> (spval((x[1]-lo[1]) * ny/(hi[1]-lo[1])));
+  iz = static_cast<int> (spval((x[2]-lo[2]) * nz/(hi[2]-lo[2])));
 
   // insure indices match grid cell boundaries in case of round-off error
   // via master equation id_child_lohi() that defines cell boundaries

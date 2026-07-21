@@ -221,7 +221,7 @@ void FixGridCheck::end_of_step()
         sprintf(str,
                 "Particle %d,%d on proc %d at %g %g %d is inside surfs in cell "
                 CELLINT_FORMAT " on timestep " BIGINT_FORMAT,
-                i,particles[i].id,comm->me,x[0],x[1],icell,cells[icell].id,
+                i,particles[i].id,comm->me,spval(x[0]),spval(x[1]),icell,cells[icell].id,
                 update->ntimestep);
         error->one(FLERR,str);
       }

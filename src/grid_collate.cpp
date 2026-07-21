@@ -110,7 +110,7 @@ void Grid::collate_vector_implicit(int n, cellint *ids,
 
   m = 0;
   for (i = 0; i < nout; i++) {
-    cellID = (cellint) ubuf(out_rvous[m++]).u;
+    cellID = (cellint) ubuf(spval(out_rvous[m++])).u;
     icell = (*hash)[cellID];
     out[icell] += out_rvous[m++];
   }
@@ -212,7 +212,7 @@ void Grid::collate_array_implicit(int nrow, int ncol, cellint *ids,
 
   m = 0;
   for (i = 0; i < nout; i++) {
-    cellID = (cellint) ubuf(out_rvous[m++]).u;
+    cellID = (cellint) ubuf(spval(out_rvous[m++])).u;
     icell = (*hash)[cellID];
     for (j = 0; j < ncol; j++)
       out[icell][j] += out_rvous[m++];
@@ -299,7 +299,7 @@ void Grid::owned_to_ghost_array(int nrequest, int ncol, cellint *ghostIDs,
 
   m = 0;
   for (i = 0; i < nout; i++) {
-    cellID = (cellint) ubuf(out_rvous[m++]).u;
+    cellID = (cellint) ubuf(spval(out_rvous[m++])).u;
     icell = (*hash)[cellID];
     for (j = 0; j < ncol; j++)
       out[icell][j] += out_rvous[m++];
@@ -343,8 +343,8 @@ int Grid::rendezvous_owned_to_ghost(int n, char *inbuf,
 
   m = k = 0;
   for (i = 0; i < n; i++) {
-    proc = (int) ubuf(in[m++]).i;
-    cellID = (cellint) ubuf(in[m++]).u;
+    proc = (int) ubuf(spval(in[m++])).i;
+    cellID = (cellint) ubuf(spval(in[m++])).u;
     int icell = (*hash)[cellID];
 
     proclist[i] = proc;

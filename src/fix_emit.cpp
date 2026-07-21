@@ -50,7 +50,7 @@ FixEmit::FixEmit(SPARTA *sparta, int narg, char **arg) :
   int me = comm->me;
   random = new RanKnuth(update->ranmaster->uniform());
   sfloat seed = update->ranmaster->uniform();
-  random->reset(seed,me,100);
+  random->reset(spval(seed),me,100);
 
   // counters common to all emit styles for output from fix
 
@@ -189,7 +189,7 @@ int FixEmit::subsonic_temperature_check(int flag, sfloat tempmax)
     MPI_Allreduce(&tempmax,&allmax,1,MPI_SFLOAT,MPI_MAX,world);
     if (comm->me == 0) {
       char str[128];
-      sprintf(str,"Excessive subsonic thermal temp = %g",allmax);
+      sprintf(str,"Excessive subsonic thermal temp = %g",spval(allmax));
       error->warning(FLERR,str);
     }
     return 1;

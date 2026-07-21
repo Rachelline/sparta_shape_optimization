@@ -149,14 +149,14 @@ void WriteISurf::command(int narg, char **arg)
   if (comm->me == 0) {
     if (screen) {
       fprintf(screen,"  corner points = %d\n",ncorner);
-      fprintf(screen,"  CPU time = %g secs\n",time_total);
+      fprintf(screen,"  CPU time = %g secs\n",spval(time_total));
       fprintf(screen,"  collect/write percent = %g %g\n",
               100.0*(time2-time1)/time_total,100.0*(time3-time2)/time_total);
     }
 
     if (logfile) {
       fprintf(logfile,"  corner points = %d\n",ncorner);
-      fprintf(logfile,"  CPU time = %g secs\n",time_total);
+      fprintf(logfile,"  CPU time = %g secs\n",spval(time_total));
       fprintf(logfile,"  collect/write percent = %g %g\n",
               100.0*(time2-time1)/time_total,100.0*(time3-time2)/time_total);
     }
@@ -196,11 +196,11 @@ void WriteISurf::collect_values()
     // ix,iy,iz = cell index (1 to Nxyz) within array of grid cells
 
     ix =
-      static_cast<int> ((cells[icell].lo[0]-cornerlo[0]) / xyzsize[0] + 0.5) + 1;
+      static_cast<int> (spval((cells[icell].lo[0]-cornerlo[0]) / xyzsize[0] + 0.5)) + 1;
     iy =
-      static_cast<int> ((cells[icell].lo[1]-cornerlo[1]) / xyzsize[1] + 0.5) + 1;
+      static_cast<int> (spval((cells[icell].lo[1]-cornerlo[1]) / xyzsize[1] + 0.5)) + 1;
     iz =
-      static_cast<int> ((cells[icell].lo[2]-cornerlo[2]) / xyzsize[2] + 0.5) + 1;
+      static_cast<int> (spval((cells[icell].lo[2]-cornerlo[2]) / xyzsize[2] + 0.5)) + 1;
 
     // index = corner point index, 0 to (Nx+1)*(Ny+1)*(Nz+1) - 1
     // x varies fastest, then y, z slowest
@@ -248,7 +248,7 @@ void WriteISurf::write_file(FILE *fp)
     uint8_t *ibuf8;
     memory->create(ibuf8,ncorner,"write_isurf:ibuf8");
     for (int i = 0; i < ncorner; i++)
-      ibuf8[i] = static_cast<int> (dbufall[i]);
+      ibuf8[i] = static_cast<int> (spval(dbufall[i]));
     fwrite(ibuf8,sizeof(uint8_t),ncorner,fp);
     memory->destroy(ibuf8);
   }

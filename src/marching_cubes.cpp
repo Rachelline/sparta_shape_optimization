@@ -107,14 +107,14 @@ void MarchingCubes::invoke(sfloat **cvalues, sfloat ***mvalues, int *svalues, in
     // Vzyx encodes this as 0/1 in each dim
 
     if (cvalues) {
-      v000 = cvalues[icell][0];
-      v001 = cvalues[icell][1];
-      v010 = cvalues[icell][2];
-      v011 = cvalues[icell][3];
-      v100 = cvalues[icell][4];
-      v101 = cvalues[icell][5];
-      v110 = cvalues[icell][6];
-      v111 = cvalues[icell][7];
+      v000 = spval(cvalues[icell][0]);
+      v001 = spval(cvalues[icell][1]);
+      v010 = spval(cvalues[icell][2]);
+      v011 = spval(cvalues[icell][3]);
+      v100 = spval(cvalues[icell][4]);
+      v101 = spval(cvalues[icell][5]);
+      v110 = spval(cvalues[icell][6]);
+      v111 = spval(cvalues[icell][7]);
 
       i0  = interpolate(v000,v001,lo[0],hi[0]);
       i1  = interpolate(v001,v011,lo[1],hi[1]);

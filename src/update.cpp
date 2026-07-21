@@ -530,10 +530,10 @@ template < int DIM, int SURF, int OPT > void Update::move()
         }
 
         if (optmove) {
-          const int ip = static_cast<int>((xnew[0] - boxlo[0])/dx);
-          const int jp = static_cast<int>((xnew[1] - boxlo[1])/dy);
+          const int ip = static_cast<int>(spval((xnew[0] - boxlo[0])/dx));
+          const int jp = static_cast<int>(spval((xnew[1] - boxlo[1])/dy));
           int kp = 0;
-          if (DIM == 3) kp = static_cast<int>((xnew[2] - boxlo[2])/dz);
+          if (DIM == 3) kp = static_cast<int>(spval((xnew[2] - boxlo[2])/dz));
 
           int cellIdx = (kp*grid->uny + jp)*grid->unx + ip + 1;
 
@@ -1797,7 +1797,7 @@ void Update::global(int narg, char **arg)
       if (strcmp(arg[iarg+1],"grid") == 0) mem_limit_grid_flag = 1;
       else {
         sfloat factor = input->numeric(FLERR,arg[iarg+1]);
-        bigint global_mem_limit_big = static_cast<bigint> (factor * 1024*1024);
+        bigint global_mem_limit_big = static_cast<bigint> (spval(factor * 1024*1024));
         if (global_mem_limit_big < 0) error->all(FLERR,"Illegal global command");
         if (global_mem_limit_big > MAXSMALLINT)
           error->all(FLERR,"Global mem/limit setting cannot exceed 2GB");

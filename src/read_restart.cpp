@@ -371,7 +371,7 @@ void ReadRestart::command(int narg, char **arg)
 
   if (me == 0) {
     if (screen) {
-      fprintf(screen,"  CPU time = %g secs\n",time_total);
+      fprintf(screen,"  CPU time = %g secs\n",spval(time_total));
       fprintf(screen,"  read/surf2grid/rebalance/ghost/inout "
               "percent = %g %g %g %g %g\n",
               100.0*(time2-time1)/time_total,100.0*(time3-time2)/time_total,
@@ -379,7 +379,7 @@ void ReadRestart::command(int narg, char **arg)
               100.0*(time6-time5)/time_total);
     }
     if (logfile) {
-      fprintf(logfile,"  CPU time = %g secs\n",time_total);
+      fprintf(logfile,"  CPU time = %g secs\n",spval(time_total));
       fprintf(logfile,"  read/surf2grid/rebalance/ghost/inout "
               "percent = %g %g %g %g %g\n",
               100.0*(time2-time1)/time_total,100.0*(time3-time2)/time_total,

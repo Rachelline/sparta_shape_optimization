@@ -137,7 +137,7 @@ SurfCollideImpulsive::SurfCollideImpulsive(SPARTA *sparta, int narg, char **arg)
 
   random = new RanKnuth(update->ranmaster->uniform());
   sfloat seed = update->ranmaster->uniform();
-  random->reset(seed,comm->me,100);
+  random->reset(spval(seed),comm->me,100);
 }
 
 /* ---------------------------------------------------------------------- */

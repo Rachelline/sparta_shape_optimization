@@ -2321,17 +2321,17 @@ void Cut3d::failed_cell()
 {
   printf("Cut3d failed on proc %d in cell ID: " CELLINT_FORMAT "\n",comm->me,id);
   Surf::Tri *tris = surf->tris;
-  printf("  lo corner %g %g %g\n",lo[0],lo[1],lo[2]);
-  printf("  hi corner %g %g %g\n",hi[0],hi[1],hi[2]);
+  printf("  lo corner %g %g %g\n",spval(lo[0]),spval(lo[1]),spval(lo[2]));
+  printf("  hi corner %g %g %g\n",spval(hi[0]),spval(hi[1]),spval(hi[2]));
   printf("  # of surfs = %d out of " BIGINT_FORMAT "\n",nsurf,surf->nsurf);
   for (int i = 0; i < nsurf; i++) {
     printf("  surf " SURFINT_FORMAT ":\n",tris[surfs[i]].id);
     printf("     p1: %g %g %g\n",
-           tris[surfs[i]].p1[0],tris[surfs[i]].p1[1],tris[surfs[i]].p1[2]);
+           spval(tris[surfs[i]].p1[0]),spval(tris[surfs[i]].p1[1]),spval(tris[surfs[i]].p1[2]));
     printf("     p2: %g %g %g\n",
-           tris[surfs[i]].p2[0],tris[surfs[i]].p2[1],tris[surfs[i]].p2[2]);
+           spval(tris[surfs[i]].p2[0]),spval(tris[surfs[i]].p2[1]),spval(tris[surfs[i]].p2[2]));
     printf("     p3: %g %g %g\n",
-           tris[surfs[i]].p3[0],tris[surfs[i]].p3[1],tris[surfs[i]].p3[2]);
+           spval(tris[surfs[i]].p3[0]),spval(tris[surfs[i]].p3[1]),spval(tris[surfs[i]].p3[2]));
   }
 }
 
@@ -2389,7 +2389,7 @@ void Cut3d::print_bpg(const char *str)
       sfloat dy = p1[1]-p2[1];
       sfloat dz = p1[2]-p2[2];
       sfloat delta = sqrt(dx*dx+dy*dy+dz*dz);
-      printf("%g",delta);
+      printf("%g",spval(delta));
       if (j < verts[i].nedge-1) printf(" ");
       newedge = edges[iedge].next[dir];
       newdir = edges[iedge].dirnext[dir];
@@ -2424,7 +2424,7 @@ void Cut3d::print_bpg(const char *str)
 
     if (verts[i].norm) {
       printf(" norm [%g %g %g]\n",
-             verts[i].norm[0],verts[i].norm[1],verts[i].norm[2]);
+             spval(verts[i].norm[0]),spval(verts[i].norm[1]),spval(verts[i].norm[2]));
     } else printf(" [NULL]\n");
   }
 
@@ -2433,8 +2433,8 @@ void Cut3d::print_bpg(const char *str)
     if (edges[i].active == 0) continue;
 
     printf("   %d %d %d",i,edges[i].active,edges[i].style);
-    printf(" (%g %g %g)",edges[i].p1[0],edges[i].p1[1],edges[i].p1[2]);
-    printf(" (%g %g %g)",edges[i].p2[0],edges[i].p2[1],edges[i].p2[2]);
+    printf(" (%g %g %g)",spval(edges[i].p1[0]),spval(edges[i].p1[1]),spval(edges[i].p1[2]));
+    printf(" (%g %g %g)",spval(edges[i].p2[0]),spval(edges[i].p2[1]),spval(edges[i].p2[2]));
     if (edges[i].nvert == 0) printf(" [-1]");
     if (edges[i].nvert == 1) {
       printf(" [%d]",edges[i].verts[0]);
@@ -2468,7 +2468,7 @@ void Cut3d::print_loops()
   for (int i = 0; i < loops.n; i++) {
     printf("  loop %d\n",i);
     printf("    flag %d\n",loops[i].flag);
-    printf("    volume %g\n",loops[i].volume);
+    printf("    volume %g\n",spval(loops[i].volume));
     printf("    nverts %d\n",loops[i].n);
     printf("    verts: [");
     int ivert = loops[i].first;

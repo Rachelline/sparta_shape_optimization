@@ -733,7 +733,7 @@ char *Variable::retrieve(char *name)
 
   } else if (style[ivar] == EQUAL) {
     sfloat answer = evaluate(data[ivar][0],NULL);
-    sprintf(data[ivar][1],"%.15g",answer);
+    sprintf(data[ivar][1],"%.15g",spval(answer));
     str = data[ivar][1];
 
   } else if (style[ivar] == FORMAT) {
@@ -741,7 +741,7 @@ char *Variable::retrieve(char *name)
     if (jvar == -1) return NULL;
     if (!equal_style(jvar)) return NULL;
     sfloat answer = compute_equal(jvar);
-    sprintf(data[ivar][2],data[ivar][1],answer);
+    sprintf(data[ivar][2],data[ivar][1],spval(answer));
     str = data[ivar][2];
 
   } else if (style[ivar] == GETENV) {
@@ -755,7 +755,7 @@ char *Variable::retrieve(char *name)
     strcpy(data[ivar][1],result);
     str = data[ivar][1];
   } else if (style[ivar] == INTERNAL) {
-    sprintf(data[ivar][0],"%.15g",dvalue[ivar]);
+    sprintf(data[ivar][0],"%.15g",spval(dvalue[ivar]));
     str = data[ivar][0];
 
   } else if (style[ivar] == PYTHON) {
@@ -2630,7 +2630,7 @@ sfloat Variable::collapse_tree(Tree *tree)
     if (randomparticle == NULL) {
       randomparticle = new RanKnuth(update->ranmaster->uniform());
       sfloat seed = update->ranmaster->uniform();
-      randomparticle->reset(seed,me,100);
+      randomparticle->reset(spval(seed),me,100);
     }
     return 0.0;
   }
@@ -2643,7 +2643,7 @@ sfloat Variable::collapse_tree(Tree *tree)
     if (randomparticle == NULL) {
       randomparticle = new RanKnuth(update->ranmaster->uniform());
       sfloat seed = update->ranmaster->uniform();
-      randomparticle->reset(seed,me,100);
+      randomparticle->reset(spval(seed),me,100);
     }
     return 0.0;
   }
@@ -2684,8 +2684,8 @@ sfloat Variable::collapse_tree(Tree *tree)
   }
 
   if (tree->type == STAGGER) {
-    int ivalue1 = static_cast<int> (collapse_tree(tree->first));
-    int ivalue2 = static_cast<int> (collapse_tree(tree->second));
+    int ivalue1 = static_cast<int> (spval(collapse_tree(tree->first)));
+    int ivalue2 = static_cast<int> (spval(collapse_tree(tree->second)));
     if (tree->first->type != VALUE || tree->second->type != VALUE) return 0.0;
     tree->type = VALUE;
     if (ivalue1 <= 0 || ivalue2 <= 0 || ivalue1 <= ivalue2)
@@ -2698,9 +2698,9 @@ sfloat Variable::collapse_tree(Tree *tree)
   }
 
   if (tree->type == LOGFREQ) {
-    int ivalue1 = static_cast<int> (collapse_tree(tree->first));
-    int ivalue2 = static_cast<int> (collapse_tree(tree->second));
-    int ivalue3 = static_cast<int> (collapse_tree(tree->extra[0]));
+    int ivalue1 = static_cast<int> (spval(collapse_tree(tree->first)));
+    int ivalue2 = static_cast<int> (spval(collapse_tree(tree->second)));
+    int ivalue3 = static_cast<int> (spval(collapse_tree(tree->extra[0])));
     if (tree->first->type != VALUE || tree->second->type != VALUE ||
         tree->extra[0]->type != VALUE) return 0.0;
     tree->type = VALUE;
@@ -2718,9 +2718,9 @@ sfloat Variable::collapse_tree(Tree *tree)
   }
 
   if (tree->type == STRIDE) {
-    int ivalue1 = static_cast<int> (collapse_tree(tree->first));
-    int ivalue2 = static_cast<int> (collapse_tree(tree->second));
-    int ivalue3 = static_cast<int> (collapse_tree(tree->extra[0]));
+    int ivalue1 = static_cast<int> (spval(collapse_tree(tree->first)));
+    int ivalue2 = static_cast<int> (spval(collapse_tree(tree->second)));
+    int ivalue3 = static_cast<int> (spval(collapse_tree(tree->extra[0])));
     if (tree->first->type != VALUE || tree->second->type != VALUE ||
         tree->extra[0]->type != VALUE) return 0.0;
     tree->type = VALUE;
@@ -2950,7 +2950,7 @@ sfloat Variable::eval_tree(Tree *tree, int i)
     if (randomparticle == NULL) {
       randomparticle = new RanKnuth(update->ranmaster->uniform());
       sfloat seed = update->ranmaster->uniform();
-      randomparticle->reset(seed,me,100);
+      randomparticle->reset(spval(seed),me,100);
     }
     return randomparticle->uniform()*(upper-lower)+lower;
   }
@@ -2962,7 +2962,7 @@ sfloat Variable::eval_tree(Tree *tree, int i)
     if (randomparticle == NULL) {
       randomparticle = new RanKnuth(update->ranmaster->uniform());
       sfloat seed = update->ranmaster->uniform();
-      randomparticle->reset(seed,me,100);
+      randomparticle->reset(spval(seed),me,100);
     }
     return mu + sigma*randomparticle->gaussian();
   }
@@ -2984,8 +2984,8 @@ sfloat Variable::eval_tree(Tree *tree, int i)
   }
 
   if (tree->type == STAGGER) {
-    int ivalue1 = static_cast<int> (eval_tree(tree->first,i));
-    int ivalue2 = static_cast<int> (eval_tree(tree->second,i));
+    int ivalue1 = static_cast<int> (spval(eval_tree(tree->first,i)));
+    int ivalue2 = static_cast<int> (spval(eval_tree(tree->second,i)));
     if (ivalue1 <= 0 || ivalue2 <= 0 || ivalue1 <= ivalue2)
       error->one(FLERR,"Invalid math function in variable formula");
     int lower = update->ntimestep/ivalue1 * ivalue1;
@@ -2996,9 +2996,9 @@ sfloat Variable::eval_tree(Tree *tree, int i)
   }
 
   if (tree->type == LOGFREQ) {
-    int ivalue1 = static_cast<int> (eval_tree(tree->first,i));
-    int ivalue2 = static_cast<int> (eval_tree(tree->second,i));
-    int ivalue3 = static_cast<int> (eval_tree(tree->extra[0],i));
+    int ivalue1 = static_cast<int> (spval(eval_tree(tree->first,i)));
+    int ivalue2 = static_cast<int> (spval(eval_tree(tree->second,i)));
+    int ivalue3 = static_cast<int> (spval(eval_tree(tree->extra[0],i)));
     if (ivalue1 <= 0 || ivalue2 <= 0 || ivalue3 <= 0 || ivalue2 >= ivalue3)
       error->one(FLERR,"Invalid math function in variable formula");
     if (update->ntimestep < ivalue1) arg = ivalue1;
@@ -3013,9 +3013,9 @@ sfloat Variable::eval_tree(Tree *tree, int i)
   }
 
   if (tree->type == STRIDE) {
-    int ivalue1 = static_cast<int> (eval_tree(tree->first,i));
-    int ivalue2 = static_cast<int> (eval_tree(tree->second,i));
-    int ivalue3 = static_cast<int> (eval_tree(tree->extra[0],i));
+    int ivalue1 = static_cast<int> (spval(eval_tree(tree->first,i)));
+    int ivalue2 = static_cast<int> (spval(eval_tree(tree->second,i)));
+    int ivalue3 = static_cast<int> (spval(eval_tree(tree->extra[0],i)));
     if (ivalue1 < 0 || ivalue2 < 0 || ivalue3 <= 0 || ivalue1 > ivalue2)
       error->one(FLERR,"Invalid math function in variable formula");
     if (update->ntimestep < ivalue1) arg = ivalue1;
@@ -3375,7 +3375,7 @@ int Variable::math_function(char *word, char *contents, Tree **tree,
       if (randomequal == NULL) {
         randomequal = new RanKnuth(update->ranmaster->uniform());
         sfloat seed = update->ranmaster->uniform();
-        randomequal->reset(seed,me,100);
+        randomequal->reset(spval(seed),me,100);
       }
       argstack[nargstack++] = randomequal->uniform()*(value2-value1) + value1;
     }
@@ -3389,7 +3389,7 @@ int Variable::math_function(char *word, char *contents, Tree **tree,
       if (randomequal == NULL) {
         randomequal = new RanKnuth(update->ranmaster->uniform());
         sfloat seed = update->ranmaster->uniform();
-        randomequal->reset(seed,me,100);
+        randomequal->reset(spval(seed),me,100);
       }
       argstack[nargstack++] = value1 + value2*randomequal->gaussian();
     }
@@ -3430,8 +3430,8 @@ int Variable::math_function(char *word, char *contents, Tree **tree,
       error->all(FLERR,"Invalid math function in variable formula");
     if (tree) newtree->type = STAGGER;
     else {
-      int ivalue1 = static_cast<int> (value1);
-      int ivalue2 = static_cast<int> (value2);
+      int ivalue1 = static_cast<int> (spval(value1));
+      int ivalue2 = static_cast<int> (spval(value2));
       if (ivalue1 <= 0 || ivalue2 <= 0 || ivalue1 <= ivalue2)
         error->all(FLERR,"Invalid math function in variable formula");
       int lower = update->ntimestep/ivalue1 * ivalue1;
@@ -3447,9 +3447,9 @@ int Variable::math_function(char *word, char *contents, Tree **tree,
       error->all(FLERR,"Invalid math function in variable formula");
     if (tree) newtree->type = LOGFREQ;
     else {
-      int ivalue1 = static_cast<int> (value1);
-      int ivalue2 = static_cast<int> (value2);
-      int ivalue3 = static_cast<int> (values[0]);
+      int ivalue1 = static_cast<int> (spval(value1));
+      int ivalue2 = static_cast<int> (spval(value2));
+      int ivalue3 = static_cast<int> (spval(values[0]));
       if (ivalue1 <= 0 || ivalue2 <= 0 || ivalue3 <= 0 || ivalue2 >= ivalue3)
         error->all(FLERR,"Invalid math function in variable formula");
       sfloat value;
@@ -3469,9 +3469,9 @@ int Variable::math_function(char *word, char *contents, Tree **tree,
       error->all(FLERR,"Invalid math function in variable formula");
     if (tree) newtree->type = STRIDE;
     else {
-      int ivalue1 = static_cast<int> (value1);
-      int ivalue2 = static_cast<int> (value2);
-      int ivalue3 = static_cast<int> (values[0]);
+      int ivalue1 = static_cast<int> (spval(value1));
+      int ivalue2 = static_cast<int> (spval(value2));
+      int ivalue3 = static_cast<int> (spval(values[0]));
       if (ivalue1 < 0 || ivalue2 < 0 || ivalue3 <= 0 || ivalue1 > ivalue2)
         error->one(FLERR,"Invalid math function in variable formula");
       sfloat value;
@@ -4217,7 +4217,7 @@ sfloat *Variable::add_storage(sfloat *cvec)
 void Variable::print_tree(Tree *tree, int level)
 {
   if (tree->type == VALUE) {
-    printf("TREE %d: %d %g\n",level,tree->type,tree->value);
+    printf("TREE %d: %d %g\n",level,tree->type,spval(tree->value));
     return;
   }
   printf("TREE %d: %d\n",level,tree->type);

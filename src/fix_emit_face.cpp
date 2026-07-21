@@ -540,7 +540,7 @@ void FixEmitFace::perform_task_onepass()
       for (isp = 0; isp < nspecies; isp++) {
         ispecies = species[isp];
         ntarget = prefactor*tasks[i].ntargetsp[isp] + random->uniform();
-        ninsert = static_cast<int> (ntarget);
+        ninsert = static_cast<int> (spval(ntarget));
         scosine = indot / vscale[isp];
 
         nactual = 0;
@@ -589,7 +589,7 @@ void FixEmitFace::perform_task_onepass()
     } else {
       if (np == 0) {
         ntarget = prefactor*tasks[i].ntarget + random->uniform();
-        ninsert = static_cast<int> (ntarget);
+        ninsert = static_cast<int> (spval(ntarget));
       } else {
         ninsert = npertask;
         if (i >= nthresh) ninsert++;
@@ -704,13 +704,13 @@ void FixEmitFace::perform_task_twopass()
     if (perspecies) {
       for (isp = 0; isp < nspecies; isp++) {
         ntarget = prefactor*tasks[i].ntargetsp[isp] + random->uniform();
-        ninsert = static_cast<int> (ntarget);
+        ninsert = static_cast<int> (spval(ntarget));
         ninsert_values[i][isp] = ninsert;
       }
     } else {
       if (np == 0) {
         ntarget = prefactor*tasks[i].ntarget + random->uniform();
-        ninsert = static_cast<int> (ntarget);
+        ninsert = static_cast<int> (spval(ntarget));
       } else {
         ninsert = npertask;
         if (i >= nthresh) ninsert++;

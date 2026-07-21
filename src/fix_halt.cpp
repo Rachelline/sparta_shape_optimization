@@ -216,7 +216,7 @@ void FixHalt::end_of_step()
 
   char message[128];
   sprintf(message, "Fix halt condition for fix-id %s met on step %ld with value %g",
-                                    id, update->ntimestep, attvalue);
+                                    id, update->ntimestep, spval(attvalue));
   if (eflag == HARD) {
     error->all(FLERR, message);
   } else if ((eflag == SOFT) || (eflag == CONTINUE)) {
@@ -249,7 +249,7 @@ sfloat FixHalt::tlimit()
 
   if (cpu < value) {
     bigint elapsed = update->ntimestep - update->firststep;
-    bigint final = update->firststep + static_cast<bigint>(tratio * value / cpu * elapsed);
+    bigint final = update->firststep + static_cast<bigint>(spval(tratio * value / cpu * elapsed));
     nextstep = (final / nevery) * nevery + nevery;
     if (nextstep == update->ntimestep) nextstep += nevery;
     tratio = 1.0;

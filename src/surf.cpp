@@ -645,7 +645,7 @@ void Surf::add_surfs(int replace, int ncount,
 
   if (nc)
     for (int i = 0; i < ncount; i++)
-      cvalues[i][0] = ubuf(((surfint) ubuf(cvalues[i][0]).i) + nsurf_old).d;
+      cvalues[i][0] = ubuf(((surfint) ubuf(spval(cvalues[i][0])).i) + nsurf_old).d;
 
   // redistribute surfs to correct layout in Surf data structs
 
@@ -1893,25 +1893,25 @@ void Surf::output_extent(int old)
 
   if (comm->me == 0) {
     if (screen) {
-      fprintf(screen,"  %g %g xlo xhi\n",extentall[0][0],extentall[0][1]);
-      fprintf(screen,"  %g %g ylo yhi\n",extentall[1][0],extentall[1][1]);
-      fprintf(screen,"  %g %g zlo zhi\n",extentall[2][0],extentall[2][1]);
+      fprintf(screen,"  %g %g xlo xhi\n",spval(extentall[0][0]),spval(extentall[0][1]));
+      fprintf(screen,"  %g %g ylo yhi\n",spval(extentall[1][0]),spval(extentall[1][1]));
+      fprintf(screen,"  %g %g zlo zhi\n",spval(extentall[2][0]),spval(extentall[2][1]));
       if (domain->dimension == 2)
-        fprintf(screen,"  %g min line length\n",minlen);
+        fprintf(screen,"  %g min line length\n",spval(minlen));
       else {
-        fprintf(screen,"  %g min triangle edge length\n",minlen);
-        fprintf(screen,"  %g min triangle area\n",minarea);
+        fprintf(screen,"  %g min triangle edge length\n",spval(minlen));
+        fprintf(screen,"  %g min triangle area\n",spval(minarea));
       }
     }
     if (logfile) {
-      fprintf(logfile,"  %g %g xlo xhi\n",extentall[0][0],extentall[0][1]);
-      fprintf(logfile,"  %g %g ylo yhi\n",extentall[1][0],extentall[1][1]);
-      fprintf(logfile,"  %g %g zlo zhi\n",extentall[2][0],extentall[2][1]);
+      fprintf(logfile,"  %g %g xlo xhi\n",spval(extentall[0][0]),spval(extentall[0][1]));
+      fprintf(logfile,"  %g %g ylo yhi\n",spval(extentall[1][0]),spval(extentall[1][1]));
+      fprintf(logfile,"  %g %g zlo zhi\n",spval(extentall[2][0]),spval(extentall[2][1]));
       if (domain->dimension == 2)
-        fprintf(logfile,"  %g min line length\n",minlen);
+        fprintf(logfile,"  %g min line length\n",spval(minlen));
       else {
-        fprintf(logfile,"  %g min triangle edge length\n",minlen);
-        fprintf(logfile,"  %g min triangle area\n",minarea);
+        fprintf(logfile,"  %g min triangle edge length\n",spval(minlen));
+        fprintf(logfile,"  %g min triangle area\n",spval(minarea));
       }
     }
   }

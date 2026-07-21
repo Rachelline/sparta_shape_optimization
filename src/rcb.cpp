@@ -776,10 +776,10 @@ void RCB::check()
 
   if (wtmax - wtmin > tolerance) {
     if (me == 0)
-      printf("ERROR: Load-imbalance > tolerance of %g\n",tolerance);
+      printf("ERROR: Load-imbalance > tolerance of %g\n",spval(tolerance));
     MPI_Barrier(world);
-    if (weight == wtmin) printf("  Proc %d has weight = %g\n",me,weight);
-    if (weight == wtmax) printf("  Proc %d has weight = %g\n",me,weight);
+    if (weight == wtmin) printf("  Proc %d has weight = %g\n",me,spval(weight));
+    if (weight == wtmax) printf("  Proc %d has weight = %g\n",me,spval(weight));
   }
 
   MPI_Barrier(world);
@@ -816,23 +816,23 @@ void RCB::stats(int flag)
   MPI_Allreduce(&weight,&wtmax,1,MPI_SFLOAT,MPI_MAX,world);
 
   if (me == 0) {
-    printf(" Total weight of dots = %g\n",wttot);
+    printf(" Total weight of dots = %g\n",spval(wttot));
     printf(" Weight on each proc: ave = %g, max = %g, min = %g\n",
-           wttot/nprocs,wtmax,wtmin);
+           wttot/nprocs,spval(wtmax),spval(wtmin));
   }
   if (flag) {
     MPI_Barrier(world);
-    printf("    Proc %d has weight = %g\n",me,weight);
+    printf("    Proc %d has weight = %g\n",me,spval(weight));
   }
 
   for (i = 0, weight = 0.0; i < ndot; i++)
     if (dots[i].wt > weight) weight = dots[i].wt;
   MPI_Allreduce(&weight,&wtmax,1,MPI_SFLOAT,MPI_MAX,world);
 
-  if (me == 0) printf(" Maximum weight of single dot = %g\n",wtmax);
+  if (me == 0) printf(" Maximum weight of single dot = %g\n",spval(wtmax));
   if (flag) {
     MPI_Barrier(world);
-    printf("    Proc %d max weight = %g\n",me,weight);
+    printf("    Proc %d max weight = %g\n",me,spval(weight));
   }
 
   // counter info
@@ -842,7 +842,7 @@ void RCB::stats(int flag)
   MPI_Allreduce(&counters[0],&max,1,MPI_INT,MPI_MAX,world);
   ave = ((sfloat) sum)/nprocs;
   if (me == 0)
-    printf(" Median iter: ave = %g, min = %d, max = %d\n",ave,min,max);
+    printf(" Median iter: ave = %g, min = %d, max = %d\n",spval(ave),min,max);
   if (flag) {
     MPI_Barrier(world);
     printf("    Proc %d median count = %d\n",me,counters[0]);
@@ -853,7 +853,7 @@ void RCB::stats(int flag)
   MPI_Allreduce(&counters[1],&max,1,MPI_INT,MPI_MAX,world);
   ave = ((sfloat) sum)/nprocs;
   if (me == 0)
-    printf(" Send count: ave = %g, min = %d, max = %d\n",ave,min,max);
+    printf(" Send count: ave = %g, min = %d, max = %d\n",spval(ave),min,max);
   if (flag) {
     MPI_Barrier(world);
     printf("    Proc %d send count = %d\n",me,counters[1]);
@@ -864,7 +864,7 @@ void RCB::stats(int flag)
   MPI_Allreduce(&counters[2],&max,1,MPI_INT,MPI_MAX,world);
   ave = ((sfloat) sum)/nprocs;
   if (me == 0)
-    printf(" Recv count: ave = %g, min = %d, max = %d\n",ave,min,max);
+    printf(" Recv count: ave = %g, min = %d, max = %d\n",spval(ave),min,max);
   if (flag) {
     MPI_Barrier(world);
     printf("    Proc %d recv count = %d\n",me,counters[2]);
@@ -875,7 +875,7 @@ void RCB::stats(int flag)
   MPI_Allreduce(&counters[3],&max,1,MPI_INT,MPI_MAX,world);
   ave = ((sfloat) sum)/nprocs;
   if (me == 0)
-    printf(" Max dots: ave = %g, min = %d, max = %d\n",ave,min,max);
+    printf(" Max dots: ave = %g, min = %d, max = %d\n",spval(ave),min,max);
   if (flag) {
     MPI_Barrier(world);
     printf("    Proc %d max dots = %d\n",me,counters[3]);
@@ -886,7 +886,7 @@ void RCB::stats(int flag)
   MPI_Allreduce(&counters[4],&max,1,MPI_INT,MPI_MAX,world);
   ave = ((sfloat) sum)/nprocs;
   if (me == 0)
-    printf(" Max memory: ave = %g, min = %d, max = %d\n",ave,min,max);
+    printf(" Max memory: ave = %g, min = %d, max = %d\n",spval(ave),min,max);
   if (flag) {
     MPI_Barrier(world);
     printf("    Proc %d max memory = %d\n",me,counters[4]);
@@ -898,7 +898,7 @@ void RCB::stats(int flag)
     MPI_Allreduce(&counters[5],&max,1,MPI_INT,MPI_MAX,world);
     ave = ((sfloat) sum)/nprocs;
     if (me == 0)
-      printf(" # of Reuse: ave = %g, min = %d, max = %d\n",ave,min,max);
+      printf(" # of Reuse: ave = %g, min = %d, max = %d\n",spval(ave),min,max);
     if (flag) {
       MPI_Barrier(world);
       printf("    Proc %d # of Reuse = %d\n",me,counters[5]);
@@ -910,7 +910,7 @@ void RCB::stats(int flag)
   MPI_Allreduce(&counters[6],&max,1,MPI_INT,MPI_MAX,world);
   ave = ((sfloat) sum)/nprocs;
   if (me == 0)
-    printf(" # of OverAlloc: ave = %g, min = %d, max = %d\n",ave,min,max);
+    printf(" # of OverAlloc: ave = %g, min = %d, max = %d\n",spval(ave),min,max);
   if (flag) {
     MPI_Barrier(world);
     printf("    Proc %d # of OverAlloc = %d\n",me,counters[6]);
@@ -924,7 +924,7 @@ void RCB::stats(int flag)
       MPI_Barrier(world);
       if (me == 0) printf("    Dimension %d\n",i+1);
       MPI_Barrier(world);
-      printf("      Proc = %d: Box = %g %g\n",me,rcbbox.lo[i],rcbbox.hi[i]);
+      printf("      Proc = %d: Box = %g %g\n",me,spval(rcbbox.lo[i]),spval(rcbbox.hi[i]));
     }
   }
 }

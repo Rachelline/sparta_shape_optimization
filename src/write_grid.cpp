@@ -116,12 +116,12 @@ void WriteGrid::command(int narg, char **arg)
   if (comm->me == 0 && !silent) {
     if (screen) {
       fprintf(screen,"  grid cells = " BIGINT_FORMAT "\n",grid->ncell);
-      fprintf(screen,"  CPU time = %g secs\n",time_total);
+      fprintf(screen,"  CPU time = %g secs\n",spval(time_total));
     }
 
     if (logfile) {
       fprintf(logfile,"  grid cells = " BIGINT_FORMAT "\n",grid->ncell);
-      fprintf(logfile,"  CPU time = %g secs\n",time_total);
+      fprintf(logfile,"  CPU time = %g secs\n",spval(time_total));
     }
   }
 }
@@ -281,17 +281,17 @@ void WriteGrid::write_custom(sfloat *vec)
   for (int ic = 0; ic < ncustom; ic++) {
     if (type_custom[ic] == 0) {
       if (size_custom[ic] == 0) {
-	fprintf(fp," %d",(int) vec[m++]);
+	fprintf(fp," %d",spval(spval(spval(spval(spval(spval(spval(spval(spval(spval(spval(spval(spval(spval(spval(spval(spval(spval(spval(spval(spval(spval(spval((int) vec[m++]))))))))))))))))))))))));
       } else {
 	for (int j = 0; j < size_custom[ic]; j++)
-	  fprintf(fp," %d",(int) vec[m++]);
+	  fprintf(fp," %d",spval(spval(spval(spval(spval(spval(spval(spval(spval(spval(spval(spval(spval(spval(spval(spval(spval(spval(spval(spval(spval(spval(spval(spval((int) vec[m++])))))))))))))))))))))))));
       }
     } else {
       if (size_custom[ic] == 0) {
-	fprintf(fp," %g",vec[m++]);
+	fprintf(fp," %g",spval(vec[m++]));
       } else {
 	for (int j = 0; j < size_custom[ic]; j++)
-	  fprintf(fp," %g",vec[m++]);
+	  fprintf(fp," %g",spval(vec[m++]));
       }
     }
   }

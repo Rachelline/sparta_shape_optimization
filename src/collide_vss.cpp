@@ -145,7 +145,7 @@ sfloat CollideVSS::attempt_collision(int icell, int np, sfloat volume)
   if (remainflag) {
     nattempt = 0.5 * np * (np-1) *
       vremax[icell][0][0] * dt * fnum / volume + remain[icell][0][0];
-    remain[icell][0][0] = nattempt - static_cast<int> (nattempt);
+    remain[icell][0][0] = nattempt - static_cast<int> (spval(nattempt));
   } else {
     nattempt = 0.5 * np * (np-1) *
       vremax[icell][0][0] * dt * fnum / volume + random->uniform();
@@ -175,7 +175,7 @@ sfloat CollideVSS::attempt_collision(int icell, int igroup, int jgroup,
 
  if (remainflag) {
    nattempt += remain[icell][igroup][jgroup];
-   remain[icell][igroup][jgroup] = nattempt - static_cast<int> (nattempt);
+   remain[icell][igroup][jgroup] = nattempt - static_cast<int> (spval(nattempt));
  } else nattempt += random->uniform();
 
  return nattempt;
@@ -517,10 +517,10 @@ void CollideVSS::EEXCHANGE_NonReactingEDisposal(Particle::OnePart *ip,
             } else if (vibstyle == DISCRETE) {
               E_Dispose += p->evib;
               max_level = static_cast<int>
-                (E_Dispose / (update->boltz * species[sp].vibtemp[0]));
+                (spval(E_Dispose / (update->boltz * species[sp].vibtemp[0])));
               do {
                 ivib = static_cast<int>
-                  (random->uniform()*(max_level+AdjustFactor));
+                  (spval(random->uniform()*(max_level+AdjustFactor)));
                 p->evib = ivib * update->boltz * species[sp].vibtemp[0];
                 State_prob = pow((1.0 - p->evib / E_Dispose),
                                  (1.5 - params[ip->ispecies][jp->ispecies].omega));
@@ -549,11 +549,11 @@ void CollideVSS::EEXCHANGE_NonReactingEDisposal(Particle::OnePart *ip,
                 E_Dispose += ivib * update->boltz *
                   particle->species[sp].vibtemp[imode];
                 max_level = static_cast<int>
-                  (E_Dispose / (update->boltz * species[sp].vibtemp[imode]));
+                  (spval(E_Dispose / (update->boltz * species[sp].vibtemp[imode])));
 
                 do {
                   ivib = static_cast<int>
-                    (random->uniform()*(max_level+AdjustFactor));
+                    (spval(random->uniform()*(max_level+AdjustFactor)));
                   pevib = ivib * update->boltz * species[sp].vibtemp[imode];
                   State_prob = pow((1.0 - pevib / E_Dispose),
                                    (1.5 - params[ip->ispecies][jp->ispecies].omega));
@@ -714,10 +714,10 @@ void CollideVSS::EEXCHANGE_ReactingEDisposal(Particle::OnePart *ip,
         p->evib = 0.0;
       } else if (vibdof == 2 && vibstyle == DISCRETE) {
         max_level = static_cast<int>
-          (E_Dispose / (update->boltz * species[sp].vibtemp[0]));
+          (spval(E_Dispose / (update->boltz * species[sp].vibtemp[0])));
         do {
           ivib = static_cast<int>
-            (random->uniform()*(max_level+AdjustFactor));
+            (spval(random->uniform()*(max_level+AdjustFactor)));
           p->evib = (sfloat)
             (ivib * update->boltz * species[sp].vibtemp[0]);
           State_prob = pow((1.0 - p->evib / E_Dispose),
@@ -748,10 +748,10 @@ void CollideVSS::EEXCHANGE_ReactingEDisposal(Particle::OnePart *ip,
             E_Dispose += ivib * update->boltz *
             particle->species[sp].vibtemp[imode];
             max_level = static_cast<int>
-            (E_Dispose / (update->boltz * species[sp].vibtemp[imode]));
+            (spval(E_Dispose / (update->boltz * species[sp].vibtemp[imode])));
             do {
               ivib = static_cast<int>
-              (random->uniform()*(max_level+AdjustFactor));
+              (spval(random->uniform()*(max_level+AdjustFactor)));
               pevib = ivib * update->boltz * species[sp].vibtemp[imode];
               State_prob = pow((1.0 - pevib / E_Dispose),
                                (1.5 - aveomega));

@@ -176,7 +176,7 @@ void MoveSurf::command(int narg, char **arg)
     if (screen) {
       if (particle->exist)
         fprintf(screen,"  " BIGINT_FORMAT " deleted particles\n",ndeleted);
-      fprintf(screen,"  CPU time = %g secs\n",time_total);
+      fprintf(screen,"  CPU time = %g secs\n",spval(time_total));
       fprintf(screen,"  sort/surf2grid/ghost/inout/particle percent = "
               "%g %g %g %g %g\n",
               100.0*(time2-time1)/time_total,100.0*(time3-time2)/time_total,
@@ -186,7 +186,7 @@ void MoveSurf::command(int narg, char **arg)
     if (logfile) {
       if (particle->exist)
         fprintf(logfile,"  " BIGINT_FORMAT " deleted particles\n",ndeleted);
-      fprintf(logfile,"  CPU time = %g secs\n",time_total);
+      fprintf(logfile,"  CPU time = %g secs\n",spval(time_total));
       fprintf(logfile,"  sort/surf2grid/ghost/inout/particle percent = "
               "%g %g %g %g %g\n",
               100.0*(time2-time1)/time_total,100.0*(time3-time2)/time_total,

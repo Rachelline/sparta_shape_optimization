@@ -511,9 +511,9 @@ void Domain::print_box(const char *str)
   if (comm->me == 0) {
     if (screen)
       fprintf(screen,"%sorthogonal box = (%g %g %g) to (%g %g %g)\n",
-              str,boxlo[0],boxlo[1],boxlo[2],boxhi[0],boxhi[1],boxhi[2]);
+              str,spval(boxlo[0]),spval(boxlo[1]),spval(boxlo[2]),spval(boxhi[0]),spval(boxhi[1]),spval(boxhi[2]));
     if (logfile)
       fprintf(logfile,"%sorthogonal box = (%g %g %g) to (%g %g %g)\n",
-              str,boxlo[0],boxlo[1],boxlo[2],boxhi[0],boxhi[1],boxhi[2]);
+              str,spval(boxlo[0]),spval(boxlo[1]),spval(boxlo[2]),spval(boxhi[0]),spval(boxhi[1]),spval(boxhi[2]));
   }
 }

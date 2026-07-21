@@ -546,7 +546,7 @@ void CreateParticles::create_local()
   int me = comm->me;
   RanKnuth *random = new RanKnuth(update->ranmaster->uniform());
   sfloat seed = update->ranmaster->uniform();
-  random->reset(seed,me,100);
+  random->reset(spval(seed),me,100);
 
   Grid::ChildCell *cells = grid->cells;
   Grid::ChildInfo *cinfo = grid->cinfo;
@@ -614,9 +614,9 @@ void CreateParticles::create_local()
   // loop over procs insures sum of nme = Np
 
   bigint nstart,nstop;
-  if (me > 0) nstart = static_cast<bigint> (np * (vols[me-1]/vols[nprocs-1]));
+  if (me > 0) nstart = static_cast<bigint> (spval(np * (vols[me-1]/vols[nprocs-1])));
   else nstart = 0;
-  nstop = static_cast<bigint> (np * (vols[me]/vols[nprocs-1]));
+  nstop = static_cast<bigint> (spval(np * (vols[me]/vols[nprocs-1])));
   bigint nme = nstop-nstart;
 
   memory->destroy(vols);
@@ -671,7 +671,7 @@ void CreateParticles::create_local()
     volsum += cinfo[icell].volume / cinfo[icell].weight;
 
     ntarget = nme * volsum/insertvolme - nprev;
-    npercell = static_cast<int> (ntarget);
+    npercell = static_cast<int> (spval(ntarget));
 
     if (random->uniform() < ntarget-npercell) npercell++;
     ncreate = npercell;
@@ -685,7 +685,7 @@ void CreateParticles::create_local()
       if (scale < 0.0)
         error->one(FLERR,"Variable/custom density scale factor < 0.0");
       ntarget *= scale;
-      ncreate = static_cast<int> (ntarget);
+      ncreate = static_cast<int> (spval(ntarget));
       if (random->uniform() < ntarget-ncreate) ncreate++;
     }
 
@@ -835,7 +835,7 @@ void CreateParticles::create_local_twopass()
   int me = comm->me;
   RanKnuth *random = new RanKnuth(update->ranmaster->uniform());
   sfloat seed = update->ranmaster->uniform();
-  random->reset(seed,me,100);
+  random->reset(spval(seed),me,100);
 
   Grid::ChildCell *cells = grid->cells;
   Grid::ChildInfo *cinfo = grid->cinfo;
@@ -903,9 +903,9 @@ void CreateParticles::create_local_twopass()
   // loop over procs insures sum of nme = Np
 
   bigint nstart,nstop;
-  if (me > 0) nstart = static_cast<bigint> (np * (vols[me-1]/vols[nprocs-1]));
+  if (me > 0) nstart = static_cast<bigint> (spval(np * (vols[me-1]/vols[nprocs-1])));
   else nstart = 0;
-  nstop = static_cast<bigint> (np * (vols[me]/vols[nprocs-1]));
+  nstop = static_cast<bigint> (spval(np * (vols[me]/vols[nprocs-1])));
   bigint nme = nstop-nstart;
 
   memory->destroy(vols);
@@ -964,7 +964,7 @@ void CreateParticles::create_local_twopass()
     volsum += cinfo[icell].volume / cinfo[icell].weight;
 
     ntarget = nme * volsum/insertvolme - nprev;
-    npercell = static_cast<int> (ntarget);
+    npercell = static_cast<int> (spval(ntarget));
 
     if (random->uniform() < ntarget-npercell) npercell++;
     ncreate = npercell;
@@ -978,7 +978,7 @@ void CreateParticles::create_local_twopass()
       if (scale < 0.0)
         error->one(FLERR,"Variable/custom density scale factor < 0.0");
       ntarget *= scale;
-      ncreate = static_cast<int> (ntarget);
+      ncreate = static_cast<int> (spval(ntarget));
       if (random->uniform() < ntarget-ncreate) ncreate++;
     }
 
@@ -1166,7 +1166,7 @@ int CreateParticles::species_variable(sfloat *x)
   if (szstr) input->variable->internal_set(szvar,x[2]);
 
   sfloat value = input->variable->compute_equal(svar);
-  int isp = static_cast<int> (value);
+  int isp = static_cast<int> (spval(value));
   return isp;
 }
 

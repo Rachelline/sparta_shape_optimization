@@ -63,6 +63,7 @@ template <typename T> inline T spval(T x) { return x; }   // identity
 #define SPARTA_AD_NDIR 4
 #endif
 
+#include <type_traits>
 #ifdef SPARTA_KOKKOS
 #include "Sacado.hpp"            // Kokkos-aware: SFad usable in device kernels
 #else
@@ -71,9 +72,17 @@ template <typename T> inline T spval(T x) { return x; }   // identity
 
 typedef Sacado::Fad::SFad<double, SPARTA_AD_NDIR> sfloat;
 
-// value extraction: identity for passive types, .val() for sfloat.
-// (derivatives deliberately end here, mirroring the stock spval contract)
-template <typename T> inline T spval(T x) { return x; }
+// value extraction: identity for passive (arithmetic) types, .val() for
+// sfloat AND any Sacado Fad EXPRESSION (a-b, a*c, ... are expression-template
+// types, not concrete sfloat; they convert to sfloat here so .val() runs).
+// The passive template is constrained to arithmetic types so it does NOT
+// greedily capture Sacado expressions (which would return the expression
+// instead of its double value -- the reference's concrete sfloat never had
+// expression templates, so this constraint is Sacado-specific).
+// derivatives deliberately end here, mirroring the stock spval contract.
+template <typename T>
+inline typename std::enable_if<std::is_arithmetic<T>::value, T>::type
+spval(T x) { return x; }
 inline double spval(const sfloat &x) { return x.val(); }
 
 // ---- math functions Sacado does NOT overload for Fad types ----
@@ -124,8 +133,21 @@ inline sfloat lgamma(const sfloat &a) {
 
 // derivative-zero-a.e. functions: derivative deliberately dropped
 inline sfloat floor(const sfloat &a) { return sfloat(std::floor(a.val())); }
+inline sfloat ceil(const sfloat &a)  { return sfloat(std::ceil(a.val())); }
 inline sfloat round(const sfloat &a) { return sfloat(std::round(a.val())); }
 inline sfloat trunc(const sfloat &a) { return sfloat(std::trunc(a.val())); }
+inline sfloat fmod(const sfloat &a, const sfloat &b) {
+  sfloat r(a);                       // d/da fmod = 1 a.e.; keep a's derivs
+  r.val() = std::fmod(a.val(), b.val());
+  return r;
+}
+
+// value-based selects / predicates (Sacado does not overload these for Fad)
+inline sfloat fmax(const sfloat &a, const sfloat &b) { return a.val() >= b.val() ? a : b; }
+inline sfloat fmin(const sfloat &a, const sfloat &b) { return a.val() <= b.val() ? a : b; }
+inline sfloat abs(const sfloat &a)  { return a.val() >= 0.0 ? a : -a; }
+inline bool isnan(const sfloat &a)  { return std::isnan(a.val()); }
+inline bool isinf(const sfloat &a)  { return std::isinf(a.val()); }
 
 #define MPI_SFLOAT MPI_5DOUBLE
 

@@ -159,7 +159,7 @@ void CreateISurf::command(int narg, char **arg)
   thresh = input->numeric(FLERR,arg[2]);
   if (thresh < 0 || thresh > 255)
     error->all(FLERR,"Create_isurf thresh must be bounded as (0,255)");
-  int ithresh = static_cast<int> (thresh);
+  int ithresh = static_cast<int> (spval(thresh));
   if (ithresh == thresh)
     error->all(FLERR,"An integer value for create_isurf thresh is not allowed");
 
@@ -239,11 +239,11 @@ void CreateISurf::set_corners()
     if (cells[icell].nsplit <= 0) continue;
 
     ixyz[icell][0] =
-      static_cast<int> ((cells[icell].lo[0]-corner[0]) / xyzsize[0] + 0.5) + 1;
+      static_cast<int> (spval((cells[icell].lo[0]-corner[0]) / xyzsize[0] + 0.5)) + 1;
     ixyz[icell][1] =
-      static_cast<int> ((cells[icell].lo[1]-corner[1]) / xyzsize[1] + 0.5) + 1;
+      static_cast<int> (spval((cells[icell].lo[1]-corner[1]) / xyzsize[1] + 0.5)) + 1;
     ixyz[icell][2] =
-      static_cast<int> ((cells[icell].lo[2]-corner[2]) / xyzsize[2] + 0.5) + 1;
+      static_cast<int> (spval((cells[icell].lo[2]-corner[2]) / xyzsize[2] + 0.5)) + 1;
   }
 
   // first shift everything down by thresh
@@ -331,11 +331,11 @@ void CreateISurf::set_multi()
     if (cells[icell].nsplit <= 0) continue;
 
     ixyz[icell][0] =
-      static_cast<int> ((cells[icell].lo[0]-corner[0]) / xyzsize[0] + 0.5) + 1;
+      static_cast<int> (spval((cells[icell].lo[0]-corner[0]) / xyzsize[0] + 0.5)) + 1;
     ixyz[icell][1] =
-      static_cast<int> ((cells[icell].lo[1]-corner[1]) / xyzsize[1] + 0.5) + 1;
+      static_cast<int> (spval((cells[icell].lo[1]-corner[1]) / xyzsize[1] + 0.5)) + 1;
     ixyz[icell][2] =
-      static_cast<int> ((cells[icell].lo[2]-corner[2]) / xyzsize[2] + 0.5) + 1;
+      static_cast<int> (spval((cells[icell].lo[2]-corner[2]) / xyzsize[2] + 0.5)) + 1;
   }
 
   // first shift everything down by thresh
@@ -823,7 +823,7 @@ void CreateISurf::sync(int which)
         } // end jy
       } // end jz
 
-      if (which == SVAL) svalues[icell][i] = static_cast<int>(dtotal[0]);
+      if (which == SVAL) svalues[icell][i] = static_cast<int>(spval(dtotal[0]));
       else if (which == IVAL) {
         for (jin = 0; jin < nmulti; jin++)
           ivalues[icell][i][jin] = dtotal[jin];
@@ -1056,13 +1056,13 @@ void CreateISurf::comm_neigh_corners(int which)
 
   m = 0;
   for (i = 0; i < nrecv; i++) {
-    cellID = (cellint) ubuf(rbuf[m++]).u;
+    cellID = (cellint) ubuf(spval(rbuf[m++])).u;
     ilocal = (*hash)[cellID];
     icell = ilocal - nglocal;
 
     if (which == SVAL) {
       for (j = 0; j < ncorner; j++)
-        sghost[icell][j] = static_cast<int> (rbuf[m++]);
+        sghost[icell][j] = static_cast<int> (spval(rbuf[m++]));
     } else if (which == IVAL) {
       for (j = 0; j < ncorner; j++)
         for (k = 0; k < nmulti; k++)

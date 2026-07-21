@@ -1226,8 +1226,8 @@ int Cut2d::whichside(sfloat *pt)
 void Cut2d::failed_cell()
 {
   printf("Cut2d failed on proc %d in cell ID: " CELLINT_FORMAT "\n",comm->me,id);
-  printf("  lo corner %20.16g %20.16g\n",lo[0],lo[1]);
-  printf("  hi corner %20.16g %20.16g\n",hi[0],hi[1]);
+  printf("  lo corner %20.16g %20.16g\n",spval(lo[0]),spval(lo[1]));
+  printf("  hi corner %20.16g %20.16g\n",spval(hi[0]),spval(hi[1]));
   printf("  # of surfs = %d out of " BIGINT_FORMAT "\n",nsurf,surf->nsurf);
   printf("  # of surfs = %d\n",nsurf);
   printf("  surfs:");
@@ -1246,8 +1246,8 @@ void Cut2d::print_clines()
 
   for (int i = 0; i < clines.n; i++) {
     printf("  line %d\n",i);
-    printf("    xpoint: %20.16g %20.16g\n",clines[i].x[0],clines[i].x[1]);
-    printf("    ypoint: %20.16g %20.16g\n",clines[i].y[0],clines[i].y[1]);
+    printf("    xpoint: %20.16g %20.16g\n",spval(clines[i].x[0]),spval(clines[i].x[1]));
+    printf("    ypoint: %20.16g %20.16g\n",spval(clines[i].y[0]),spval(clines[i].y[1]));
     printf("    line %d\n",clines[i].line);
   }
 }
@@ -1263,7 +1263,7 @@ void Cut2d::print_points()
 
   for (int i = 0; i < points.n; i++) {
     printf("  point %d\n",i);
-    printf("    coord: %g %g\n",points[i].x[0],points[i].x[1]);
+    printf("    coord: %g %g\n",spval(points[i].x[0]),spval(points[i].x[1]));
     printf("    type %d, next %d\n",points[i].type,points[i].next);
     if (points[i].type == ENTRY || points[i].type == TWO)
       printf("    line %d\n",points[i].line);
@@ -1271,7 +1271,7 @@ void Cut2d::print_points()
     printf("    corner %d\n",points[i].corner);
     if (points[i].type != TWO) {
       printf("    cprev %d, cnext %d\n",points[i].cprev,points[i].cnext);
-      printf("    side/value: %d %g\n",points[i].side,points[i].value);
+      printf("    side/value: %d %g\n",points[i].side,spval(points[i].value));
     }
   }
 }
@@ -1289,12 +1289,12 @@ void Cut2d::print_loops()
     printf("  loop %d\n",i);
     printf("    active %d\n",loops[i].active);
     printf("    flag %d\n",loops[i].flag);
-    printf("    area %g\n",loops[i].area);
+    printf("    area %g\n",spval(loops[i].area));
     printf("    npoints %d\n",loops[i].n);
     printf("    points:\n");
     int ipt = loops[i].first;
     for (int j = 0; j < loops[i].n; j++) {
-      printf("      %d %g %g\n",ipt,points[ipt].x[0],points[ipt].x[1]);
+      printf("      %d %g %g\n",ipt,spval(points[ipt].x[0]),spval(points[ipt].x[1]));
       ipt = points[ipt].next;
     }
   }

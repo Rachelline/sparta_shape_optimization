@@ -449,26 +449,26 @@ int Dump::convert_string(int n, sfloat *mybuf)
 
     for (j = 0; j < size_one; j++) {
       if (vtype[j] == DOUBLE)
-        offset += sprintf(&sbuf[offset],vformat[j],mybuf[m]);
+        offset += sprintf(&sbuf[offset],vformat[j],spval(mybuf[m]));
       else if (vtype[j] == INT)
         offset += sprintf(&sbuf[offset],vformat[j],
-                          static_cast<int> (ubuf(mybuf[m]).i));
+                          static_cast<int> (ubuf(spval(mybuf[m])).i));
       else if (vtype[j] == BIGINT)
         offset += sprintf(&sbuf[offset],vformat[j],
-                          static_cast<bigint> (ubuf(mybuf[m]).i));
+                          static_cast<bigint> (ubuf(spval(mybuf[m])).i));
       else if (vtype[j] == UINT)
         offset += sprintf(&sbuf[offset],vformat[j],
-                          static_cast<uint32_t> (ubuf(mybuf[m]).i));
+                          static_cast<uint32_t> (ubuf(spval(mybuf[m])).i));
       else if (vtype[j] == BIGUINT)
         offset += sprintf(&sbuf[offset],vformat[j],
-                          static_cast<uint64_t> (ubuf(mybuf[m]).i));
+                          static_cast<uint64_t> (ubuf(spval(mybuf[m])).i));
       else if (vtype[j] == STRING) {
         // NOTE: this is a kludge
         // assumes any STRING field from dump particle/grid/surf
         // is a grid cell ID
         // if not, might have to move this method into child classes
         // and tailor it for each dump style
-        grid->id_num2str(static_cast<int> (mybuf[m]),str);
+        grid->id_num2str(static_cast<int> (spval(mybuf[m])),str);
         offset += sprintf(&sbuf[offset],vformat[j],str);
       }
       m++;

@@ -516,7 +516,7 @@ void Input::substitute(char *&str, char *&str2, int &max, int &max2, int flag)
         if (var[i] == '\0') error->one(FLERR,"Invalid immediate variable");
         var[i] = '\0';
         beyond = ptr + strlen(var) + 3;
-        sprintf(immediate,"%.20g",variable->compute_equal(var));
+        sprintf(immediate,"%.20g",spval(variable->compute_equal(var)));
         value = immediate;
 
       // single character variable name, e.g. $a

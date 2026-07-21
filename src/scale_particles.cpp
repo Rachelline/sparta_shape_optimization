@@ -51,7 +51,7 @@ void ScaleParticles::command(int narg, char **arg)
 
   RanKnuth *random = new RanKnuth(update->ranmaster->uniform());
   sfloat seed = update->ranmaster->uniform();
-  random->reset(seed,comm->me,100);
+  random->reset(spval(seed),comm->me,100);
 
   // nbefore = current total # of particles
 
@@ -104,7 +104,7 @@ void ScaleParticles::command(int narg, char **arg)
     // factor > 1.0 is candidate for cloning
     // create Nclone new particles each with unique ID
 
-    nclone = static_cast<int> (factor);
+    nclone = static_cast<int> (spval(factor));
     fraction = factor - nclone;
     nclone--;
     if (random->uniform() < fraction) nclone++;

@@ -174,7 +174,7 @@ void Output::setup(int memflag)
           (ntimestep/every_dump[idump])*every_dump[idump] + every_dump[idump];
       else {
         bigint nextdump = static_cast<bigint>
-          (input->variable->compute_equal(ivar_dump[idump]));
+          (spval(input->variable->compute_equal(ivar_dump[idump])));
         if (nextdump <= ntimestep)
           error->all(FLERR,"Dump every variable returned a bad timestep");
         next_dump[idump] = nextdump;
@@ -201,7 +201,7 @@ void Output::setup(int memflag)
           restart_every_single;
       else {
         bigint nextrestart = static_cast<bigint>
-          (input->variable->compute_equal(ivar_restart_single));
+          (spval(input->variable->compute_equal(ivar_restart_single)));
         if (nextrestart <= ntimestep)
           error->all(FLERR,"Restart variable returned a bad timestep");
         next_restart_single = nextrestart;
@@ -214,7 +214,7 @@ void Output::setup(int memflag)
           restart_every_double;
       else {
         bigint nextrestart = static_cast<bigint>
-          (input->variable->compute_equal(ivar_restart_double));
+          (spval(input->variable->compute_equal(ivar_restart_double)));
         if (nextrestart <= ntimestep)
           error->all(FLERR,"Restart variable returned a bad timestep");
         next_restart_double = nextrestart;
@@ -239,7 +239,7 @@ void Output::setup(int memflag)
 
   if (var_stats) {
     next_stats = static_cast<bigint>
-      (input->variable->compute_equal(ivar_stats));
+      (spval(input->variable->compute_equal(ivar_stats)));
     if (next_stats <= ntimestep)
       error->all(FLERR,"Stats every variable returned a bad timestep");
   } else if (stats_every) {
@@ -279,7 +279,7 @@ void Output::write(bigint ntimestep)
         if (every_dump[idump]) next_dump[idump] += every_dump[idump];
         else {
           bigint nextdump = static_cast<bigint>
-            (input->variable->compute_equal(ivar_dump[idump]));
+            (spval(input->variable->compute_equal(ivar_dump[idump])));
           if (nextdump <= ntimestep)
             error->all(FLERR,"Dump every variable returned a bad timestep");
           next_dump[idump] = nextdump;
@@ -309,7 +309,7 @@ void Output::write(bigint ntimestep)
       else {
         modify->clearstep_compute();
         bigint nextrestart = static_cast<bigint>
-          (input->variable->compute_equal(ivar_restart_single));
+          (spval(input->variable->compute_equal(ivar_restart_single)));
         if (nextrestart <= ntimestep)
           error->all(FLERR,"Restart variable returned a bad timestep");
         next_restart_single = nextrestart;
@@ -330,7 +330,7 @@ void Output::write(bigint ntimestep)
       else {
         modify->clearstep_compute();
         bigint nextrestart = static_cast<bigint>
-          (input->variable->compute_equal(ivar_restart_double));
+          (spval(input->variable->compute_equal(ivar_restart_double)));
         if (nextrestart <= ntimestep)
           error->all(FLERR,"Restart variable returned a bad timestep");
         next_restart_double = nextrestart;
@@ -350,7 +350,7 @@ void Output::write(bigint ntimestep)
     last_stats = ntimestep;
     if (var_stats) {
       next_stats = static_cast<bigint>
-        (input->variable->compute_equal(ivar_stats));
+        (spval(input->variable->compute_equal(ivar_stats)));
       if (next_stats <= ntimestep)
         error->all(FLERR,"Stats every variable returned a bad timestep");
     } else if (stats_every) next_stats += stats_every;
@@ -427,7 +427,7 @@ void Output::reset_timestep(bigint ntimestep)
       modify->clearstep_compute();
       update->ntimestep--;
       bigint nextdump = static_cast<bigint>
-        (input->variable->compute_equal(ivar_dump[idump]));
+        (spval(input->variable->compute_equal(ivar_dump[idump])));
       if (nextdump < ntimestep)
         error->all(FLERR,"Dump every variable returned a bad timestep");
       update->ntimestep++;
@@ -447,7 +447,7 @@ void Output::reset_timestep(bigint ntimestep)
       modify->clearstep_compute();
       update->ntimestep--;
       bigint nextrestart = static_cast<bigint>
-        (input->variable->compute_equal(ivar_restart_single));
+        (spval(input->variable->compute_equal(ivar_restart_single)));
       if (nextrestart < ntimestep)
         error->all(FLERR,"Restart variable returned a bad timestep");
       update->ntimestep++;
@@ -466,7 +466,7 @@ void Output::reset_timestep(bigint ntimestep)
       modify->clearstep_compute();
       update->ntimestep--;
       bigint nextrestart = static_cast<bigint>
-        (input->variable->compute_equal(ivar_restart_double));
+        (spval(input->variable->compute_equal(ivar_restart_double)));
       if (nextrestart < ntimestep)
         error->all(FLERR,"Restart variable returned a bad timestep");
       update->ntimestep++;
@@ -481,7 +481,7 @@ void Output::reset_timestep(bigint ntimestep)
     modify->clearstep_compute();
     update->ntimestep--;
     next_stats = static_cast<bigint>
-      (input->variable->compute_equal(ivar_stats));
+      (spval(input->variable->compute_equal(ivar_stats)));
     if (next_stats < ntimestep)
       error->all(FLERR,"Stats_modify every variable returned a bad timestep");
     update->ntimestep++;
@@ -768,24 +768,24 @@ void Output::memory_usage()
     if (screen) {
       fprintf(screen,"Memory usage per proc in Mbytes:\n");
       fprintf(screen,"  particles (ave,min,max) = %g %g %g\n",
-              pave,pmin,pmax);
+              spval(pave),spval(pmin),spval(pmax));
       fprintf(screen,"  grid      (ave,min,max) = %g %g %g\n",
-              gave,gmin,gmax);
+              spval(gave),spval(gmin),spval(gmax));
       fprintf(screen,"  surf      (ave,min,max) = %g %g %g\n",
-              save,smin,smax);
+              spval(save),spval(smin),spval(smax));
       fprintf(screen,"  total     (ave,min,max) = %g %g %g\n",
-              tave,tmin,tmax);
+              spval(tave),spval(tmin),spval(tmax));
     }
     if (logfile) {
       fprintf(logfile,"Memory usage per proc in Mbytes:\n");
       fprintf(logfile,"  particles (ave,min,max) = %g %g %g\n",
-              pave,pmin,pmax);
+              spval(pave),spval(pmin),spval(pmax));
       fprintf(logfile,"  grid      (ave,min,max) = %g %g %g\n",
-              gave,gmin,gmax);
+              spval(gave),spval(gmin),spval(gmax));
       fprintf(logfile,"  surf      (ave,min,max) = %g %g %g\n",
-              save,smin,smax);
+              spval(save),spval(smin),spval(smax));
       fprintf(logfile,"  total     (ave,min,max) = %g %g %g\n",
-              tave,tmin,tmax);
+              spval(tave),spval(tmin),spval(tmax));
     }
   }
 }

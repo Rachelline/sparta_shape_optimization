@@ -41,7 +41,7 @@ React::React(SPARTA *sparta, int, char **arg) : Pointers(sparta)
 
   random = new RanKnuth(update->ranmaster->uniform());
   sfloat seed = update->ranmaster->uniform();
-  random->reset(seed,comm->me,100);
+  random->reset(spval(seed),comm->me,100);
 
   copy = copymode = 0;
   uncopy = 1;

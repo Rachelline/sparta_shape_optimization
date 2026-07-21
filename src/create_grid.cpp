@@ -289,7 +289,7 @@ void CreateGrid::command(int narg, char **arg)
     if (screen) {
       fprintf(screen,"Created " BIGINT_FORMAT " child grid cells\n",
               grid->ncell);
-      fprintf(screen,"  CPU time = %g secs\n",time_total);
+      fprintf(screen,"  CPU time = %g secs\n",spval(time_total));
       fprintf(screen,"  create/ghost percent = %g %g\n",
               100.0*(time2-time1)/time_total,100.0*(time3-time2)/time_total);
     }
@@ -297,7 +297,7 @@ void CreateGrid::command(int narg, char **arg)
     if (logfile) {
       fprintf(logfile,"Created " BIGINT_FORMAT " child grid cells\n",
               grid->ncell);
-      fprintf(logfile,"  CPU time = %g secs\n",time_total);
+      fprintf(logfile,"  CPU time = %g secs\n",spval(time_total));
       fprintf(logfile,"  create/ghost percent = %g %g\n",
               100.0*(time2-time1)/time_total,100.0*(time3-time2)/time_total);
     }

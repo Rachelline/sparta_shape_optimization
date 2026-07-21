@@ -265,10 +265,10 @@ void Image::view_params(sfloat boxxlo, sfloat boxxhi, sfloat boxylo,
     if (!random) {
       random = new RanKnuth(update->ranmaster->uniform());
       sfloat seed = update->ranmaster->uniform();
-      random->reset(seed,me,100);
+      random->reset(spval(seed),me,100);
     }
     SSAORadius = maxdel * 0.05 * ssaoint;
-    SSAOSamples = static_cast<int> (8.0 + 32.0*ssaoint);
+    SSAOSamples = static_cast<int> (spval(8.0 + 32.0*ssaoint));
     SSAOJitter = MY_PI / 12;
     ambientColor[0] = 0.5;
     ambientColor[1] = 0.5;
@@ -467,12 +467,12 @@ void Image::draw_sphere(sfloat *x, sfloat *surfaceColor, sfloat diameter)
   sfloat pixelWidth = (tanPerPixel > 0) ? tanPerPixel * dist :
     -tanPerPixel / zoom;
   sfloat pixelRadiusFull = radius / pixelWidth;
-  int pixelRadius = static_cast<int> (pixelRadiusFull + 0.5) + 1;
+  int pixelRadius = static_cast<int> (spval(pixelRadiusFull + 0.5)) + 1;
 
   sfloat xf = xmap / pixelWidth;
   sfloat yf = ymap / pixelWidth;
-  int xc = static_cast<int> (xf);
-  int yc = static_cast<int> (yf);
+  int xc = static_cast<int> (spval(xf));
+  int yc = static_cast<int> (spval(yf));
   sfloat width_error = xf - xc;
   sfloat height_error = yf - yc;
 
@@ -534,12 +534,12 @@ void Image::draw_brick(sfloat *x, sfloat *surfaceColor, sfloat *diameter)
   sfloat halfWidth = MAX(diameter[0],diameter[1]);
   halfWidth = MAX(halfWidth,diameter[2]);
   sfloat pixelHalfWidthFull = halfWidth / pixelWidth;
-  int pixelHalfWidth = static_cast<int> (pixelHalfWidthFull + 0.5);
+  int pixelHalfWidth = static_cast<int> (spval(pixelHalfWidthFull + 0.5));
 
   sfloat xf = xmap / pixelWidth;
   sfloat yf = ymap / pixelWidth;
-  int xc = static_cast<int> (xf);
-  int yc = static_cast<int> (yf);
+  int xc = static_cast<int> (spval(xf));
+  int yc = static_cast<int> (spval(yf));
   sfloat width_error = xf - xc;
   sfloat height_error = yf - yc;
 
@@ -661,8 +661,8 @@ void Image::draw_cylinder(sfloat *x, sfloat *y,
 
   sfloat xf = xmap / pixelWidth;
   sfloat yf = ymap / pixelWidth;
-  int xc = static_cast<int> (xf);
-  int yc = static_cast<int> (yf);
+  int xc = static_cast<int> (spval(xf));
+  int yc = static_cast<int> (spval(yf));
   sfloat width_error = xf - xc;
   sfloat height_error = yf - yc;
 
@@ -673,8 +673,8 @@ void Image::draw_cylinder(sfloat *x, sfloat *y,
 
   sfloat pixelHalfWidthFull = (rasterWidth * 0.5) / pixelWidth;
   sfloat pixelHalfHeightFull = (rasterHeight * 0.5) / pixelWidth;
-  int pixelHalfWidth = static_cast<int> (pixelHalfWidthFull + 0.5);
-  int pixelHalfHeight = static_cast<int> (pixelHalfHeightFull + 0.5);
+  int pixelHalfWidth = static_cast<int> (spval(pixelHalfWidthFull + 0.5));
+  int pixelHalfHeight = static_cast<int> (spval(pixelHalfHeightFull + 0.5));
 
   if (zaxis[0] == camDir[0] && zaxis[1] == camDir[1] && zaxis[2] == camDir[2])
     return;
@@ -820,8 +820,8 @@ void Image::draw_triangle(sfloat *x, sfloat *y, sfloat *z, sfloat *surfaceColor)
 
   sfloat xf = xmap / pixelWidth;
   sfloat yf = ymap / pixelWidth;
-  int xc = static_cast<int> (xf);
-  int yc = static_cast<int> (yf);
+  int xc = static_cast<int> (spval(xf));
+  int yc = static_cast<int> (spval(yf));
   sfloat width_error = xf - xc;
   sfloat height_error = yf - yc;
 
@@ -842,10 +842,10 @@ void Image::draw_triangle(sfloat *x, sfloat *y, sfloat *z, sfloat *surfaceColor)
   //int pixelUp = static_cast<int> (pixelUpFull + 0.5);
 
   // new
-  int pixelLeft = static_cast<int> (pixelLeftFull + 1.0);
-  int pixelRight = static_cast<int> (pixelRightFull + 1.0);
-  int pixelDown = static_cast<int> (pixelDownFull + 1.0);
-  int pixelUp = static_cast<int> (pixelUpFull + 1.0);
+  int pixelLeft = static_cast<int> (spval(pixelLeftFull + 1.0));
+  int pixelRight = static_cast<int> (spval(pixelRightFull + 1.0));
+  int pixelDown = static_cast<int> (spval(pixelDownFull + 1.0));
+  int pixelUp = static_cast<int> (spval(pixelUpFull + 1.0));
 
   for (int iy = yc - pixelDown; iy <= yc + pixelUp; iy ++) {
     for (int ix = xc - pixelLeft; ix <= xc + pixelRight; ix ++) {
@@ -947,9 +947,9 @@ void Image::draw_pixel(int ix, int iy, sfloat depth,
   c[1] = saturate(c[1]);
   c[2] = saturate(c[2]);
 
-  imageBuffer[0 + ix*3 + iy*width*3] = static_cast<int>(c[0] * 255.0);
-  imageBuffer[1 + ix*3 + iy*width*3] = static_cast<int>(c[1] * 255.0);
-  imageBuffer[2 + ix*3 + iy*width*3] = static_cast<int>(c[2] * 255.0);
+  imageBuffer[0 + ix*3 + iy*width*3] = static_cast<int>(spval(c[0] * 255.0));
+  imageBuffer[1 + ix*3 + iy*width*3] = static_cast<int>(spval(c[1] * 255.0));
+  imageBuffer[2 + ix*3 + iy*width*3] = static_cast<int>(spval(c[2] * 255.0));
 }
 
 /* ---------------------------------------------------------------------- */
@@ -964,7 +964,7 @@ void Image::compute_SSAO()
 
   sfloat pixelWidth = (tanPerPixel > 0) ? tanPerPixel :
         -tanPerPixel / zoom;
-  int pixelRadius = (int) trunc (SSAORadius / pixelWidth + 0.5);
+  int pixelRadius = spval(spval(spval(spval(spval(spval(spval(spval(spval(spval(spval(spval(spval(spval(spval(spval(spval(spval(spval(spval(spval(spval(spval(spval((int) trunc (SSAORadius / pixelWidth + 0.5)))))))))))))))))))))))));
 
   // each proc is assigned a subset of contiguous pixels from the full image
   // pixels are contiguous in x (columns within a row), then by row
@@ -1003,8 +1003,8 @@ void Image::compute_SSAO()
 
       // Bresenham's line algorithm to march over depthBuffer
 
-      int dx = static_cast<int> (hx * pixelRadius);
-      int dy = static_cast<int> (hy * pixelRadius);
+      int dx = static_cast<int> (spval(hx * pixelRadius));
+      int dy = static_cast<int> (spval(hy * pixelRadius));
       int ex = x + dx;
       if (ex < 0) { ex = 0; } if (ex >= width) { ex = width - 1; }
       int ey = y + dy;
@@ -1076,9 +1076,9 @@ void Image::compute_SSAO()
     c[0] *= (1.0 - ao);
     c[1] *= (1.0 - ao);
     c[2] *= (1.0 - ao);
-    imageBuffer[index * 3 + 0] = (int) c[0];
-    imageBuffer[index * 3 + 1] = (int) c[1];
-    imageBuffer[index * 3 + 2] = (int) c[2];
+    imageBuffer[index * 3 + 0] = spval(spval(spval(spval(spval(spval(spval(spval(spval(spval(spval(spval(spval(spval(spval(spval(spval(spval(spval(spval(spval(spval((int) c[0]))))))))))))))))))))));
+    imageBuffer[index * 3 + 1] = spval(spval(spval(spval(spval(spval(spval(spval(spval(spval(spval(spval(spval(spval(spval(spval(spval(spval(spval(spval(spval(spval(spval((int) c[1])))))))))))))))))))))));
+    imageBuffer[index * 3 + 2] = spval(spval(spval(spval(spval(spval(spval(spval(spval(spval(spval(spval(spval(spval(spval(spval(spval(spval(spval(spval(spval(spval(spval((int) c[2])))))))))))))))))))))));
   }
 }
 
@@ -1985,7 +1985,7 @@ sfloat *ColorMap::value2color(sfloat value)
       if (value >= mentry[i].lvalue && value <= mentry[i].hvalue)
         return mentry[i].color;
   } else {
-    int ibin = static_cast<int> ((value-lo) * mbinsizeinv);
+    int ibin = static_cast<int> (spval((value-lo) * mbinsizeinv));
     return mentry[ibin%nentry].color;
   }
 

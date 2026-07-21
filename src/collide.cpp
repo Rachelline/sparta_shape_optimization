@@ -56,7 +56,7 @@ Collide::Collide(SPARTA *sparta, int, char **arg) : Pointers(sparta)
 
   random = new RanKnuth(update->ranmaster->uniform());
   sfloat seed = update->ranmaster->uniform();
-  random->reset(seed,comm->me,100);
+  random->reset(spval(seed),comm->me,100);
 
   ngroups = 0;
 
@@ -472,7 +472,7 @@ template < int NEARCP, int GASTALLY > void Collide::collisions_one()
     // if no attempts, continue to next grid cell
 
     attempt = attempt_collision(icell,np,volume);
-    nattempt = static_cast<int> (attempt);
+    nattempt = static_cast<int> (spval(attempt));
 
     if (!nattempt) continue;
     nattempt_one += nattempt;
@@ -659,7 +659,7 @@ template < int NEARCP, int GASTALLY > void Collide::collisions_group()
     for (igroup = 0; igroup < ngroups; igroup++)
       for (jgroup = igroup; jgroup < ngroups; jgroup++) {
         attempt = attempt_collision(icell,igroup,jgroup,volume);
-        nattempt = static_cast<int> (attempt);
+        nattempt = static_cast<int> (spval(attempt));
 
         if (nattempt) {
           gpair[npair][0] = igroup;
@@ -936,7 +936,7 @@ template < int GASTALLY > void Collide::collisions_one_ambipolar()
 
     nptotal = np + nelectron;
     attempt = attempt_collision(icell,nptotal,volume);
-    nattempt = static_cast<int> (attempt);
+    nattempt = static_cast<int> (spval(attempt));
 
     if (!nattempt) continue;
     nattempt_one += nattempt;
@@ -1281,7 +1281,7 @@ template < int GASTALLY > void Collide::collisions_group_ambipolar()
       for (jgroup = igroup; jgroup < ngroups; jgroup++) {
         if (igroup == egroup && jgroup == egroup) continue;
         attempt = attempt_collision(icell,igroup,jgroup,volume);
-        nattempt = static_cast<int> (attempt);
+        nattempt = static_cast<int> (spval(attempt));
 
         if (nattempt) {
           if (igroup == egroup) {

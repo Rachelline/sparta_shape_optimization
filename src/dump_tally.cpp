@@ -219,9 +219,9 @@ void DumpTally::header_item(bigint ndump)
   fprintf(fp,"ITEM: NUMBER OF TALLIES\n");
   fprintf(fp,BIGINT_FORMAT "\n",ndump);
   fprintf(fp,"ITEM: BOX BOUNDS %s\n",boundstr);
-  fprintf(fp,"%g %g\n",boxxlo,boxxhi);
-  fprintf(fp,"%g %g\n",boxylo,boxyhi);
-  fprintf(fp,"%g %g\n",boxzlo,boxzhi);
+  fprintf(fp,"%g %g\n",spval(boxxlo),spval(boxxhi));
+  fprintf(fp,"%g %g\n",spval(boxylo),spval(boxyhi));
+  fprintf(fp,"%g %g\n",spval(boxzlo),spval(boxzhi));
   fprintf(fp,"ITEM: TALLIES %s\n",columns);
 }
 
@@ -296,11 +296,11 @@ void DumpTally::write_text(int n, sfloat *mybuf)
   int m = 0;
   for (i = 0; i < n; i++) {
     for (j = 0; j < size_one; j++) {
-      if (vtype[j] == DOUBLE) fprintf(fp,vformat[j],mybuf[m]);
-      else if (vtype[j] == INT) fprintf(fp,vformat[j],(int) ubuf(mybuf[m]).i);
-      else if (vtype[j] == BIGINT) fprintf(fp,vformat[j],(bigint) ubuf(mybuf[m]).i);
-      else if (vtype[j] == UINT) fprintf(fp,vformat[j],(uint32_t) ubuf(mybuf[m]).i);
-      else if (vtype[j] == BIGUINT) fprintf(fp,vformat[j],(uint64_t) ubuf(mybuf[m]).i);
+      if (vtype[j] == DOUBLE) fprintf(fp,vformat[j],spval(mybuf[m]));
+      else if (vtype[j] == INT) fprintf(fp,vformat[j],(int) ubuf(spval(mybuf[m])).i);
+      else if (vtype[j] == BIGINT) fprintf(fp,vformat[j],(bigint) ubuf(spval(mybuf[m])).i);
+      else if (vtype[j] == UINT) fprintf(fp,vformat[j],(uint32_t) ubuf(spval(mybuf[m])).i);
+      else if (vtype[j] == BIGUINT) fprintf(fp,vformat[j],(uint64_t) ubuf(spval(mybuf[m])).i);
       m++;
     }
     fprintf(fp,"\n");
