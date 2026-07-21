@@ -379,7 +379,7 @@ void SurfCollideImpulsive::impulsive(Particle::OnePart *p, sfloat *norm)
 
       if (sparta->collide->vibstyle == SMOOTH) p->evib = evib_val;
       if (sparta->collide->vibstyle == DISCRETE && vibdof==2) {
-        int ivib =  evib_val / (update->boltz*vibtemp[0]);
+        int ivib =  spval(evib_val / (update->boltz*vibtemp[0]));
         p->evib = ivib * update->boltz * vibtemp[0];
       } else {
         // vibmode degeneracies are expanded into individual oscillators at
@@ -393,7 +393,7 @@ void SurfCollideImpulsive::impulsive(Particle::OnePart *p, sfloat *norm)
           tot_temp += vibtemp[imode];
 
         for (int imode=0; imode<nvibmode; imode++) {
-          int ivib = evib_val / (update->boltz*tot_temp);
+          int ivib = spval(evib_val / (update->boltz*tot_temp));
           evib_sum += ivib * update->boltz * vibtemp[imode];
         }
 

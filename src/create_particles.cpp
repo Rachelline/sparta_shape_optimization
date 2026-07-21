@@ -587,7 +587,7 @@ void CreateParticles::create_local()
   if (np == 0) {
     sfloat flowvol;
     MPI_Allreduce(&flowvolme,&flowvol,1,MPI_SFLOAT,MPI_SUM,world);
-    np = particle->mixture[imix]->nrho * flowvol / update->fnum;
+    np = static_cast<bigint>(spval(particle->mixture[imix]->nrho * flowvol / update->fnum));
   }
 
   // gather cummulative insertion volumes across all procs
@@ -876,7 +876,7 @@ void CreateParticles::create_local_twopass()
   if (np == 0) {
     sfloat flowvol;
     MPI_Allreduce(&flowvolme,&flowvol,1,MPI_SFLOAT,MPI_SUM,world);
-    np = particle->mixture[imix]->nrho * flowvol / update->fnum;
+    np = static_cast<bigint>(spval(particle->mixture[imix]->nrho * flowvol / update->fnum));
   }
 
   // gather cummulative insertion volumes across all procs

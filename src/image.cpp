@@ -464,8 +464,8 @@ void Image::draw_sphere(sfloat *x, sfloat *surfaceColor, sfloat diameter)
 
   sfloat radius = 0.5*diameter;
   sfloat radsq = radius*radius;
-  sfloat pixelWidth = (tanPerPixel > 0) ? tanPerPixel * dist :
-    -tanPerPixel / zoom;
+  sfloat pixelWidth = (tanPerPixel > 0) ? sfloat(tanPerPixel * dist) :
+    sfloat(-tanPerPixel / zoom);
   sfloat pixelRadiusFull = radius / pixelWidth;
   int pixelRadius = static_cast<int> (spval(pixelRadiusFull + 0.5)) + 1;
 
@@ -528,8 +528,8 @@ void Image::draw_brick(sfloat *x, sfloat *surfaceColor, sfloat *diameter)
   radius[1] = 0.5*diameter[1];
   radius[2] = 0.5*diameter[2];
 
-  sfloat pixelWidth = (tanPerPixel > 0) ? tanPerPixel * dist :
-    -tanPerPixel / zoom;
+  sfloat pixelWidth = (tanPerPixel > 0) ? sfloat(tanPerPixel * dist) :
+    sfloat(-tanPerPixel / zoom);
 
   sfloat halfWidth = MAX(diameter[0],diameter[1]);
   halfWidth = MAX(halfWidth,diameter[2]);
@@ -656,8 +656,8 @@ void Image::draw_cylinder(sfloat *x, sfloat *y,
   sfloat ymap = MathExtra::dot3(camUp,mid);
   sfloat dist = MathExtra::dot3(camPos,camDir) - MathExtra::dot3(mid,camDir);
 
-  sfloat pixelWidth = (tanPerPixel > 0) ? tanPerPixel * dist :
-    -tanPerPixel / zoom;
+  sfloat pixelWidth = (tanPerPixel > 0) ? sfloat(tanPerPixel * dist) :
+    sfloat(-tanPerPixel / zoom);
 
   sfloat xf = xmap / pixelWidth;
   sfloat yf = ymap / pixelWidth;
@@ -815,8 +815,8 @@ void Image::draw_triangle(sfloat *x, sfloat *y, sfloat *z, sfloat *surfaceColor)
   sfloat ymap = MathExtra::dot3(camUp,xlocal);
   sfloat dist = MathExtra::dot3(camPos,camDir) - MathExtra::dot3(xlocal,camDir);
 
-  sfloat pixelWidth = (tanPerPixel > 0) ? tanPerPixel * dist :
-    -tanPerPixel / zoom;
+  sfloat pixelWidth = (tanPerPixel > 0) ? sfloat(tanPerPixel * dist) :
+    sfloat(-tanPerPixel / zoom);
 
   sfloat xf = xmap / pixelWidth;
   sfloat yf = ymap / pixelWidth;
@@ -962,9 +962,9 @@ void Image::compute_SSAO()
 
   // typical neighborhood value for shading
 
-  sfloat pixelWidth = (tanPerPixel > 0) ? tanPerPixel :
-        -tanPerPixel / zoom;
-  int pixelRadius = spval(spval(spval(spval(spval(spval(spval(spval(spval(spval(spval(spval(spval(spval(spval(spval(spval(spval(spval(spval(spval(spval(spval(spval((int) trunc (SSAORadius / pixelWidth + 0.5)))))))))))))))))))))))));
+  sfloat pixelWidth = (tanPerPixel > 0) ? sfloat(tanPerPixel) :
+        sfloat(-tanPerPixel / zoom);
+  int pixelRadius = (int) spval(trunc(SSAORadius / pixelWidth + 0.5));
 
   // each proc is assigned a subset of contiguous pixels from the full image
   // pixels are contiguous in x (columns within a row), then by row
@@ -1076,9 +1076,9 @@ void Image::compute_SSAO()
     c[0] *= (1.0 - ao);
     c[1] *= (1.0 - ao);
     c[2] *= (1.0 - ao);
-    imageBuffer[index * 3 + 0] = spval(spval(spval(spval(spval(spval(spval(spval(spval(spval(spval(spval(spval(spval(spval(spval(spval(spval(spval(spval(spval(spval((int) c[0]))))))))))))))))))))));
-    imageBuffer[index * 3 + 1] = spval(spval(spval(spval(spval(spval(spval(spval(spval(spval(spval(spval(spval(spval(spval(spval(spval(spval(spval(spval(spval(spval(spval((int) c[1])))))))))))))))))))))));
-    imageBuffer[index * 3 + 2] = spval(spval(spval(spval(spval(spval(spval(spval(spval(spval(spval(spval(spval(spval(spval(spval(spval(spval(spval(spval(spval(spval(spval((int) c[2])))))))))))))))))))))));
+    imageBuffer[index * 3 + 0] = (int) spval(c[0]);
+    imageBuffer[index * 3 + 1] = (int) spval(c[1]);
+    imageBuffer[index * 3 + 2] = (int) spval(c[2]);
   }
 }
 

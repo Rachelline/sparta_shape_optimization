@@ -651,7 +651,7 @@ void Modify::list_init_computes()
 bigint Modify::memory_usage()
 {
   bigint bytes = 0;
-  for (int i = 0; i < nfix; i++) bytes += fix[i]->memory_usage();
+  for (int i = 0; i < nfix; i++) bytes += spval(fix[i]->memory_usage());
   for (int i = 0; i < ncompute; i++) bytes += compute[i]->memory_usage();
   return bytes;
 }

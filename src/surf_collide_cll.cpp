@@ -404,7 +404,7 @@ void SurfCollideCLL::cll(Particle::OnePart *p, sfloat *norm)
     cos_theta_vib = cos(MY_2PI*random->uniform());
     evib_val = update->boltz * tsurf *
       (r_vib*r_vib + evib_mag*evib_mag + 2*r_vib*evib_mag*cos_theta_vib);
-    int ivib =  evib_val / (update->boltz*species[ispecies].vibtemp[0]);
+    int ivib =  spval(evib_val / (update->boltz*species[ispecies].vibtemp[0]));
     p->evib = ivib * update->boltz * species[ispecies].vibtemp[0];
   }
 

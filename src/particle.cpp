@@ -1043,8 +1043,8 @@ sfloat Particle::erot(int isp, sfloat temp_thermal, RanKnuth *erandom)
   if (species[isp].rotdof < 2) return 0.0;
 
   if (rotstyle == DISCRETE && species[isp].rotdof == 2) {
-    int irot = -log(erandom->uniform()) * temp_thermal /
-      particle->species[isp].rottemp[0];
+    int irot = spval(-log(erandom->uniform()) * temp_thermal /
+      particle->species[isp].rottemp[0]);
     eng = irot * update->boltz * particle->species[isp].rottemp[0];
   } else if (rotstyle == SMOOTH && species[isp].rotdof == 2) {
     eng = -log(erandom->uniform()) * update->boltz * temp_thermal;
@@ -1087,8 +1087,8 @@ sfloat Particle::evib(int isp, sfloat temp_thermal, RanKnuth *erandom)
   eng = 0.0;
 
   if (vibstyle == DISCRETE && species[isp].vibdof == 2) {
-    int ivib = -log(erandom->uniform()) * temp_thermal /
-      particle->species[isp].vibtemp[0];
+    int ivib = spval(-log(erandom->uniform()) * temp_thermal /
+      particle->species[isp].vibtemp[0]);
     eng = ivib * update->boltz * particle->species[isp].vibtemp[0];
   } else if (vibstyle == SMOOTH || species[isp].vibdof >= 2) {
     if (species[isp].vibdof == 2)

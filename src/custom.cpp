@@ -1601,13 +1601,13 @@ bigint Custom::coarse_tree_neighbor_assign(int external, int colcount,
       for (int j = 0; j < colcount; j++) {
         if (ctype[j] == INT) {
           if (csize[j] == 0) {
-            if (!ic) ivec[j][i] = spval(spval(spval(spval(spval(spval(spval(spval(spval(spval(spval(spval(spval(spval(spval(spval(spval(spval(spval(spval(spval(spval(spval(spval((int) values_coarse[plist[ic]][j]))))))))))))))))))))))));
-            else ivec[j][i] += spval(spval(spval(spval(spval(spval(spval(spval(spval(spval(spval(spval(spval(spval(spval(spval(spval(spval(spval(spval(spval(spval(spval(spval((int) values_coarse[plist[ic]][j]))))))))))))))))))))))));
+            if (!ic) ivec[j][i] = (int) spval(values_coarse[plist[ic]][j]);
+            else ivec[j][i] += (int) spval(values_coarse[plist[ic]][j]);
           } else {
             if (!ic) iarray[j][i][ccol[j]-1] =
-                       spval(spval(spval(spval(spval(spval(spval(spval(spval(spval(spval(spval(spval(spval(spval(spval(spval(spval(spval(spval(spval(spval((int) values_coarse[plist[ic]][j]))))))))))))))))))))));
+                       (int) spval(values_coarse[plist[ic]][j]);
             else iarray[j][i][ccol[j]-1] +=
-                   spval(spval(spval(spval(spval(spval(spval(spval(spval(spval(spval(spval(spval(spval(spval(spval(spval(spval(spval(spval(spval(spval(spval(spval((int) values_coarse[plist[ic]][j]))))))))))))))))))))))));
+                   (int) spval(values_coarse[plist[ic]][j]);
           }
         } else if (ctype[j] == DOUBLE) {
           if (csize[j] == 0) {

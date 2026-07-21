@@ -484,7 +484,7 @@ void WriteRestart::write_less_memory(char *file)
 
   int my_npasses;
   if (particle->nlocal == 0) my_npasses = 2;
-  else my_npasses = ceil((sfloat)particle->nlocal/step_size)+1;
+  else my_npasses = spval(ceil((sfloat)particle->nlocal/step_size)+1);
 
   // write grid + particle data into file(s)
   // filewriter = 1 = this proc writes to file

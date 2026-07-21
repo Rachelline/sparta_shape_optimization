@@ -144,14 +144,14 @@ void MarchingCubes::invoke(sfloat **cvalues, sfloat ***mvalues, int *svalues, in
       // manually change for consistency
 
       for (j = 0; j < 6; j++) {
-        v000 += inval[0][j];
-        v001 += inval[1][j];
-        v010 += inval[2][j];
-        v011 += inval[3][j];
-        v100 += inval[4][j];
-        v101 += inval[5][j];
-        v110 += inval[6][j];
-        v111 += inval[7][j];
+        v000 += spval(inval[0][j]);
+        v001 += spval(inval[1][j]);
+        v010 += spval(inval[2][j]);
+        v011 += spval(inval[3][j]);
+        v100 += spval(inval[4][j]);
+        v101 += spval(inval[5][j]);
+        v110 += spval(inval[6][j]);
+        v111 += spval(inval[7][j]);
       }
 
       v000 /= 6.0;

@@ -281,10 +281,10 @@ void WriteGrid::write_custom(sfloat *vec)
   for (int ic = 0; ic < ncustom; ic++) {
     if (type_custom[ic] == 0) {
       if (size_custom[ic] == 0) {
-	fprintf(fp," %d",spval(spval(spval(spval(spval(spval(spval(spval(spval(spval(spval(spval(spval(spval(spval(spval(spval(spval(spval(spval(spval(spval(spval((int) vec[m++]))))))))))))))))))))))));
+	fprintf(fp," %d",(int) spval(vec[m++]));
       } else {
 	for (int j = 0; j < size_custom[ic]; j++)
-	  fprintf(fp," %d",spval(spval(spval(spval(spval(spval(spval(spval(spval(spval(spval(spval(spval(spval(spval(spval(spval(spval(spval(spval(spval(spval(spval(spval((int) vec[m++])))))))))))))))))))))))));
+	  fprintf(fp," %d",(int) spval(vec[m++]));
       }
     } else {
       if (size_custom[ic] == 0) {

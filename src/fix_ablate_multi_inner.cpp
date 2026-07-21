@@ -176,13 +176,13 @@ void FixAblate::decrement_multid_outside()
 
       ninter = 0;
       for (k = 0; k < dim; k++)
-        if (refcorners[neighbors[k]] == 0) ninter++;
+        if (refcorners[neighbors[k]] == 0) ninter += 1;
 
       if (ninter == 0) continue;
 
       Nout = 0;
       for (k = 0; k < dim; k++)
-        if (refcorners[neighbors[k]] == 0) Nout++;
+        if (refcorners[neighbors[k]] == 0) Nout += 1;
 
       if (Nout == 0) error->one(FLERR,"No outside neghbors");
 
@@ -691,7 +691,7 @@ void FixAblate::decrement_multiv_multid_outside()
       // ... of adjacent outside interface points
       ninter = 0;
       for (k = 0; k < dim; k++)
-        if (refcorners[neighbors[k]] == 0) ninter++;
+        if (refcorners[neighbors[k]] == 0) ninter += 1;
 
       if (ninter == 0) continue;
 
@@ -699,7 +699,7 @@ void FixAblate::decrement_multiv_multid_outside()
 
       Nout = 0;
       for (k = 0; k < dim; k++)
-        if (refcorners[neighbors[k]] == 0) Nout++;
+        if (refcorners[neighbors[k]] == 0) Nout += 1;
 
       // scale values so their sum is one (L1 norm over L2 norm)
 

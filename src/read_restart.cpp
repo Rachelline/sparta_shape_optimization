@@ -1154,7 +1154,7 @@ void ReadRestart::read_gp_multi_file_less_procs_memlimit(char *file)
       // extra pass for grid
 
       if (particle_nlocal == 0) npasses = 2;
-      else npasses = ceil((sfloat)particle_nlocal/step_size)+1;
+      else npasses = spval(ceil((sfloat)particle_nlocal/step_size)+1);
 
       int nlocal_restart = 0;
       bigint total_read_part = 0;
@@ -1314,7 +1314,7 @@ void ReadRestart::read_gp_multi_file_more_procs_memlimit(char *file)
       // extra pass for grid
 
       if (particle_nlocal == 0) npasses = 2;
-      else npasses = ceil((sfloat)particle_nlocal/step_size)+1;
+      else npasses = spval(ceil((sfloat)particle_nlocal/step_size)+1);
 
       if (i % nclusterprocs) {
         iproc = me + (i % nclusterprocs);

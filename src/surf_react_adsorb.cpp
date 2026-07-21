@@ -1492,7 +1492,7 @@ void SurfReactAdsorb::update_state_surf()
   for (i = 0; i < nsown; i++) {
     total_state[i] = 0;
     for (j = 0; j < nspecies_surf; j++) {
-      species_state[i][j] += outcollate[i][j];
+      species_state[i][j] += spval(outcollate[i][j]);
       species_state[i][j] = MAX(0,species_state[i][j]);
       total_state[i] += species_state[i][j];
     }

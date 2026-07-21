@@ -344,7 +344,7 @@ sfloat FixBalance::imbalance_factor(sfloat &maxcost)
   MPI_Allreduce(&mycost,&maxcost,1,MPI_SFLOAT,MPI_MAX,world);
 
   sfloat imbalance = 1.0;
-  if (maxcost) imbalance = maxcost / (totalcost / nprocs);
+  if (maxcost != 0.0) imbalance = maxcost / (totalcost / nprocs);
   return imbalance;
 }
 

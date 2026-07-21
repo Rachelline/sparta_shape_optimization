@@ -1563,8 +1563,10 @@ void CreateISurf::set_cvalues_voxel()
       error->one(FLERR,"Calculated solid fraction above one or negative");
     sfrac = MIN(MAX(sfrac,0.0),1.0);
 
-    for (int ic = 0; ic < ncorner; ic++)
-      tmp_cvalues[icell][ic] = MIN(MAX(sfrac*cin,0.0),255.0);
+    for (int ic = 0; ic < ncorner; ic++) {
+      sfloat cval = sfrac*cin;
+      tmp_cvalues[icell][ic] = MIN(MAX(cval,0.0),255.0);
+    }
 
   } // end grid cells
 }
