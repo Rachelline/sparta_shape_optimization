@@ -276,7 +276,7 @@ void Surf::collate_array_rendezvous(int nrow, int ncol, surfint *tally2surf,
   int *proclist;
   memory->create(proclist,nrow,"surf:proclist");
   sfloat *in_rvous = (sfloat *)
-    memory->smalloc(nrow*(ncol+1)*sizeof(sfloat*),"surf:in_rvous");
+    memory->smalloc(nrow*(ncol+1)*sizeof(sfloat),"surf:in_rvous");  // upstream bug: was sizeof(double*)
 
   // create rvous inputs
   // proclist = owner of each surf

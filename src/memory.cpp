@@ -44,8 +44,15 @@ void *Memory::smalloc(bigint nbytes, const char *name, int align)
   if (align) {
     int retval = posix_memalign(&ptr, align, nbytes);
     if (retval) ptr = NULL;
+#ifdef SPARTA_AD
+    if (ptr) memset(ptr,0,nbytes);  // zero-init: sfloat derivs start at 0
+#endif
   } else {
+#ifdef SPARTA_AD
+    ptr = calloc(1,nbytes);   // zero-init: sfloat value+derivs start at 0
+#else
     ptr = malloc(nbytes);
+#endif
   }
 
   if (ptr == NULL) {
