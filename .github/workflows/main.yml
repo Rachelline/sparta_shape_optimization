@@ -194,6 +194,34 @@ jobs:
       with:
         name: 'mpi-stubs-ad-sacado-Artifacts'
         path: 'build/examples/'
+  fmf-analytic-verify:
+    # Phases A+B of the AD-vs-analytic FMF ladder (docs/PLAN.md). Runs on the
+    # STOCK build -- no AD/Sacado needed. Phase A: the closed-form FMF
+    # coefficient reference self-checks (analytic derivative vs FD-of-formula,
+    # hardcoded anchors). Phase B: stock SPARTA free-molecular specular
+    # flat-plate pressure vs cp(delta,s)*q_inf. Validates units / q_inf
+    # normalization / speed-ratio + angle conventions before the Phase C/D
+    # derivative comparison relies on them.
+    runs-on: ubuntu-22.04
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Configure (stock serial)
+      run: |
+        mkdir build
+        cd build
+        cmake -C ../cmake/presets/serial.cmake \
+          -DPKG_PYTHON=ON \
+          ../cmake
+
+    - name: Build
+      run: cd build; make -j4
+
+    - name: Phase A -- analytic reference self-test
+      run: python3 tools/ad_verify/fmf_coeff.py
+
+    - name: Phase B -- stock DSMC vs analytic FMF pressure
+      run: SPARTA=$PWD/build/src/spa_serial python3 tools/ad_verify/flatplate_value_match.py
   bigbig:
     runs-on: ubuntu-22.04
     steps:
