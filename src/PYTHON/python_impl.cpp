@@ -307,7 +307,7 @@ void PythonImpl::command(int narg, char **arg)
 
 /* ------------------------------------------------------------------ */
 
-void PythonImpl::invoke_function(int ifunc, char *result, double *dvalue)
+void PythonImpl::invoke_function(int ifunc, char *result, sfloat *dvalue)
 {
   PyUtils::GIL lock;
   PyObject *pValue;
@@ -339,7 +339,7 @@ void PythonImpl::invoke_function(int ifunc, char *result, double *dvalue)
         }
         pValue = PY_INT_FROM_LONG(PY_LONG_FROM_STRING(str));
       } else if (pfuncs[ifunc].ivarflag[i] == INTERNALVAR) {
-        double value = input->variable->compute_equal(pfuncs[ifunc].internal_var[i]);
+        double value = spval(input->variable->compute_equal(pfuncs[ifunc].internal_var[i]));
         pValue = PyLong_FromDouble(value);
       } else {
         pValue = PY_INT_FROM_LONG(pfuncs[ifunc].ivalue[i]);
@@ -355,7 +355,7 @@ void PythonImpl::invoke_function(int ifunc, char *result, double *dvalue)
         }
         pValue = PyFloat_FromDouble(std::stod(str));
       } else if (pfuncs[ifunc].ivarflag[i] == INTERNALVAR) {
-        double value = input->variable->compute_equal(pfuncs[ifunc].internal_var[i]);
+        double value = spval(input->variable->compute_equal(pfuncs[ifunc].internal_var[i]));
         pValue = PyFloat_FromDouble(value);
       } else {
         pValue = PyFloat_FromDouble(pfuncs[ifunc].dvalue[i]);
@@ -603,7 +603,7 @@ int PythonImpl::create_entry(char *name, int ninput, int noutput,
         }
       } else {
         pfuncs[ifunc].ivarflag[i] = VALUE;
-        pfuncs[ifunc].dvalue[i] = utils::numeric(FLERR, istr[i], false, sparta);
+        pfuncs[ifunc].dvalue[i] = spval(utils::numeric(FLERR, istr[i], false, sparta));
       }
     } else if (type == 's') {
       pfuncs[ifunc].itype[i] = STRING;
