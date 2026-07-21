@@ -166,6 +166,7 @@ static int stubtypesize(MPI_Datatype datatype)
   if (datatype == MPI_INT)             return sizeof(int);
   else if (datatype == MPI_FLOAT)      return sizeof(float);
   else if (datatype == MPI_DOUBLE)     return sizeof(double);
+  else if (datatype == MPI_5DOUBLE)    return 5*sizeof(double);  /* SPARTA_AD sfloat */
   else if (datatype == MPI_CHAR)       return sizeof(char);
   else if (datatype == MPI_BYTE)       return sizeof(char);
   else if (datatype == MPI_LONG)       return sizeof(long);

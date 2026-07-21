@@ -17,10 +17,39 @@
 #include "string.h"
 #include "stdlib.h"
 #include "math_extra.h"
+#include <type_traits>
 
 using namespace SPARTA_NS;
 
 namespace MathExtra {
+
+namespace detail {
+
+  // trivially-copyable types (e.g. double): memcpy/memmove is safe and fast
+  template <unsigned N, typename T>
+  inline typename std::enable_if<std::is_trivially_copyable<T>::value>::type
+  swap_row(T *a, T *b)
+  {
+    T tempv[N];
+    memcpy(tempv,a,N*sizeof(T));
+    memmove(a,b,N*sizeof(T));
+    memcpy(b,tempv,N*sizeof(T));
+  }
+
+  // non-trivially-copyable types (e.g. AD active types): must go through
+  // assignment so constructors/tape bookkeeping run correctly
+  template <unsigned N, typename T>
+  inline typename std::enable_if<!std::is_trivially_copyable<T>::value>::type
+  swap_row(T *a, T *b)
+  {
+    for (unsigned k = 0; k < N; k++) {
+      T tempv = a[k];
+      a[k] = b[k];
+      b[k] = tempv;
+    }
+  }
+
+}
 
 /* ----------------------------------------------------------------------
    solve Ax = b or M ans = v
@@ -28,11 +57,12 @@ namespace MathExtra {
    copied from lammps
 ------------------------------------------------------------------------- */
 
-int mldivide3(const double m[3][3], const double *v, double *ans)
+template <typename T>
+int mldivide3(const T m[3][3], const T *v, T *ans)
 {
   // create augmented matrix for pivoting
 
-  double aug[3][4];
+  T aug[3][4];
   for (unsigned i = 0; i < 3; i++) {
     aug[i][3] = v[i];
     for (unsigned j = 0; j < 3; j++) aug[i][j] = m[i][j];
@@ -42,10 +72,7 @@ int mldivide3(const double m[3][3], const double *v, double *ans)
     unsigned p = i;
     for (unsigned j = i+1; j < 3; j++) {
       if (fabs(aug[j][i]) > fabs(aug[i][i])) {
-        double tempv[4];
-        memcpy(tempv,aug[i],4*sizeof(double));
-        memmove(aug[i],aug[j],4*sizeof(double));
-        memcpy(aug[j],tempv,4*sizeof(double));
+        detail::swap_row<4>(aug[i],aug[j]);
       }
     }
 
@@ -54,14 +81,11 @@ int mldivide3(const double m[3][3], const double *v, double *ans)
     if (p == 3) return 1;
     else
       if (p != i) {
-        double tempv[4];
-        memcpy(tempv,aug[i],4*sizeof(double));
-        memmove(aug[i],aug[p],4*sizeof(double));
-        memcpy(aug[p],tempv,4*sizeof(double));
+        detail::swap_row<4>(aug[i],aug[p]);
       }
 
     for (unsigned j = i+1; j < 3; j++) {
-      double n = aug[j][i]/aug[i][i];
+      T n = aug[j][i]/aug[i][i];
       for (unsigned k=i+1; k<4; k++) aug[j][k]-=n*aug[i][k];
     }
   }
@@ -72,7 +96,7 @@ int mldivide3(const double m[3][3], const double *v, double *ans)
 
   ans[2] = aug[2][3]/aug[2][2];
   for (int i = 1; i >= 0; i--) {
-    double sumax = 0.0;
+    T sumax = 0.0;
     for (unsigned j = i+1; j < 3; j++) sumax += aug[i][j]*ans[j];
     ans[i] = (aug[i][3]-sumax) / aug[i][i];
   }
@@ -88,11 +112,12 @@ int mldivide3(const double m[3][3], const double *v, double *ans)
    copied from LAMMPS
 ------------------------------------------------------------------------- */
 
-int mldivide4(const double m[4][4], const double *v, double *ans)
+template <typename T>
+int mldivide4(const T m[4][4], const T *v, T *ans)
 {
   // create augmented matrix for pivoting
 
-  double aug[4][5];
+  T aug[4][5];
   for (unsigned i = 0; i < 4; i++) {
     aug[i][4] = v[i];
     for (unsigned j = 0; j < 4; j++) aug[i][j] = m[i][j];
@@ -105,10 +130,7 @@ int mldivide4(const double m[4][4], const double *v, double *ans)
 
     for (unsigned j = i+1; j < 4; j++) {
       if (fabs(aug[j][i]) > fabs(aug[i][i])) {
-        double tempv[5];
-        memcpy(tempv,aug[i],5*sizeof(double));
-        memmove(aug[i],aug[j],5*sizeof(double));
-        memcpy(aug[j],tempv,5*sizeof(double));
+        detail::swap_row<5>(aug[i],aug[j]);
       }
     }
 
@@ -121,17 +143,14 @@ int mldivide4(const double m[4][4], const double *v, double *ans)
     if (p == 4) return 1;
     else {
       if (p != i) {
-        double tempv[5];
-        memcpy(tempv,aug[i],5*sizeof(double));
-        memmove(aug[i],aug[p],5*sizeof(double));
-        memcpy(aug[p],tempv,5*sizeof(double));
+        detail::swap_row<5>(aug[i],aug[p]);
       }
     }
 
     // Gaussian elimination
 
     for (unsigned j = i+1; j < 4; j++) {
-      double n = aug[j][i]/aug[i][i];
+      T n = aug[j][i]/aug[i][i];
       for (unsigned k = i+1; k < 5; k++) aug[j][k]-=n*aug[i][k];
     }
   }
@@ -144,7 +163,7 @@ int mldivide4(const double m[4][4], const double *v, double *ans)
 
   ans[3] = aug[3][4]/aug[3][3];
   for (int i = 2; i >= 0; i--) {
-    double sumax = 0.0;
+    T sumax = 0.0;
     for (unsigned j = i+1; j < 4; j++) sumax += aug[i][j]*ans[j];
     ans[i] = (aug[i][4]-sumax) / aug[i][i];
   }
@@ -203,5 +222,10 @@ char *num2str(bigint n, char *outstr)
   else sprintf(outstr,"(%1.3gE)",1.0e-18*n);
   return outstr;
 }
+
+// explicit instantiations
+
+template int mldivide3<double>(const double m[3][3], const double *v, double *ans);
+template int mldivide4<double>(const double m[4][4], const double *v, double *ans);
 
 }
