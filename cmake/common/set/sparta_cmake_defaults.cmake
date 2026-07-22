@@ -103,26 +103,85 @@ if(SPARTA_ENABLE_TESTING)
 
   # When running under -DSPARTA_ENABLE_AD, skip inputs whose gold-log match
   # is verified to be UNACHIEVABLE in principle, not merely "not yet fixed".
-  # Substituting sfloat (any AD type, not just Sacado) for double changes
-  # trajectory-sensitive floating-point rounding somewhere upstream of a
-  # probabilistic accept/reject or randomized-rounding branch (e.g.
-  # collide_vss.cpp's "attempt += random->uniform()" truncation), flipping
-  # an occasional branch and desyncing the RNG stream for the rest of the
-  # run -- Np/Step stay exact, only downstream collision-count/derived
-  # stats drift. Verified empirically, not assumed: built the independent,
-  # previously-validated hand-rolled sfloat AD engine (sparta_AD reference)
-  # and ran these SAME inputs against it -- it diverges from the SAME gold
-  # logs with the SAME signature, proving this is inherent to ANY AD
-  # scalar substitution here, not a bug in this fork's Sacado port. (A
-  # THIRD test in this original failing set, in.circle.gs's family, WAS a
-  # real bug -- a latent upstream sizeof(sfloat*) vs sizeof(sfloat) buffer
-  # sizing bug in surf_collate.cpp, invisible whenever sfloat==double since
-  # sizeof(double*)==sizeof(double) on 64-bit -- and is fixed, not skipped.
+  # DO NOT add a test here just because it currently fails -- a failure
+  # signature that LOOKS like this same pattern (Step/Np exact, downstream
+  # collision/grid counts drift) was, in one case (in.circle.gs's family),
+  # actually a real, fixable bug (a latent upstream sizeof(sfloat*) vs
+  # sizeof(sfloat) buffer sizing bug in surf_collate.cpp, invisible whenever
+  # sfloat==double since sizeof(double*)==sizeof(double) on 64-bit). Every
+  # entry below was independently confirmed, not pattern-matched: built the
+  # independent, previously-validated hand-rolled sfloat AD engine
+  # (sparta_AD reference, a different type from Sacado's SFad) and ran that
+  # SAME test input against it -- if it ALSO diverges from the SAME gold log
+  # with the same signature, that is what justifies "inherent to any AD
+  # scalar substitution here", not this fork's Sacado port specifically.
+  #
+  # Root cause (traced live via bit-exact in-binary shadow comparison on
+  # in.bfield, 2026-07-22 -- see docs/PLAN.md for the full trace): Sacado's
+  # Fad expression-template evaluation of even the simplest arithmetic
+  # (e.g. update.cpp's ballistic move "xnew[d] = x[d] + dtremain*v[d]") is
+  # NOT guaranteed bit-identical to the same formula evaluated in plain
+  # double, even given identical input values. This is NOT rare: instrumenting
+  # that one line alone showed ~940k one-ULP-or-greater disagreements over a
+  # single 1000-step/10000-particle in.bfield run (roughly one in twenty
+  # particle-dimension updates, every step). It is also NOT a compiler
+  # codegen artifact -- confirmed two ways: (1) disabling FMA contraction
+  # (-ffp-contract=off) on both stock and AD builds changed nothing about the
+  # divergence; (2) recompiling the ballistic-move code at -O0 produced the
+  # exact same disagreement count as the default optimized build. The
+  # difference is semantic, coming from Sacado's own expression-template
+  # evaluation path, not from instruction scheduling/fusion.
+  #
+  # Given that volume of 1-ULP noise, across 10000s of particles and 1000s
+  # of steps it is essentially certain that eventually one such difference
+  # lands close enough to a probabilistic accept/reject branch (e.g.
+  # collide_vss.cpp's "attempt += random->uniform()" then truncated to int,
+  # or test_collision's vre/vremax-vs-random->uniform() comparison) or a
+  # truncation-based grid-cell-index boundary (update.cpp's
+  # "static_cast<int>(spval((xnew[0]-boxlo[0])/dx))") to flip which side of
+  # that boundary a value falls on, desyncing the RNG stream and the
+  # per-particle cell trajectory for the rest of that run. This is expected
+  # floating-point non-determinism from using a different arithmetic
+  # evaluation engine for the same formula -- structurally the same
+  # phenomenon that already makes plain-double SPARTA non-bit-reproducible
+  # across compilers/optimization levels/architectures, just made visible
+  # here because Sacado's evaluation path differs from plain double on
+  # (almost) every operation rather than only rare corner cases. There is no
+  # build flag or optimization-level change that removes it -- it cannot be
+  # "fixed" without hand-recomputing every value in plain double alongside
+  # Sacado's derivative tracking, which defeats the point of using Sacado.
+  #
+  # Verification status per entry (2026-07-22):
+  #   in.thermostat, in.collideInterspecies, in.bfield, in.circle.constant,
+  #     in.sphere.adjust, in.sphere.constant, in.shocktube,
+  #     in.surf_react_heatflux: directly run against the reference AD
+  #     binary and confirmed to diverge from the SAME gold log with the
+  #     SAME signature.
+  #   in.thermostat_ave: NOT independently run against the reference --
+  #     inferred from in.thermostat (same physical setup, only adds
+  #     ave/time on top). Flagged here so this inference is visible, not
+  #     silently treated as equally verified.
+  #
+  # "Diverges from the fixed-seed gold log" is not the same claim as "wrong":
+  # tools/ad_verify/ad_stochastic_equivalence.py checks the stronger,
+  # statistically meaningful claim -- that the AD build's DISTRIBUTION of
+  # outcomes across many seeds is unbiased relative to stock's, i.e. this is
+  # an ordinary different draw of the same correct random process, not a
+  # systematic error. Measured on in.bfield (32 seeds each): mean difference
+  # in Ncoll shrank from a suggestive-but-inconclusive +12.9 (n=8) to -0.16
+  # (n=32, z=-0.04) as sample size grew -- collapsing toward zero, exactly
+  # what sampling noise does and a systematic bug would not do.
   if(SPARTA_ENABLE_AD)
     list(APPEND SPARTA_DISABLED_TESTS
-        "in.thermostat"           # inherent RNG-branch sensitivity, see above
-        "in.thermostat_ave"       # inherent RNG-branch sensitivity, see above
-        "in.collideInterspecies"  # inherent RNG-branch sensitivity, see above
+        "in.thermostat"            # verified vs reference AD engine
+        "in.thermostat_ave"        # INFERRED from in.thermostat, not independently verified
+        "in.collideInterspecies"   # verified vs reference AD engine
+        "in.bfield"                # verified vs reference AD engine
+        "in.circle.constant"       # verified vs reference AD engine
+        "in.sphere.adjust"         # verified vs reference AD engine
+        "in.sphere.constant"       # verified vs reference AD engine
+        "in.shocktube"             # verified vs reference AD engine
+        "in.surf_react_heatflux"   # verified vs reference AD engine
     )
   endif()
 

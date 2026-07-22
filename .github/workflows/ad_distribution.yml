@@ -1,0 +1,157 @@
+name: AD Distribution
+
+on:
+  workflow_dispatch:
+
+# Statistical distribution/equivalence screen for the tests EXCLUDED from
+# the mpi-stubs-ad-sacado gold-log regression in ad.yml (see
+# SPARTA_DISABLED_TESTS in cmake/common/set/sparta_cmake_defaults.cmake).
+# Those tests are excluded because a single fixed-seed trajectory can never
+# be relied on to match between stock and AD for them -- the AD build's
+# arithmetic diverges from stock's by ~1 ULP at essentially every operation
+# (see the comment block in sparta_cmake_defaults.cmake for the traced
+# mechanism), which occasionally flips a probabilistic accept/reject or
+# truncation-based decision boundary and desyncs the RNG stream for the
+# rest of that run. This workflow runs the three complementary statistical
+# checks (tools/ad_verify/) that replace a fixed-trajectory regression test
+# for exactly these cases:
+#   ad_stochastic_equivalence.py -- TOST-style mean equivalence (z-score
+#     against pooled SEM) between a stock and an AD ensemble of runs.
+#   ad_convergence_sweep.py -- sweeps N and checks the AD-vs-stock mean
+#     difference decays like stock's own seed-to-seed noise floor (the
+#     1/sqrt(N) signature of sampling noise, not a systematic bias).
+#   ad_distribution_test.py -- permutation Kolmogorov-Smirnov two-sample
+#     test on the full distributions, catching shape/variance differences
+#     a mean-only check could miss.
+# Each needs TWO binaries (a stock build and an -DSPARTA_ENABLE_AD build)
+# in the same job -- unlike ad.yml's single-binary jobs -- so this workflow
+# builds both once and shares them with a test matrix via artifacts, rather
+# than rebuilding per test case.
+jobs:
+  build:
+    runs-on: ubuntu-22.04
+    steps:
+    - uses: actions/checkout@v4
+
+    # Same minimal Sacado-only Trilinos install and cache key as ad.yml's
+    # mpi-stubs-ad-sacado job -- see that file for why (not the Ubuntu
+    # libtrilinos-sacado-dev package, which pulls in all of Trilinos at a
+    # stale 13.2.0 and was never verified against sfloat.h).
+    - name: Cache minimal Trilinos/Sacado install
+      id: sacado-cache
+      uses: actions/cache@v4
+      with:
+        path: ${{ github.workspace }}/sacado-install
+        key: sacado-17-0-0-nokokkos-ubuntu22.04-v1
+
+    - name: Build minimal Sacado (Trilinos 17.0.0, Sacado only)
+      if: steps.sacado-cache.outputs.cache-hit != 'true'
+      run: |
+        git clone --depth 1 --branch trilinos-release-17-0-0 \
+          https://github.com/trilinos/Trilinos.git /tmp/Trilinos
+        mkdir /tmp/trilinos-build && cd /tmp/trilinos-build
+        cmake \
+          -D CMAKE_BUILD_TYPE=RELEASE \
+          -D CMAKE_INSTALL_PREFIX=${{ github.workspace }}/sacado-install \
+          -D CMAKE_CXX_STANDARD=20 \
+          -D BUILD_SHARED_LIBS=OFF \
+          -D TPL_ENABLE_MPI=OFF \
+          -D Trilinos_ENABLE_Fortran=OFF \
+          -D Trilinos_ENABLE_ALL_PACKAGES=OFF \
+          -D Trilinos_ENABLE_ALL_OPTIONAL_PACKAGES=OFF \
+          -D Trilinos_ENABLE_TESTS=OFF \
+          -D Trilinos_ENABLE_EXAMPLES=OFF \
+          -D Trilinos_ENABLE_Sacado=ON \
+          /tmp/Trilinos
+        make -j4 install
+
+    - name: Configure + build stock
+      run: |
+        mkdir build-stock
+        cd build-stock
+        cmake -C ../cmake/presets/serial.cmake ../cmake
+        make -j4
+
+    # Real AD build gate (SPARTA_ENABLE_AD -> FindSacado.cmake ->
+    # Sacado::Sacado), same as ad.yml -- not a manual -DSPARTA_AD flag.
+    - name: Configure + build AD
+      run: |
+        mkdir build-ad
+        cd build-ad
+        cmake -C ../cmake/presets/serial.cmake \
+          -DSPARTA_ENABLE_AD=ON \
+          -DSACADO_ROOT=${{ github.workspace }}/sacado-install \
+          ../cmake
+        make -j4
+
+    - uses: actions/upload-artifact@v4
+      with:
+        name: spa-binaries
+        path: |
+          build-stock/src/spa_serial
+          build-ad/src/spa_serial
+        retention-days: 3
+
+  distribution-test:
+    needs: build
+    runs-on: ubuntu-22.04
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: thermostat
+            case: examples/thermostat/in.thermostat
+          - name: thermostat_ave
+            case: examples/thermostat/in.thermostat_ave
+          - name: collideInterspecies
+            case: examples/collide/in.collideInterspecies
+          - name: bfield
+            case: examples/bfield/in.bfield
+          - name: circle.constant
+            case: examples/adjust_temp/in.circle.constant
+          - name: sphere.adjust
+            case: examples/adjust_temp/in.sphere.adjust
+          - name: sphere.constant
+            case: examples/adjust_temp/in.sphere.constant
+          - name: shocktube
+            case: examples/shock_tube/in.shocktube
+          - name: surf_react_heatflux
+            case: examples/surf_react_heatflux/in.surf_react_heatflux
+    steps:
+    - uses: actions/checkout@v4
+
+    - uses: actions/download-artifact@v4
+      with:
+        name: spa-binaries
+        path: bin
+
+    - name: Make binaries executable, set env
+      run: |
+        chmod +x bin/build-stock/src/spa_serial bin/build-ad/src/spa_serial
+        echo "SPARTA_STOCK=${{ github.workspace }}/bin/build-stock/src/spa_serial" >> "$GITHUB_ENV"
+        echo "SPARTA_AD=${{ github.workspace }}/bin/build-ad/src/spa_serial" >> "$GITHUB_ENV"
+
+    - name: Mean equivalence (TOST-style z-score)
+      run: |
+        python3 tools/ad_verify/ad_stochastic_equivalence.py \
+          --seeds 32 --case ${{ matrix.case }}
+
+    - name: 1/sqrt(N) convergence sweep
+      run: |
+        python3 tools/ad_verify/ad_convergence_sweep.py \
+          --sweep-ns 4,8,16,32,64 --jobs 4 --case ${{ matrix.case }} \
+          --out-json sweep-${{ matrix.name }}.json
+
+    - name: Distribution screen (permutation KS)
+      run: |
+        python3 tools/ad_verify/ad_distribution_test.py \
+          --n 64 --jobs 4 --n-perm 5000 --case ${{ matrix.case }} \
+          --out-json dist-${{ matrix.name }}.json
+
+    - uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: distribution-results-${{ matrix.name }}
+        path: |
+          sweep-${{ matrix.name }}.json
+          dist-${{ matrix.name }}.json
