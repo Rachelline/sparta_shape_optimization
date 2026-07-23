@@ -35,6 +35,14 @@ METHOD
   flattening at a level above |noise_floor(N)| as N grows is the signature of
   a systematic bias.
 
+  PASS/FAIL: a z-test (|ad_bias(N_max)/sem_bias(N_max)| < Z_THRESHOLD) at
+  the LARGEST N in the sweep -- the most statistically powerful point,
+  since sem shrinks as 1/sqrt(N). A bias that still fails this after having
+  had the most data to shrink into noise is the flattening-not-shrinking
+  signature of a real bug. This is a genuine gate (exit 1 on failure), not
+  only a printed diagnostic -- used as one of two required checks (with
+  ad_stochastic_equivalence.py) by ctest_fallback_gate.py.
+
   Which columns get swept is auto-detected from stock_A (every stats column
   except Step/CPU that isn't constant across that pool -- see
   select_tracked_columns() in ad_stochastic_equivalence.py), or set
@@ -47,14 +55,13 @@ USAGE
   python3 ad_convergence_sweep.py [--sweep-ns 4,8,16,32,64] \\
       [--case examples/bfield/in.bfield] [--jobs 6] [--out-json sweep.json]
 
-WORKFLOW INTENT (not yet wired into CI)
-  Same two-binary requirement as ad_stochastic_equivalence.py -- needs a
-  stock build and an -DSPARTA_ENABLE_AD build in the same job, unlike the
-  single-binary jobs in ad.yml today. Standard library only (uses a thread
-  pool for parallel runs, no third-party dependency), so it drops into CI
-  without extra installs once that two-binary job exists. Emits JSON so a
-  separate step can render it (e.g. as a build artifact) without re-running
-  SPARTA.
+WORKFLOW INTENT
+  Wired into CI via tools/ad_verify/ctest_fallback_gate.py, run from
+  .github/workflows/ad.yml's mpi-stubs-ad-sacado job when ctest reports a
+  failure: needs a stock build and an -DSPARTA_ENABLE_AD build in the same
+  job (that job builds both). Standard library only (uses a thread pool
+  for parallel runs, no third-party dependency). Emits JSON so a separate
+  step can render it (e.g. as a build artifact) without re-running SPARTA.
 """
 import os
 import sys
@@ -66,7 +73,7 @@ from concurrent.futures import ThreadPoolExecutor
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
 from ad_stochastic_equivalence import (  # noqa: E402
-    make_deck, run_one, transpose, select_tracked_columns, REPO_ROOT)
+    make_deck, run_one, transpose, select_tracked_columns, REPO_ROOT, Z_THRESHOLD)
 
 STOCK_B_OFFSET = 5_000_000  # keeps stock_B's seeds far from stock_A/ad_A's
 
@@ -163,6 +170,27 @@ def main():
                                 "sem_noise": sem_noise, "sem_bias": sem_bias})
         print()
 
+    # Pass/fail: a z-test at the LARGEST N in the sweep (the most
+    # statistically powerful point, since sem shrinks as 1/sqrt(N)) --
+    # |ad_bias| must stay within Z_THRESHOLD sem_bias of zero, same
+    # threshold/logic as ad_stochastic_equivalence.py's single-N check.
+    # This is what actually gives the sweep a pass/fail verdict distinct
+    # from being purely a printed diagnostic: a bias that FAILS this at
+    # the largest N tested, after having had the most data to shrink into
+    # noise, is the flattening-instead-of-shrinking signature of a
+    # systematic bug, not sampling noise.
+    ok = True
+    print(f"{'quantity':<10} {'N':>5} {'ad_bias':>12} {'sem_bias':>12} {'z':>8}  result")
+    for q in tracked:
+        last = summary[q][-1]
+        z = last["ad_bias"] / last["sem_bias"] if last["sem_bias"] > 0 else float("inf")
+        good = abs(z) < Z_THRESHOLD
+        ok = ok and good
+        print(f"{q:<10} {last['N']:>5} {last['ad_bias']:>12.4f} {last['sem_bias']:>12.4f} "
+              f"{z:>8.2f}  {'PASS' if good else 'FAIL'}")
+    print(f"\nconvergence sweep (z-test at N={sweep_ns[-1]}, |z|<{Z_THRESHOLD}): "
+          f"{'ALL PASS' if ok else 'FAIL'}")
+
     if args.out_json:
         out = {
             "case": args.case,
@@ -176,7 +204,7 @@ def main():
             json.dump(out, f, indent=2)
         print(f"wrote {args.out_json}")
 
-    return 0
+    return 0 if ok else 1
 
 
 if __name__ == "__main__":

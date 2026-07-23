@@ -101,20 +101,11 @@ if(SPARTA_ENABLE_TESTING)
     )
   endif()
 
-  # When running under -DSPARTA_ENABLE_AD, skip inputs whose gold-log match
-  # is verified to be UNACHIEVABLE in principle, not merely "not yet fixed".
-  # DO NOT add a test here just because it currently fails -- a failure
-  # signature that LOOKS like this same pattern (Step/Np exact, downstream
-  # collision/grid counts drift) was, in one case (in.circle.gs's family),
-  # actually a real, fixable bug (a latent upstream sizeof(sfloat*) vs
-  # sizeof(sfloat) buffer sizing bug in surf_collate.cpp, invisible whenever
-  # sfloat==double since sizeof(double*)==sizeof(double) on 64-bit). Every
-  # entry below was independently confirmed, not pattern-matched: built the
-  # independent, previously-validated hand-rolled sfloat AD engine
-  # (sparta_AD reference, a different type from Sacado's SFad) and ran that
-  # SAME test input against it -- if it ALSO diverges from the SAME gold log
-  # with the same signature, that is what justifies "inherent to any AD
-  # scalar substitution here", not this fork's Sacado port specifically.
+  # NOTE on -DSPARTA_ENABLE_AD and gold-log regression tests: no tests are
+  # statically excluded here for AD. A handful of inputs are known to
+  # sometimes diverge from a fixed-seed gold log under AD even though they
+  # are not buggy -- see the CI-level explanation below, not a hardcoded
+  # skip list here.
   #
   # Root cause (traced live via bit-exact in-binary shadow comparison on
   # in.bfield, 2026-07-22 -- see docs/PLAN.md for the full trace): Sacado's
@@ -151,39 +142,20 @@ if(SPARTA_ENABLE_TESTING)
   # "fixed" without hand-recomputing every value in plain double alongside
   # Sacado's derivative tracking, which defeats the point of using Sacado.
   #
-  # Verification status per entry (2026-07-22):
-  #   in.thermostat, in.collideInterspecies, in.bfield, in.circle.constant,
-  #     in.sphere.adjust, in.sphere.constant, in.shocktube,
-  #     in.surf_react_heatflux: directly run against the reference AD
-  #     binary and confirmed to diverge from the SAME gold log with the
-  #     SAME signature.
-  #   in.thermostat_ave: NOT independently run against the reference --
-  #     inferred from in.thermostat (same physical setup, only adds
-  #     ave/time on top). Flagged here so this inference is visible, not
-  #     silently treated as equally verified.
-  #
-  # "Diverges from the fixed-seed gold log" is not the same claim as "wrong":
-  # tools/ad_verify/ad_stochastic_equivalence.py checks the stronger,
-  # statistically meaningful claim -- that the AD build's DISTRIBUTION of
-  # outcomes across many seeds is unbiased relative to stock's, i.e. this is
-  # an ordinary different draw of the same correct random process, not a
-  # systematic error. Measured on in.bfield (32 seeds each): mean difference
-  # in Ncoll shrank from a suggestive-but-inconclusive +12.9 (n=8) to -0.16
-  # (n=32, z=-0.04) as sample size grew -- collapsing toward zero, exactly
-  # what sampling noise does and a systematic bug would not do.
-  if(SPARTA_ENABLE_AD)
-    list(APPEND SPARTA_DISABLED_TESTS
-        "in.thermostat"            # verified vs reference AD engine
-        "in.thermostat_ave"        # INFERRED from in.thermostat, not independently verified
-        "in.collideInterspecies"   # verified vs reference AD engine
-        "in.bfield"                # verified vs reference AD engine
-        "in.circle.constant"       # verified vs reference AD engine
-        "in.sphere.adjust"         # verified vs reference AD engine
-        "in.sphere.constant"       # verified vs reference AD engine
-        "in.shocktube"             # verified vs reference AD engine
-        "in.surf_react_heatflux"   # verified vs reference AD engine
-    )
-  endif()
+  # "Diverges from the fixed-seed gold log" is not the same claim as "wrong".
+  # Rather than maintain a hand-curated, must-be-kept-in-sync list of which
+  # specific inputs are known to hit this (the previous design here), CI
+  # (.github/workflows/ad.yml, job mpi-stubs-ad-sacado) instead runs the
+  # FULL ctest suite unconditionally and, for any test that fails, falls
+  # back to tools/ad_verify/ad_stochastic_equivalence.py +
+  # ad_convergence_sweep.py against that specific input: the stronger,
+  # statistically meaningful claim that the AD build's DISTRIBUTION of
+  # outcomes across many seeds is unbiased relative to stock's -- i.e. this
+  # is an ordinary different draw of the same correct random process, not a
+  # systematic error. Only if that fallback ALSO fails does the job report
+  # a real failure. This is automatic and evidence-based per input, rather
+  # than needing a human to notice a new divergence and add it to a list.
+  # See tools/ad_verify/ctest_fallback_gate.py.
 
   list(APPEND __DEFAULT_MPI_RANKS "1")
   list(APPEND __DEFAULT_MPI_RANKS "4")

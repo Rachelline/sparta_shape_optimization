@@ -392,6 +392,32 @@ void Mixture::params(int narg, char **arg)
       vstream_user[2] = atof(arg[iarg+3]);
       iarg += 4;
 
+#ifdef SPARTA_AD
+      // Phase C AD-derivative verification hook (tools/ad_verify/
+      // flatplate_derivative_match.py): dormant unless all three env vars
+      // are set and SPARTA_AD_SEED_MIX matches this mixture's id. Seeds
+      // d(vx)/d(delta) and d(vy)/d(delta) into the SAME Sacado direction, so
+      // downstream physics automatically chain-rules to d(anything)/d(delta)
+      // via ordinary sfloat arithmetic -- no other code needs to change.
+      // vx = V*cos(delta), vy = V*sin(delta) is the tilted-freestream
+      // angle-of-incidence convention already established by
+      // tools/ad_verify/flatplate_value_match.py (Phase B).
+      {
+        const char *seed_mix = getenv("SPARTA_AD_SEED_MIX");
+        const char *seed_delta = getenv("SPARTA_AD_SEED_DELTA");
+        if (seed_mix && seed_delta && strcmp(seed_mix,id) == 0) {
+          int dir = 0;
+          const char *seed_dir = getenv("SPARTA_AD_SEED_DIR");
+          if (seed_dir) dir = atoi(seed_dir);
+          double delta0 = atof(seed_delta);
+          double V = sqrt(spval(vstream_user[0])*spval(vstream_user[0]) +
+                           spval(vstream_user[1])*spval(vstream_user[1]));
+          vstream_user[0].fastAccessDx(dir) = -V*sin(delta0);
+          vstream_user[1].fastAccessDx(dir) =  V*cos(delta0);
+        }
+      }
+#endif
+
     } else if (strcmp(arg[iarg],"temp") == 0) {
       if (iarg+2 > narg) error->all(FLERR,"Illegal mixture command");
       temp_thermal_flag = 1;

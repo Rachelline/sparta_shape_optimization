@@ -13,6 +13,7 @@
    See the README file in the top-level SPARTA directory.
 ------------------------------------------------------------------------- */
 
+#include "stdio.h"
 #include "string.h"
 #include "compute_boundary.h"
 #include "particle.h"
@@ -149,6 +150,28 @@ void ComputeBoundary::compute_array()
       for (int i = 0; i < size_array_rows; i++)
         array[i][j] /= normflux[i];
   }
+
+#ifdef SPARTA_AD
+  // Phase C AD-derivative verification hook (tools/ad_verify/
+  // flatplate_derivative_match.py): dormant unless SPARTA_AD_DUMP_DX (the
+  // Sacado direction index to dump) is set. array[i][j] is the final
+  // sfloat-typed per-boundary-face tally at this point -- BEFORE it would
+  // reach the standard "variable equal c_cb[...]" pipeline, which discards
+  // derivative information (variable.cpp calls spval(), extracting only
+  // .val()). This is the only way a derivative from this compute can reach
+  // the test driver. Dumps every cell rather than a targeted one so no
+  // additional env vars are needed to address a specific boundary/column.
+  {
+    const char *dump_dir = getenv("SPARTA_AD_DUMP_DX");
+    if (dump_dir) {
+      int dir = atoi(dump_dir);
+      for (int i = 0; i < size_array_rows; i++)
+        for (int j = 0; j < ntotal; j++)
+          fprintf(stderr, "AD_DX step=" BIGINT_FORMAT " iface=%d col=%d val=%.15g dx=%.15g\n",
+                  update->ntimestep, i, j, spval(array[i][j]), array[i][j].fastAccessDx(dir));
+    }
+  }
+#endif
 }
 
 /* ---------------------------------------------------------------------- */
