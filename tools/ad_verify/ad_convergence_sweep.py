@@ -73,12 +73,13 @@ from concurrent.futures import ThreadPoolExecutor
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
 from ad_stochastic_equivalence import (  # noqa: E402
-    make_deck, run_one, transpose, select_tracked_columns, REPO_ROOT, Z_THRESHOLD)
+    make_deck, run_one, transpose, select_tracked_columns, REPO_ROOT, Z_THRESHOLD,
+    DEFAULT_TIMEOUT)
 
 STOCK_B_OFFSET = 5_000_000  # keeps stock_B's seeds far from stock_A/ad_A's
 
 
-def run_pool(binary, case_dir, base_deck, seeds, jobs):
+def run_pool(binary, case_dir, base_deck, seeds, jobs, timeout=DEFAULT_TIMEOUT):
     """Run `binary` once per seed in `seeds`, in parallel. Returns a list of
     per-seed {quantity: value} dicts, in the same order as `seeds`."""
     import tempfile
@@ -92,7 +93,7 @@ def run_pool(binary, case_dir, base_deck, seeds, jobs):
             deck_path = os.path.join(workdir, "in.case")
             with open(deck_path, "w") as f:
                 f.write(deck_text)
-            return run_one(binary, deck_path, workdir, aux_files)
+            return run_one(binary, deck_path, workdir, aux_files, timeout=timeout)
 
     with ThreadPoolExecutor(max_workers=jobs) as ex:
         return list(ex.map(one, seeds))
@@ -121,6 +122,8 @@ def main():
     ap.add_argument("--columns", default=None,
                      help="comma-separated column names to sweep (default: "
                           "auto-detect every non-constant column in the stats output)")
+    ap.add_argument("--timeout", type=int, default=DEFAULT_TIMEOUT,
+                     help=f"per-run subprocess timeout in seconds (default {DEFAULT_TIMEOUT})")
     args = ap.parse_args()
 
     sweep_ns = [int(x) for x in args.sweep_ns.split(",")]
@@ -140,13 +143,13 @@ def main():
     seeds_a = [args.seed_base + i for i in range(n_max)]
     seeds_b = [args.seed_base + STOCK_B_OFFSET + i for i in range(n_max)]
 
-    print(f"case={args.case}  sweep_ns={sweep_ns}  jobs={args.jobs}")
+    print(f"case={args.case}  sweep_ns={sweep_ns}  jobs={args.jobs}  timeout={args.timeout}s")
     print(f"running {n_max} stock_A seeds...")
-    stock_a = run_pool(stock, case_dir, base_deck, seeds_a, args.jobs)
+    stock_a = run_pool(stock, case_dir, base_deck, seeds_a, args.jobs, args.timeout)
     print(f"running {n_max} stock_B seeds (noise-floor control)...")
-    stock_b = run_pool(stock, case_dir, base_deck, seeds_b, args.jobs)
+    stock_b = run_pool(stock, case_dir, base_deck, seeds_b, args.jobs, args.timeout)
     print(f"running {n_max} AD seeds...")
-    ad_a = run_pool(ad, case_dir, base_deck, seeds_a, args.jobs)
+    ad_a = run_pool(ad, case_dir, base_deck, seeds_a, args.jobs, args.timeout)
 
     requested = args.columns.split(",") if args.columns else None
     tracked = select_tracked_columns(transpose(stock_a), requested)

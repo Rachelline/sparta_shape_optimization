@@ -83,7 +83,8 @@ import argparse
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
 from ad_convergence_sweep import run_pool  # noqa: E402
-from ad_stochastic_equivalence import transpose, select_tracked_columns, REPO_ROOT  # noqa: E402
+from ad_stochastic_equivalence import (  # noqa: E402
+    transpose, select_tracked_columns, REPO_ROOT, DEFAULT_TIMEOUT)
 
 AD_OFFSET = 5_000_000  # keeps the AD pool's seeds distinct from stock's --
                        # see METHOD above: samples are always unpaired
@@ -134,6 +135,8 @@ def main():
     ap.add_argument("--columns", default=None,
                      help="comma-separated column names to test (default: "
                           "auto-detect every non-constant column in the stats output)")
+    ap.add_argument("--timeout", type=int, default=DEFAULT_TIMEOUT,
+                     help=f"per-run subprocess timeout in seconds (default {DEFAULT_TIMEOUT})")
     args = ap.parse_args()
 
     stock = os.environ.get("SPARTA_STOCK")
@@ -150,11 +153,12 @@ def main():
     stock_seeds = [args.seed_base + i for i in range(args.n)]
     ad_seeds = [args.seed_base + AD_OFFSET + i for i in range(args.n)]
 
-    print(f"case={args.case}  n={args.n} per side  n_perm={args.n_perm}  alpha={args.alpha}")
+    print(f"case={args.case}  n={args.n} per side  n_perm={args.n_perm}  alpha={args.alpha}  "
+          f"timeout={args.timeout}s")
     print(f"running {args.n} stock seeds...")
-    stock_r = run_pool(stock, case_dir, base_deck, stock_seeds, args.jobs)
+    stock_r = run_pool(stock, case_dir, base_deck, stock_seeds, args.jobs, args.timeout)
     print(f"running {args.n} AD seeds...")
-    ad_r = run_pool(ad, case_dir, base_deck, ad_seeds, args.jobs)
+    ad_r = run_pool(ad, case_dir, base_deck, ad_seeds, args.jobs, args.timeout)
 
     requested = args.columns.split(",") if args.columns else None
     tracked = select_tracked_columns(transpose(stock_r), requested)

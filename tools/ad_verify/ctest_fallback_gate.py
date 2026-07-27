@@ -67,6 +67,8 @@ import subprocess
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 REPO_ROOT = os.path.normpath(os.path.join(HERE, "..", ".."))
+sys.path.insert(0, HERE)
+from ad_stochastic_equivalence import DEFAULT_TIMEOUT  # noqa: E402
 
 # Matches sparta_add_test's naming convention (cmake/common/test/
 # sparta_test_utils.cmake): "<machine>.<deck>[.mpi_<N>][<config>]", e.g.
@@ -103,21 +105,24 @@ def find_deck_path(deck_name):
     return None
 
 
-def run_fallback(case_path, seeds, sweep_ns):
+def run_fallback(case_path, seeds, sweep_ns, timeout):
     """Streams both scripts' output directly to the CI log (not captured)
     so the underlying statistical detail is visible, not hidden behind a
     summary."""
-    print(f"  -- ad_stochastic_equivalence.py --seeds {seeds} --case {case_path}")
+    print(f"  -- ad_stochastic_equivalence.py --seeds {seeds} --case {case_path} "
+          f"--timeout {timeout}")
     r1 = subprocess.run(
         [sys.executable, os.path.join(HERE, "ad_stochastic_equivalence.py"),
-         "--seeds", str(seeds), "--case", case_path],
+         "--seeds", str(seeds), "--case", case_path, "--timeout", str(timeout)],
         cwd=REPO_ROOT)
     equiv_ok = r1.returncode == 0
 
-    print(f"  -- ad_convergence_sweep.py --sweep-ns {sweep_ns} --case {case_path}")
+    print(f"  -- ad_convergence_sweep.py --sweep-ns {sweep_ns} --case {case_path} "
+          f"--timeout {timeout}")
     r2 = subprocess.run(
         [sys.executable, os.path.join(HERE, "ad_convergence_sweep.py"),
-         "--sweep-ns", sweep_ns, "--jobs", "4", "--case", case_path],
+         "--sweep-ns", sweep_ns, "--jobs", "4", "--case", case_path,
+         "--timeout", str(timeout)],
         cwd=REPO_ROOT)
     sweep_ok = r2.returncode == 0
 
@@ -129,6 +134,9 @@ def main():
     ap.add_argument("--build-dir", default="build")
     ap.add_argument("--seeds", type=int, default=32)
     ap.add_argument("--sweep-ns", default="4,8,16,32,64")
+    ap.add_argument("--timeout", type=int, default=DEFAULT_TIMEOUT,
+                     help=f"per-run subprocess timeout in seconds, passed through to "
+                          f"both fallback scripts (default {DEFAULT_TIMEOUT})")
     args = ap.parse_args()
 
     if not os.environ.get("SPARTA_STOCK") or not os.environ.get("SPARTA_AD"):
@@ -164,7 +172,7 @@ def main():
             all_ok = False
             continue
         print(f"  case={case_path}")
-        equiv_ok, sweep_ok = run_fallback(case_path, args.seeds, args.sweep_ns)
+        equiv_ok, sweep_ok = run_fallback(case_path, args.seeds, args.sweep_ns, args.timeout)
         ok = equiv_ok and sweep_ok
         all_ok = all_ok and ok
         print(f"  mean-equivalence: {'PASS' if equiv_ok else 'FAIL'}   "

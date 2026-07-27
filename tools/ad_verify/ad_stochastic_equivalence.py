@@ -80,6 +80,14 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 REPO_ROOT = os.path.normpath(os.path.join(HERE, "..", ".."))
 
 Z_THRESHOLD = 3.0
+# Per-run subprocess timeout (seconds). Must comfortably exceed the
+# slowest single deck invocation, not just the typical one: shocktube
+# (10000 steps) alone took ~300s on a GitHub Actions runner (slower than
+# a fast local machine) -- a too-tight timeout here doesn't fail the
+# statistical comparison, it crashes the script before one is even
+# computed (subprocess.TimeoutExpired), which previously showed up
+# misleadingly as "FAIL" with no actual z-score behind it.
+DEFAULT_TIMEOUT = 900
 IGNORE_COLUMNS = {"Step", "CPU"}  # never physics: loop index and wall-clock timing
 
 SEED_RE = re.compile(r"^(\s*seed\s+)\S+", re.M)
@@ -105,11 +113,11 @@ def parse_stats_line(header, toks):
     return vals
 
 
-def run_one(binary, deck_path, workdir, aux_files):
+def run_one(binary, deck_path, workdir, aux_files, timeout=DEFAULT_TIMEOUT):
     for f in aux_files:
         shutil.copy(f, workdir)
     out = subprocess.run([binary, "-in", os.path.basename(deck_path)],
-                         cwd=workdir, capture_output=True, text=True, timeout=120)
+                         cwd=workdir, capture_output=True, text=True, timeout=timeout)
     if out.returncode != 0:
         raise RuntimeError(f"SPARTA failed (exit {out.returncode}):\n{out.stdout[-1500:]}")
     # Read the LAST stats row of the LAST "run" block -- not a fixed step
@@ -166,7 +174,7 @@ def select_tracked_columns(reference_results, requested=None):
     return tracked
 
 
-def ensemble(binary, case_dir, base_deck, n_seeds, seed_base):
+def ensemble(binary, case_dir, base_deck, n_seeds, seed_base, timeout=DEFAULT_TIMEOUT):
     pool = []
     aux_files = [os.path.join(case_dir, f) for f in os.listdir(case_dir)
                 if not f.startswith("in.") and not f.startswith("log.")]
@@ -177,7 +185,7 @@ def ensemble(binary, case_dir, base_deck, n_seeds, seed_base):
             deck_path = os.path.join(workdir, "in.case")
             with open(deck_path, "w") as f:
                 f.write(deck_text)
-            pool.append(run_one(binary, deck_path, workdir, aux_files))
+            pool.append(run_one(binary, deck_path, workdir, aux_files, timeout=timeout))
     return transpose(pool)
 
 
@@ -196,6 +204,8 @@ def main():
     ap.add_argument("--columns", default=None,
                      help="comma-separated column names to test (default: "
                           "auto-detect every non-constant column in the stats output)")
+    ap.add_argument("--timeout", type=int, default=DEFAULT_TIMEOUT,
+                     help=f"per-run subprocess timeout in seconds (default {DEFAULT_TIMEOUT})")
     args = ap.parse_args()
 
     stock = os.environ.get("SPARTA_STOCK")
@@ -209,11 +219,12 @@ def main():
     with open(case_path) as f:
         base_deck = f.read()
 
-    print(f"case={args.case}  seeds={args.seeds}  reading last stats row of each run")
+    print(f"case={args.case}  seeds={args.seeds}  timeout={args.timeout}s  "
+          f"reading last stats row of each run")
     print("running stock ensemble...")
-    stock_r = ensemble(stock, case_dir, base_deck, args.seeds, args.seed_base)
+    stock_r = ensemble(stock, case_dir, base_deck, args.seeds, args.seed_base, args.timeout)
     print("running AD ensemble...")
-    ad_r = ensemble(ad, case_dir, base_deck, args.seeds, args.seed_base)
+    ad_r = ensemble(ad, case_dir, base_deck, args.seeds, args.seed_base, args.timeout)
 
     requested = args.columns.split(",") if args.columns else None
     tracked = select_tracked_columns(stock_r, requested)
