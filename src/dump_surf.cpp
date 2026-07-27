@@ -427,6 +427,33 @@ void DumpSurf::write_text(int n, sfloat *mybuf)
 {
   int i,j;
 
+#ifdef SPARTA_AD
+  // Phase C AD-derivative verification hook (tools/ad_verify/
+  // thinplate_derivative_match.py): dormant unless SPARTA_AD_DUMP_DX (the
+  // Sacado direction index to dump) is set. mybuf[] here is the final
+  // sfloat-typed per-surf-element row -- fix ave/surf accumulates purely in
+  // sfloat arithmetic (see fix_ave_surf.cpp), so derivative information
+  // seeded by read_surf.cpp's point-coordinate hook survives all the way
+  // here. This is the only way that derivative can reach the test driver,
+  // since the fprintf(fp,...) loop below calls spval() and discards it.
+  {
+    const char *dump_dir = getenv("SPARTA_AD_DUMP_DX");
+    if (dump_dir) {
+      int dir = atoi(dump_dir);
+      int m = 0;
+      for (i = 0; i < n; i++) {
+        for (j = 0; j < size_one; j++) {
+          double printval = (vtype[j] == DOUBLE) ? spval(mybuf[m])
+            : (double) ubuf(spval(mybuf[m])).i;
+          fprintf(stderr, "AD_DX row=%d col=%d val=%.15g dx=%.15g\n",
+                  i, j, printval, mybuf[m].fastAccessDx(dir));
+          m++;
+        }
+      }
+    }
+  }
+#endif
+
   int m = 0;
   for (i = 0; i < n; i++) {
     for (j = 0; j < size_one; j++) {

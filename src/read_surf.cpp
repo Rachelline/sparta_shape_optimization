@@ -887,6 +887,32 @@ void ReadSurf::read_points()
 
     nread += nchunk;
   }
+
+#ifdef SPARTA_AD
+  // Phase C AD-derivative verification hook (tools/ad_verify/
+  // thinplate_derivative_match.py): dormant unless SPARTA_AD_SEED_ALPHA is
+  // set. Seeds d(x)/d(alpha), d(y)/d(alpha) into every point read from this
+  // surf file, where alpha is the object's rigid-body rotation angle used
+  // to generate the file. For a point (x,y) = R(alpha)*(x0,y0), taking
+  // d/dalpha gives R(alpha)*rot90(x0,y0) = rot90(R(alpha)*(x0,y0)) =
+  // rot90(x,y) = (-y,x) -- i.e. the derivative equals the CURRENT
+  // (already-rotated) point rotated a further 90 degrees, so no unrotated
+  // reference coordinates need to be passed in.
+  {
+    const char *seed_alpha = getenv("SPARTA_AD_SEED_ALPHA");
+    if (seed_alpha) {
+      int dir = 0;
+      const char *seed_dir = getenv("SPARTA_AD_SEED_DIR");
+      if (seed_dir) dir = atoi(seed_dir);
+      for (int i = 0; i < npoint_file; i++) {
+        double x0 = spval(pts[i].x[0]);
+        double y0 = spval(pts[i].x[1]);
+        pts[i].x[0].fastAccessDx(dir) = -y0;
+        pts[i].x[1].fastAccessDx(dir) =  x0;
+      }
+    }
+  }
+#endif
 }
 
 /* ----------------------------------------------------------------------
