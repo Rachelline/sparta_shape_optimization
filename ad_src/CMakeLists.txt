@@ -1,6 +1,9 @@
 # ----------------------------------------------------------------------
-# Standalone build for ad_src/'s shape-optimization driver (Milestone 1:
-# Parametrization x Objective, FD gradients only -- no AD, no IPOPT yet).
+# Standalone build for ad_src/'s shape-optimization driver.
+# Milestone 1: Parametrization x Objective, FD gradients (shape_main).
+# Milestone 2: ShapeTNLP + IPOPT optimizer loop (shape_opt), still FD
+#   gradients only -- no AD-linked target yet, see the deferred-AD note
+#   below.
 #
 # This is a self-contained CMake project, deliberately NOT wired into
 # sparta/cmake or sparta/src/CMakeLists.txt (no add_subdirectory anywhere
@@ -56,6 +59,27 @@ set(SPARTA_ROOT ${CMAKE_CURRENT_SOURCE_DIR}/..)
 set(SPARTA_SRC_DIR ${SPARTA_ROOT}/src)
 find_program(MAKE_EXECUTABLE NAMES make gmake REQUIRED)
 
+# ---- IPOPT discovery (for shape_opt) -----------------------------------
+# IPOPT is optional: if not found, shape_main still builds and only
+# shape_opt is skipped. Install with `brew install ipopt` (headers ->
+# /opt/homebrew/include/coin-or, lib -> /opt/homebrew/lib/libipopt.dylib).
+# No pkg-config needed. (Confirmed present this session: 3.14.19, which
+# satisfies get_curr_iterate()'s >=3.14 requirement -- see shape_tnlp.cpp.)
+find_path(IPOPT_INCLUDE_DIR NAMES IpTNLP.hpp
+  PATHS /opt/homebrew/include/coin-or /usr/local/include/coin-or
+        /opt/homebrew/include /usr/local/include)
+find_library(IPOPT_LIB NAMES ipopt
+  PATHS /opt/homebrew/lib /usr/local/lib)
+if(IPOPT_INCLUDE_DIR AND IPOPT_LIB)
+  set(HAVE_IPOPT ON)
+  message(STATUS "IPOPT found: ${IPOPT_LIB} (include ${IPOPT_INCLUDE_DIR})")
+else()
+  set(HAVE_IPOPT OFF)
+  message(WARNING
+    "IPOPT not found -- skipping shape_opt.\n"
+    "Install it with `brew install ipopt`, then re-run cmake.")
+endif()
+
 # ---- STUBS (MPI stand-in for serial builds) ---------------------------
 
 set(SPARTA_MPI_STUBS_A ${SPARTA_SRC_DIR}/STUBS/libmpi_stubs.a)
@@ -104,3 +128,22 @@ add_executable(shape_main
 target_compile_definitions(shape_main PRIVATE SPARTA_UNORDERED_MAP)
 target_include_directories(shape_main PRIVATE ${SPARTA_SRC_DIR} ${SPARTA_SRC_DIR}/STUBS)
 target_link_libraries(shape_main PRIVATE sparta_serial mpi_stubs)
+
+# ---- shape_opt: IPOPT-driven optimizer loop, FD gradients only --------
+# Same SPARTA dependency as shape_main, plus IPOPT's TNLP interface.
+
+if(HAVE_IPOPT)
+  add_executable(shape_opt
+    opt_main.cpp
+    shape_tnlp.cpp
+    svg_shape.cpp
+    shape_case.cpp
+    bezier_geom.cpp
+    bezier_parametrization.cpp
+    drag_objective.cpp
+    heat_flux_objective.cpp)
+  target_compile_definitions(shape_opt PRIVATE SPARTA_UNORDERED_MAP)
+  target_include_directories(shape_opt PRIVATE
+    ${SPARTA_SRC_DIR} ${SPARTA_SRC_DIR}/STUBS ${IPOPT_INCLUDE_DIR})
+  target_link_libraries(shape_opt PRIVATE sparta_serial mpi_stubs ${IPOPT_LIB})
+endif()
