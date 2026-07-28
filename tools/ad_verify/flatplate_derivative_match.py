@@ -41,6 +41,16 @@ structurally captures only (1). Expect this gap to recur for ANY design
 parameter that affects emission/inflow rates somewhere on a surface --
 plausibly most shape parameters in the broader optimization use case.
 
+UPDATE: a second, more general missing-derivative mechanism (not fixed by
+correcting (2) above) was later found using a different seeding design --
+see thinplate_derivative_match.py and measure_theory_check.py in this same
+directory. That one is a flux-weighted-sampling / score-function term
+present even with the emission side left completely untouched (which is
+exactly why this test's own residual, after correcting for (2), never
+closed all the way -- both mechanisms are live here at once). This test's
+diagnosis above is still correct as far as it goes; it just isn't the
+whole story. See docs/ad_phase_c_investigation/FINDINGS.md.
+
 WHY THE PARTICLE-COUNT SWEEP MATTERS
   A missing structural term and ordinary Monte-Carlo sampling noise have
   different signatures under a particle-count sweep: MC noise shrinks as
