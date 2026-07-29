@@ -2,10 +2,13 @@
    SPARTA - Stochastic PArallel Rarefied-gas Time-accurate Analyzer
 
    shape_tnlp: an IPOPT TNLP that minimizes obj(alpha) for a given
-   Parametrization/Objective pair, subject to box constraints only
-   (no general constraints, m = 0):
+   Parametrization/Objective pair, subject to box bounds:
 
        shape.bounds(lo,hi)[j] <= alpha[j] <= shape.bounds(lo,hi)[j]
+
+   plus an optional list of general inequality constraints (Constraint,
+   e.g. MinAreaConstraint) -- empty by default, unconstrained behavior
+   unchanged when no constraints are passed.
 
    Generalizes the reference ad_src's DragTNLP (fixed double[4], hardcoded
    Bezier + drag) to a runtime-sized alpha (length shape.ndesign()) and an
@@ -13,24 +16,32 @@
    shape_main.cpp already did for single evaluations, applied to the
    optimizer loop.
 
-   Gradient source: always shape_case.h's grad_fd() (common-random-number
-   central finite difference). The reference branched on #ifdef SPARTA_AD
-   to get a free gradient from a single AD-build SPARTA run; no AD-linked
-   build target exists in this fork yet (see docs/PLAN.md and
-   docs/ad_phase_c_investigation/FINDINGS.md for why that's deferred, not
-   just unbuilt), so there is nothing to branch on this round -- grad_fd()
-   is correct and is the only gradient source until that lands.
+   Gradient source: stock build always uses shape_case.h's grad_fd()
+   (common-random-number central finite difference). AD build (compiled
+   with -DSPARTA_AD, linked against an AD-configured SPARTA library) gets
+   the whole gradient from a single SPARTA run via evaluate_avg(...,grad),
+   using src/read_surf.cpp's SPARTA_AD_SEED_JACFILE hook to seed all
+   ndesign directions at once. IMPORTANT: AD gradients are used exactly as
+   the solver returns them -- no flux-measure-derivative correction is
+   applied (explicit instruction). They carry a known, well-characterized
+   bias (~50% low for specular reflection, ~40% for diffuse -- see
+   docs/ad_phase_c_investigation/FINDINGS.md); since that bias is a strict
+   positive multiplier, not a sign flip, the *direction* AD reports should
+   still usually point downhill, but do not expect the same trajectory,
+   iteration count, or convergence behavior as the FD-driven build.
 
-   Each evaluation is expensive (nseeds SPARTA runs for a value,
-   (2*ndesign+1)*nseeds for a gradient), so results are cached per design
-   point to avoid recomputation between the paired eval_f / eval_grad_f
-   calls IPOPT makes at the same x.
+   Each evaluation is expensive (nseeds SPARTA runs for a value; stock
+   build: (2*ndesign+1)*nseeds more for a gradient; AD build: nseeds more,
+   not (2*ndesign+1)*nseeds, since gradient comes free with the value), so
+   results are cached per design point to avoid recomputation between the
+   paired eval_f / eval_grad_f calls IPOPT makes at the same x.
 ------------------------------------------------------------------------- */
 
 #ifndef SPARTA_SHAPE_TNLP_H
 #define SPARTA_SHAPE_TNLP_H
 
 #include "IpTNLP.hpp"
+#include "constraint.h"
 #include "objective.h"
 #include "parametrization.h"
 #include "shape_case.h"
@@ -48,11 +59,17 @@ struct TrajPoint {
 
 class ShapeTNLP : public Ipopt::TNLP {
  public:
+  // constraints: empty by default (today's unconstrained behavior,
+  // unchanged); each is g_lo <= constraint->eval(...) <= g_hi. Pointers
+  // are not owned -- caller (opt_main.cpp) keeps them alive for the
+  // TNLP's lifetime.
   ShapeTNLP(const Parametrization &shape, const Objective &obj,
            const double *alpha0, const double *xlo, const double *xhi,
            const int *seeds, int nseeds,
            const RunConfig &c, double h,
-           int max_iter, bool show_bar, double obj_scale);
+           int max_iter, bool show_bar, double obj_scale,
+           const std::vector<const Constraint *> &constraints =
+             std::vector<const Constraint *>());
 
   // --- IPOPT TNLP interface -------------------------------------------
   bool get_nlp_info(Ipopt::Index &n, Ipopt::Index &m,
@@ -129,6 +146,7 @@ class ShapeTNLP : public Ipopt::TNLP {
   int  max_iter_;
   bool show_bar_;
   double obj_scale_;
+  std::vector<const Constraint *> constraints_;
 
   // value/gradient cache keyed on the design point
   bool   fcache_valid_;

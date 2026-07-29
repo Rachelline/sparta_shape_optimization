@@ -141,9 +141,89 @@ if(HAVE_IPOPT)
     bezier_geom.cpp
     bezier_parametrization.cpp
     drag_objective.cpp
-    heat_flux_objective.cpp)
+    heat_flux_objective.cpp
+    min_area_constraint.cpp)
   target_compile_definitions(shape_opt PRIVATE SPARTA_UNORDERED_MAP)
   target_include_directories(shape_opt PRIVATE
     ${SPARTA_SRC_DIR} ${SPARTA_SRC_DIR}/STUBS ${IPOPT_INCLUDE_DIR})
   target_link_libraries(shape_opt PRIVATE sparta_serial mpi_stubs ${IPOPT_LIB})
+endif()
+
+# ---- AD-linked targets: shape_main_ad / shape_opt_ad (Milestone 3) -----
+# AD gradients used exactly as the solver returns them -- no flux-measure-
+# derivative correction (docs/ad_phase_c_investigation/FINDINGS.md), per
+# explicit instruction. Optional: skipped entirely (stock targets above
+# unaffected) unless both SPARTA_AD_BUILD_DIR and Sacado are found.
+#
+# SPARTA_AD_BUILD_DIR: path to an ALREADY-configured-and-built top-level
+# SPARTA CMake build (cmake/CMakeLists.txt) with -DSPARTA_ENABLE_AD=ON,
+# e.g.:
+#   cmake -S cmake -B <dir> -C cmake/presets/mac.cmake \
+#     -DSPARTA_MACHINE=ad -DSPARTA_ENABLE_AD=ON -DSACADO_ROOT=<sacado install>
+#   cmake --build <dir>
+# Not auto-built by this file: the top-level AD path has real complexity
+# (Kokkos ODR guard, C++17+ bump, Sacado discovery) not worth duplicating
+# in a nested custom command -- see the reference's own classic-Makefile
+# equivalent for why the analogous shortcut was rejected there too.
+#
+# SPARTA_AD_NDIR must match whatever SPARTA_AD_BUILD_DIR was itself
+# configured with (default 4 on both sides -- matches
+# BezierParametrization::ndesign(), letting a normal-default AD build get
+# a shape's whole gradient from one SPARTA run). This is an ABI-affecting
+# parameter (sfloat's Sacado::Fad::SFad<double,N> size); mismatched values
+# on either side of the link boundary is undefined behavior, not just a
+# performance question.
+set(SPARTA_AD_BUILD_DIR "" CACHE PATH
+  "Path to a pre-built -DSPARTA_ENABLE_AD=ON top-level SPARTA CMake build. Empty = skip shape_main_ad/shape_opt_ad.")
+set(SPARTA_AD_NDIR "4" CACHE STRING
+  "Must match the SPARTA_AD_NDIR the SPARTA_AD_BUILD_DIR library was built with.")
+
+if(SPARTA_AD_BUILD_DIR)
+  list(APPEND CMAKE_MODULE_PATH ${SPARTA_ROOT}/cmake/Modules)
+  find_package(Sacado)
+
+  find_library(SPARTA_AD_LIB NAMES sparta_ad sparta
+    PATHS ${SPARTA_AD_BUILD_DIR}/src NO_DEFAULT_PATH)
+  if(NOT SPARTA_AD_LIB)
+    file(GLOB _sparta_ad_lib_candidates ${SPARTA_AD_BUILD_DIR}/src/libsparta_*.a)
+    if(_sparta_ad_lib_candidates)
+      list(GET _sparta_ad_lib_candidates 0 SPARTA_AD_LIB)
+    endif()
+  endif()
+
+  if(Sacado_FOUND AND SPARTA_AD_LIB)
+    message(STATUS "AD SPARTA found: ${SPARTA_AD_LIB} (Sacado: ${SACADO_INCLUDE_DIRS})")
+    add_library(sparta_ad_lib STATIC IMPORTED)
+    set_target_properties(sparta_ad_lib PROPERTIES IMPORTED_LOCATION ${SPARTA_AD_LIB})
+
+    set(AD_COMPILE_DEFS SPARTA_AD SPARTA_AD_NDIR=${SPARTA_AD_NDIR} SPARTA_UNORDERED_MAP)
+
+    add_executable(shape_main_ad
+      shape_main.cpp shape_case.cpp bezier_geom.cpp bezier_parametrization.cpp
+      drag_objective.cpp heat_flux_objective.cpp)
+    target_compile_definitions(shape_main_ad PRIVATE ${AD_COMPILE_DEFS})
+    target_include_directories(shape_main_ad PRIVATE ${SPARTA_SRC_DIR} ${SPARTA_SRC_DIR}/STUBS)
+    target_link_libraries(shape_main_ad PRIVATE sparta_ad_lib mpi_stubs Sacado::Sacado)
+    # Sacado's headers need C++17+ (matches the top-level build's own bump,
+    # cmake/common/process/sparta_build_options.cmake: "AD needs at least
+    # C++17"); the project-wide CMAKE_CXX_STANDARD above (14) is fine for
+    # the stock targets but not this one.
+    set_target_properties(shape_main_ad PROPERTIES CXX_STANDARD 17 CXX_STANDARD_REQUIRED ON)
+
+    if(HAVE_IPOPT)
+      add_executable(shape_opt_ad
+        opt_main.cpp shape_tnlp.cpp svg_shape.cpp shape_case.cpp
+        bezier_geom.cpp bezier_parametrization.cpp
+        drag_objective.cpp heat_flux_objective.cpp min_area_constraint.cpp)
+      target_compile_definitions(shape_opt_ad PRIVATE ${AD_COMPILE_DEFS})
+      target_include_directories(shape_opt_ad PRIVATE
+        ${SPARTA_SRC_DIR} ${SPARTA_SRC_DIR}/STUBS ${IPOPT_INCLUDE_DIR})
+      target_link_libraries(shape_opt_ad PRIVATE sparta_ad_lib mpi_stubs Sacado::Sacado ${IPOPT_LIB})
+      set_target_properties(shape_opt_ad PROPERTIES CXX_STANDARD 17 CXX_STANDARD_REQUIRED ON)
+    endif()
+  else()
+    message(WARNING
+      "SPARTA_AD_BUILD_DIR set but Sacado and/or the AD library weren't "
+      "found there -- skipping shape_main_ad/shape_opt_ad.")
+  endif()
 endif()

@@ -45,6 +45,28 @@ void write_surf_tmp(const char *path, const double *pts, int npt)
   std::fclose(fp);
 }
 
+#ifdef SPARTA_AD
+// Side file read_surf.cpp's SPARTA_AD_SEED_JACFILE hook (src/read_surf.cpp,
+// read_points()) consumes: one line per point (same order write_surf_tmp
+// used), 2*ndesign doubles per line (dx/dalpha_j dy/dalpha_j, j=0..ndesign-1).
+// jac is shape.jacobian()'s own row-major output, [2*(npt+1)] x [ndesign];
+// only the first npt points' rows are written, matching write_surf_tmp's
+// own "drop the duplicate closing point" convention.
+void write_jac_tmp(const char *path, const double *jac, int npt, int ndesign)
+{
+  FILE *fp = std::fopen(path, "w");
+  if (!fp) die("cannot open jacobian tmp file for writing");
+  for (int i = 0; i < npt; i++) {
+    for (int c = 0; c < ndesign; c++) {
+      std::fprintf(fp, "%.15g %.15g%s",
+                   jac[(2 * i) * ndesign + c], jac[(2 * i + 1) * ndesign + c],
+                   c + 1 < ndesign ? "  " : "\n");
+    }
+  }
+  std::fclose(fp);
+}
+#endif
+
 }  // namespace
 
 double evaluate(const Parametrization &shape, const Objective &obj,
@@ -84,6 +106,18 @@ double evaluate(const Parametrization &shape, const Objective &obj,
   delete[] pts;
   delete[] norms;
 
+#ifdef SPARTA_AD
+  char jacpath[256];
+  std::snprintf(jacpath, sizeof(jacpath), "tmp_jac_%d_%d.data",
+               (int) getpid(), seed);
+  {
+    double *jac = new double[2 * npt_closed * ndesign];
+    shape.jacobian(c.nseg, jac);
+    write_jac_tmp(jacpath, jac, npt, ndesign);
+    delete[] jac;
+  }
+#endif
+
   void *spa;
   char a0[] = "sparta", a1[] = "-log", a2[] = "none";
   char a3[] = "-screen";
@@ -112,12 +146,15 @@ double evaluate(const Parametrization &shape, const Objective &obj,
   std::snprintf(line, sizeof(line), "mixture gas %s vstream %.15g 0 0 temp %.15g",
                c.species_names, c.vstream, c.tinf);
   cmd(spa, line);
+#ifdef SPARTA_AD
+  // Consumed by src/read_surf.cpp's SPARTA_AD_SEED_JACFILE hook, inside
+  // the read_surf command issued right below -- must be set before that
+  // command runs, not after.
+  setenv("SPARTA_AD_SEED_JACFILE", jacpath, 1);
+#endif
+
   std::snprintf(line, sizeof(line), "read_surf %s", surfpath);
   cmd(spa, line);
-
-  // AD point-seeding would go here (right after read_surf, before any
-  // command that reads surf geometry) in an AD build -- not wired up
-  // this milestone, see ad_seed.h.
 
   if (c.specular) cmd(spa, "surf_collide 1 specular");
   else {
@@ -159,6 +196,9 @@ double evaluate(const Parametrization &shape, const Objective &obj,
 
   sparta_close(spa);
   unlink(surfpath);
+#ifdef SPARTA_AD
+  unlink(jacpath);
+#endif
 
   return value;
 }

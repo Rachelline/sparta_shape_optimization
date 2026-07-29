@@ -64,11 +64,12 @@ ShapeTNLP::ShapeTNLP(const Parametrization &shape, const Objective &obj,
                      const double *alpha0, const double *xlo, const double *xhi,
                      const int *seeds, int nseeds,
                      const RunConfig &c, double h,
-                     int max_iter, bool show_bar, double obj_scale)
+                     int max_iter, bool show_bar, double obj_scale,
+                     const std::vector<const Constraint *> &constraints)
   : init_value(0.0), final_value(0.0), solve_status(-1),
     shape_(shape), obj_(obj), ndesign_(shape.ndesign()),
     c_(c), h_(h), max_iter_(max_iter), show_bar_(show_bar),
-    obj_scale_(obj_scale),
+    obj_scale_(obj_scale), constraints_(constraints),
     fcache_valid_(false), fcache_f_(0.0), gcache_valid_(false),
     got_init_(false)
 {
@@ -94,8 +95,27 @@ double ShapeTNLP::evaluate(const double *x, bool want_grad, double *grad)
   const int ns = (int) seeds_.size();
   double v;
 
-  // Gradient always comes from the CRN central finite difference -- see
-  // shape_tnlp.h for why there is no AD branch here this milestone.
+#ifdef SPARTA_AD
+  // AD build: one SPARTA run yields value AND gradient together (the
+  // Jacobian side-file / SPARTA_AD_SEED_JACFILE hook seeds all ndesign_
+  // directions in that single run -- see shape_case.cpp / read_surf.cpp).
+  // Gradients here are used exactly as the solver returns them: no
+  // flux-measure-derivative correction, per explicit instruction -- see
+  // docs/ad_phase_c_investigation/FINDINGS.md for the known ~50%
+  // (specular) / ~40% (diffuse) low bias this carries.
+  {
+    std::vector<double> g(ndesign_);
+    v = evaluate_avg(shape_, obj_, x, seeds_.data(), ns, c_,
+                     want_grad ? g.data() : 0);
+    fcache_x_.assign(x, x + ndesign_); fcache_f_ = v; fcache_valid_ = true;
+    if (want_grad) {
+      gcache_x_.assign(x, x + ndesign_);
+      gcache_g_ = g; gcache_valid_ = true;
+      for (int j = 0; j < ndesign_; j++) grad[j] = g[j];
+    }
+  }
+#else
+  // Stock build: gradient from the CRN central finite difference.
   if (want_grad) {
     std::vector<double> g(ndesign_);
     v = grad_fd(shape_, obj_, x, seeds_.data(), ns, c_, h_, g.data());
@@ -107,6 +127,7 @@ double ShapeTNLP::evaluate(const double *x, bool want_grad, double *grad)
     v = evaluate_avg(shape_, obj_, x, seeds_.data(), ns, c_);
     fcache_x_.assign(x, x + ndesign_); fcache_f_ = v; fcache_valid_ = true;
   }
+#endif
 
   if (!got_init_) { init_value = v; got_init_ = true; }
   return v;
@@ -118,8 +139,9 @@ bool ShapeTNLP::get_nlp_info(Index &n, Index &m, Index &nnz_jac_g,
                              Index &nnz_h_lag, IndexStyleEnum &index_style)
 {
   n = ndesign_;
-  m = 0;
-  nnz_jac_g = 0;
+  m = (Index) constraints_.size();
+  nnz_jac_g = n * m;            // dense: trivially small (few constraints x
+                                // small ndesign), no sparse structure needed
   nnz_h_lag = 0;               // Hessian via limited-memory, not supplied
   index_style = TNLP::C_STYLE;
   return true;
@@ -128,8 +150,11 @@ bool ShapeTNLP::get_nlp_info(Index &n, Index &m, Index &nnz_jac_g,
 bool ShapeTNLP::get_bounds_info(Index n, Number *x_l, Number *x_u,
                                 Index m, Number *g_l, Number *g_u)
 {
-  (void) m; (void) g_l; (void) g_u;
   for (Index i = 0; i < n; i++) { x_l[i] = xl_[i]; x_u[i] = xu_[i]; }
+  for (Index i = 0; i < m; i++) {
+    g_l[i] = constraints_[i]->lower();
+    g_u[i] = constraints_[i]->upper();
+  }
   return true;
 }
 
@@ -141,7 +166,8 @@ bool ShapeTNLP::get_scaling_parameters(Number &obj_scaling, bool &use_x_scaling,
   (void) n; (void) x_scaling; (void) m; (void) g_scaling;
   obj_scaling   = obj_scale_;   // 1/|value(start)| -> scaled objective ~ O(1)
   use_x_scaling = false;        // design vars are already O(1)
-  use_g_scaling = false;        // no constraints
+  use_g_scaling = false;        // constraint values (e.g. area) are already
+                                // O(1)-ish; no scaling needed for them either
   return true;
 }
 
@@ -172,17 +198,33 @@ bool ShapeTNLP::eval_grad_f(Index n, const Number *x, bool new_x, Number *grad_f
 
 bool ShapeTNLP::eval_g(Index n, const Number *x, bool new_x, Index m, Number *g)
 {
-  (void) n; (void) x; (void) new_x; (void) m; (void) g;
-  return true;                 // m = 0, nothing to do
+  (void) new_x;
+  std::vector<double> alpha(x, x + n);
+  for (Index i = 0; i < m; i++)
+    g[i] = constraints_[i]->eval(shape_, alpha.data(), c_.chord, c_.nseg);
+  return true;
 }
 
 bool ShapeTNLP::eval_jac_g(Index n, const Number *x, bool new_x, Index m,
                            Index nele_jac, Index *iRow, Index *jCol,
                            Number *values)
 {
-  (void) n; (void) x; (void) new_x; (void) m; (void) nele_jac;
-  (void) iRow; (void) jCol; (void) values;
-  return true;                 // no constraint Jacobian
+  (void) new_x; (void) nele_jac;
+  if (values == NULL) {
+    // dense triplet structure: row i (constraint i), col j (design var j)
+    int k = 0;
+    for (Index i = 0; i < m; i++)
+      for (Index j = 0; j < n; j++) { iRow[k] = i; jCol[k] = j; k++; }
+  } else {
+    std::vector<double> alpha(x, x + n);
+    std::vector<double> g(n);
+    int k = 0;
+    for (Index i = 0; i < m; i++) {
+      constraints_[i]->grad(shape_, alpha.data(), c_.chord, c_.nseg, g.data());
+      for (Index j = 0; j < n; j++) values[k++] = g[j];
+    }
+  }
+  return true;
 }
 
 bool ShapeTNLP::intermediate_callback(AlgorithmMode mode, Index iter,

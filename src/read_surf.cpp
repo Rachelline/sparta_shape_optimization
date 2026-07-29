@@ -912,6 +912,47 @@ void ReadSurf::read_points()
       }
     }
   }
+
+  // ad_src/ shape-optimization AD hook (Milestone 3, see
+  // ad_src/shape_case.cpp): dormant unless SPARTA_AD_SEED_JACFILE is set.
+  // Separate from the SPARTA_AD_SEED_ALPHA hook above, not a modification
+  // of it -- that hook derives every point's derivative from a
+  // closed-form RIGID-ROTATION formula (d(x,y)/dalpha = (-y,x)), which
+  // has no meaning for a design vector that moves Bezier control points
+  // independently (BezierParametrization::jacobian() has no such
+  // closed-form shortcut; it has to be supplied from outside).
+  //
+  // File format: one line per point (matching this file's own point
+  // count and order), 2*ndesign whitespace-separated doubles per line:
+  //   dx/dalpha_0 dy/dalpha_0  dx/dalpha_1 dy/dalpha_1  ...
+  // All ndesign directions are seeded in one pass -- SPARTA_AD_NDIR's
+  // build-time default (4) already matches BezierParametrization's
+  // ndesign(), so a normal AD build gets a shape's WHOLE gradient from
+  // ONE SPARTA run, which is the actual point of using AD here.
+  {
+    const char *jacfile = getenv("SPARTA_AD_SEED_JACFILE");
+    if (jacfile) {
+      FILE *jf = fopen(jacfile,"r");
+      if (!jf) error->one(FLERR,"Cannot open SPARTA_AD_SEED_JACFILE");
+      for (int i = 0; i < npoint_file; i++) {
+        char line[1024];
+        if (!fgets(line,sizeof(line),jf))
+          error->one(FLERR,"SPARTA_AD_SEED_JACFILE has too few lines");
+        char *tok = strtok(line," \t\n\r\f");
+        for (int j = 0; tok != NULL; j++) {
+          double dx = atof(tok);
+          tok = strtok(NULL," \t\n\r\f");
+          if (!tok) error->one(FLERR,"SPARTA_AD_SEED_JACFILE row has an odd "
+                               "number of values (need dx,dy pairs)");
+          double dy = atof(tok);
+          tok = strtok(NULL," \t\n\r\f");
+          pts[i].x[0].fastAccessDx(j) = dx;
+          pts[i].x[1].fastAccessDx(j) = dy;
+        }
+      }
+      fclose(jf);
+    }
+  }
 #endif
 }
 

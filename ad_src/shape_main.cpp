@@ -149,11 +149,22 @@ int main(int argc, char **argv)
   std::printf("\n");
 
   std::vector<double> grad(ndesign);
+#ifdef SPARTA_AD
+  // One SPARTA run yields value AND gradient together (see shape_case.cpp /
+  // read_surf.cpp's SPARTA_AD_SEED_JACFILE hook). Used exactly as the
+  // solver returns it -- no flux-measure-derivative correction, per
+  // explicit instruction; see docs/ad_phase_c_investigation/FINDINGS.md
+  // for the known ~50%/~40% low bias this carries.
+  double base = evaluate_avg(*shape, *obj, alpha_v.data(), seeds_v.data(),
+                             nseeds, c, grad.data());
+  std::printf("grad_ad (uncorrected, see FINDINGS.md): [");
+#else
   double base = grad_fd(*shape, *obj, alpha_v.data(), seeds_v.data(), nseeds,
                         c, h, grad.data());
   std::printf("grad_fd (h=%.4g): [", h);
+#endif
   for (int j = 0; j < ndesign; j++) std::printf("%s%.6g", j ? ", " : "", grad[j]);
-  std::printf("]  (base value used for FD: %.10g)\n", base);
+  std::printf("]  (base value used: %.10g)\n", base);
 
   return 0;
 }

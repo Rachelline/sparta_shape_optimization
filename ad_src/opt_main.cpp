@@ -3,13 +3,23 @@
 
    opt_main: IPOPT-driven shape-optimization driver. Generalizes the
    reference ad_src's opt_ipopt.cpp: --objective drag|heatflux --shape
-   bezier selection (mirrors shape_main.cpp exactly), gradients always
-   from grad_fd() (see shape_tnlp.h for why there's no AD branch this
-   milestone).
+   bezier selection (mirrors shape_main.cpp exactly). Gradient source
+   depends on which binary this is: shape_opt (stock) always uses
+   grad_fd(); shape_opt_ad (built with -DSPARTA_AD, Milestone 3) gets the
+   whole gradient from one SPARTA run instead -- see shape_tnlp.h for
+   both, including the important caveat that AD gradients are used
+   exactly as the solver returns them, with a known ~50%/~40% low bias,
+   not corrected here.
 
    Bounds come from Parametrization::bounds() (built in Milestone 1), not
    CLI flags -- the reference's --x-lo/--x-hi/--y-lo/--y-hi are
    Bezier-specific naming baked into what's meant to be a generic driver.
+
+   Optional general constraints (Milestone 3): --min-area A imposes
+   |body area| >= A via MinAreaConstraint, so the optimizer can't collapse
+   the Bezier body to a needle chasing a smaller objective. Uses an exact
+   analytic gradient (shoelace formula chained through
+   Parametrization::jacobian()), not FD/AD -- see min_area_constraint.cpp.
 
    Results are written to a dated output folder:
      output/fd_<YYYY-MM-DD>_<experiment>[_N]/
@@ -36,6 +46,7 @@
 #include "bezier_parametrization.h"
 #include "drag_objective.h"
 #include "heat_flux_objective.h"
+#include "min_area_constraint.h"
 #include "shape_case.h"
 #include "shape_tnlp.h"
 #include "svg_shape.h"
@@ -73,6 +84,7 @@ static const char *USAGE =
   "  --h H                       FD step (default: 0.05)\n"
   "  --experiment NAME\n"
   "  --nsettle N  --navg N  --nseg N  --chord L  --vstream V\n"
+  "  --min-area A                 constrain |body area| >= A (default: none)\n"
   "  --wall-temp T  --wall-accom A   (diffuse wall; see note above for\n"
   "                                   --objective heatflux)\n"
   "  --specular  --nocoll  --verbose\n"
@@ -99,6 +111,8 @@ struct Config {
   std::string experiment = "run";
   RunConfig c;
   bool alpha_set = false;
+  bool min_area_set = false;
+  double min_area = 0.0;
 };
 
 // ---- small string helpers -----------------------------------------------
@@ -159,6 +173,7 @@ static bool parse_input_file(const char *path, Config &cfg)
     } else if (key == "acceptable_iter") { cfg.acc_iter = atoi(val.c_str());
     } else if (key == "h") { cfg.h = atof(val.c_str());
     } else if (key == "experiment") { cfg.experiment = val;
+    } else if (key == "min_area") { cfg.min_area = atof(val.c_str()); cfg.min_area_set = true;
     } else if (key == "nseg") { cfg.c.nseg = atoi(val.c_str());
     } else if (key == "chord") { cfg.c.chord = atof(val.c_str());
     } else if (key == "nsettle") { cfg.c.nsettle = atoi(val.c_str());
@@ -206,7 +221,11 @@ static std::string make_output_dir(const std::string &experiment)
   return dir;
 }
 
-// ---- geometry: signed area of the final body (bezier only) --------------
+// ---- geometry: |area| of the final body (bezier only) --------------------
+// NOTE: BezierGeom::signed_area is NEGATIVE for a valid (clockwise) body
+// -- callers that want a plain "how big is it" number, comparable
+// against MinAreaConstraint's own |signed_area| convention, want the
+// absolute value, not the raw signed one.
 
 static double body_area(const double alpha[4], double chord, int nseg)
 {
@@ -214,7 +233,7 @@ static double body_area(const double alpha[4], double chord, int nseg)
   std::vector<double> pts(2 * npt), norms(2 * (2 * nseg));
   BezierGeom::symmetric_body_to_lines(alpha, chord, nseg, pts.data(),
                                       norms.data());
-  return BezierGeom::signed_area(2 * nseg, pts.data());
+  return std::fabs(BezierGeom::signed_area(2 * nseg, pts.data()));
 }
 
 static const char *status_str(ApplicationReturnStatus s)
@@ -268,6 +287,8 @@ int main(int narg, char **arg)
     } else if (!strcmp(arg[i], "--acceptable-iter") && i + 1 < narg) { cfg.acc_iter = atoi(arg[++i]);
     } else if (!strcmp(arg[i], "--h") && i + 1 < narg) { cfg.h = atof(arg[++i]);
     } else if (!strcmp(arg[i], "--experiment") && i + 1 < narg) { cfg.experiment = arg[++i];
+    } else if (!strcmp(arg[i], "--min-area") && i + 1 < narg) {
+      cfg.min_area = atof(arg[++i]); cfg.min_area_set = true;
     } else if (!strcmp(arg[i], "--nseg") && i + 1 < narg) { cfg.c.nseg = atoi(arg[++i]);
     } else if (!strcmp(arg[i], "--chord") && i + 1 < narg) { cfg.c.chord = atof(arg[++i]);
     } else if (!strcmp(arg[i], "--nsettle") && i + 1 < narg) { cfg.c.nsettle = atoi(arg[++i]);
@@ -349,7 +370,12 @@ int main(int narg, char **arg)
     cf << "experiment   = " << cfg.experiment << "\n";
     cf << "objective    = " << cfg.objective_name << "\n";
     cf << "shape        = " << cfg.shape_name << "\n";
+#ifdef SPARTA_AD
+    cf << "gradient     = AD (forward-mode, UNCORRECTED -- see "
+          "docs/ad_phase_c_investigation/FINDINGS.md)\n";
+#else
     cf << "gradient     = finite-difference (CRN)\n";
+#endif
     cf << "value(start) = " << f0 << "\n";
     cf << "obj_scaling  = " << obj_scale << "   (1/|value(start)|)\n";
     cf << "alpha_start  = ";
@@ -375,20 +401,31 @@ int main(int narg, char **arg)
     cf << "wall_accom   = " << cfg.c.wall_accom << "\n";
     cf << "specular     = " << cfg.c.specular << "\n";
     cf << "collisions   = " << cfg.c.collisions << "\n";
+    if (cfg.min_area_set) cf << "min_area     = " << cfg.min_area << "\n";
+    else cf << "min_area     = (none)\n";
   }
 
-  printf("%s optimization (finite-difference gradient)\n",
-         cfg.objective_name.c_str());
+  printf("%s optimization (%s gradient)\n", cfg.objective_name.c_str(),
+#ifdef SPARTA_AD
+        "AD"
+#else
+        "finite-difference"
+#endif
+        );
   printf("  start alpha = ");
   for (int j = 0; j < n; j++) printf("%.5g ", cfg.alpha[j]);
   printf("\n  output dir  = %s\n", dir.c_str());
   fflush(stdout);
 
+  MinAreaConstraint min_area_constraint(cfg.min_area);
+  std::vector<const Constraint *> constraints;
+  if (cfg.min_area_set) constraints.push_back(&min_area_constraint);
+
   SmartPtr<ShapeTNLP> nlp = new ShapeTNLP(*shape, *obj, cfg.alpha.data(),
                                           xl.data(), xu.data(),
                                           cfg.seeds.data(), (int) cfg.seeds.size(),
                                           cfg.c, cfg.h, cfg.max_iter, show_bar,
-                                          obj_scale);
+                                          obj_scale, constraints);
 
   SmartPtr<IpoptApplication> app = IpoptApplicationFactory();
   app->Options()->SetStringValue("hessian_approximation", "limited-memory");
@@ -426,9 +463,8 @@ int main(int narg, char **arg)
     }
   }
 
-  double area = -1.0;
-  if (cfg.shape_name == "bezier" && n == 4)
-    area = body_area(nlp->final_alpha.data(), cfg.c.chord, cfg.c.nseg);
+  bool have_area = (cfg.shape_name == "bezier" && n == 4);
+  double area = have_area ? body_area(nlp->final_alpha.data(), cfg.c.chord, cfg.c.nseg) : 0.0;
 
   // result.txt
   {
@@ -436,7 +472,11 @@ int main(int narg, char **arg)
     rf << "experiment    : " << cfg.experiment << "\n";
     rf << "objective     : " << cfg.objective_name << "\n";
     rf << "shape         : " << cfg.shape_name << "\n";
+#ifdef SPARTA_AD
+    rf << "gradient      : AD (forward-mode, uncorrected)\n";
+#else
     rf << "gradient      : finite-difference\n";
+#endif
     rf << "ipopt status  : " << status_str(st) << "\n";
     rf << "iterations    : " << (nlp->traj.empty() ? 0 : nlp->traj.back().iter) << "\n";
     rf.setf(std::ios::scientific); rf.precision(8);
@@ -447,7 +487,14 @@ int main(int narg, char **arg)
     rf << "value start   : " << nlp->init_value << "\n";
     rf << "value final   : " << nlp->final_value << "\n";
     rf << "value reduction: " << (nlp->init_value - nlp->final_value) << "\n";
-    if (area >= 0.0) rf << "body area      : " << area << "\n";
+    if (have_area) {
+      rf << "body area      : " << area << "\n";
+      if (cfg.min_area_set) {
+        rf << "min_area bound : " << cfg.min_area
+           << (area + 1e-9 >= cfg.min_area ? "  (satisfied)" : "  (VIOLATED)")
+           << "\n";
+      }
+    }
   }
 
   // shapes.svg -- Bezier-specific (see svg_shape.h)
