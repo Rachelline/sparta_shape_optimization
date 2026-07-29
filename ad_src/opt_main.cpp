@@ -91,7 +91,7 @@ static const char *USAGE =
   "\n"
   "  Minimizes the chosen objective with IPOPT, subject to the shape's\n"
   "  own box bounds (Parametrization::bounds()). Run from a dir with\n"
-  "  N.species/N.vss. Output written to output/fd_<date>_<experiment>/.\n";
+  "  N.species/N.vss. Output written to output/<fd|ad>_<date>_<experiment>/.\n";
 
 // ---- config ------------------------------------------------------------
 
@@ -198,16 +198,20 @@ static bool dir_exists(const std::string &p)
   return stat(p.c_str(), &st) == 0 && S_ISDIR(st.st_mode);
 }
 
-// Create output/fd_<date>_<experiment>[_N]/ and return its path (empty on
-// fail). "fd_" prefix (not "ad_") so an eventual AD-gradient variant's
-// runs land in a distinguishable, non-colliding place later.
+// Create output/<fd|ad>_<date>_<experiment>[_N]/ and return its path
+// (empty on fail). Prefix reflects the actual gradient method so AD and
+// FD runs land in distinguishable, non-colliding places.
 static std::string make_output_dir(const std::string &experiment)
 {
   mkdir("output", 0755);   // ok if it already exists
   char datestr[32];
   time_t t = time(0);
   strftime(datestr, sizeof(datestr), "%Y-%m-%d", localtime(&t));
+#ifdef SPARTA_AD
+  std::string base = std::string("output/ad_") + datestr + "_" + experiment;
+#else
   std::string base = std::string("output/fd_") + datestr + "_" + experiment;
+#endif
   std::string dir = base;
   int suffix = 2;
   while (dir_exists(dir)) {
