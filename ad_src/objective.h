@@ -38,11 +38,14 @@ class Objective {
 
   // After the averaging window has run: return the QOI's value.
   // ndesign: length of grad (may be NULL if the caller doesn't want a
-  // gradient -- every call site in this milestone, since only FD
-  // gradients are wired up). In the AD build, fills
-  // grad[j] = d(QOI)/d(alpha[j]) via ad_extract(); in the stock build,
-  // fills grad with 0.0 (once, with a one-time warning) since no
-  // gradient is available that way.
+  // gradient, e.g. shape_main.cpp's --alpha-only eval path). In the AD
+  // build, fills grad[j] = d(QOI)/d(alpha[j]) via ad_extract() (see
+  // docs/ad_phase_c_investigation/FINDINGS.md for this gradient's known
+  // low bias and the SPARTA_AD_SCORE_CORRECTION runtime toggle that
+  // corrects it for fluxscale-weighted tallies); in the stock build,
+  // fills grad with 0.0 (once, with a one-time warning), since FD
+  // gradients are computed externally by shape_case.cpp's grad_fd(),
+  // not through this interface.
   virtual double extract(void *spa, int ndesign, double *grad) const = 0;
 };
 

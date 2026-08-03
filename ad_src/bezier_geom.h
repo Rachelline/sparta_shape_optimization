@@ -51,14 +51,6 @@ double bernstein(int n, int k, double t);
 void bezier_to_lines(int nctrl, const double *alpha,
                      int nseg, double *pts, double *norms);
 
-// Analytic Jacobian of the tessellation: d(pts)/d(alpha),
-// row-major, shape [2*(nseg+1)] x [2*nctrl].
-//   jac[r*(2*nctrl) + c] = d pts[r] / d alpha[c]
-// Independent of alpha (Bezier is linear in its control points),
-// exact and cheap. This is the "glue" factor for chaining with
-// solver sensitivities:  d(drag)/d(alpha) = d(drag)/d(pts) * jac.
-void bezier_to_lines_jacobian(int nctrl, int nseg, double *jac);
-
 // -------------------------------------------------------------------
 // symmetric body: the shape-optimization test case
 // -------------------------------------------------------------------
@@ -94,33 +86,11 @@ void symmetric_body_jacobian(int nseg, double *jac);
 // a tolerance before handing geometry to SPARTA.
 double min_segment_length(int nseg, const double *pts);
 
-// 1 if the polyline is closed within tol (first point == last point),
-// else 0. read_surf-style watertight bodies need a closed loop.
-int is_closed(int nseg, const double *pts, double tol);
-
 // Signed area of the polyline treated as a closed loop (shoelace).
 // Positive => counter-clockwise traversal => normals point INTO the
 // enclosed body (wrong for flow around a body). Negative => clockwise
 // => normals point outward into the gas, matching SPARTA bodies.
 double signed_area(int nseg, const double *pts);
-
-// -------------------------------------------------------------------
-// convenience owner for tests/drivers. NOT part of the AD seam --
-// the command layer may use raw arrays directly.
-// -------------------------------------------------------------------
-
-struct Tessellation {
-  int nseg;
-  double *pts;     // length 2*(nseg+1)
-  double *norms;   // length 2*nseg
-
-  Tessellation(int nctrl, const double *alpha, int nseg_);
-  ~Tessellation();
-
-  // non-copyable (owns raw buffers)
-  Tessellation(const Tessellation &) = delete;
-  Tessellation &operator=(const Tessellation &) = delete;
-};
 
 }  // namespace BezierGeom
 

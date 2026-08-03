@@ -92,7 +92,7 @@ int main(int argc, char **argv)
     else if (!strcmp(argv[i], "--specular")) c.specular = 1;
     else if (!strcmp(argv[i], "--score-correction")) c.score_correction = true;
     else if (!strcmp(argv[i], "--nocoll")) c.collisions = 0;
-    else if (!strcmp(argv[i], "--verbose")) { c.verbose = 1; c.progress = 1; }
+    else if (!strcmp(argv[i], "--verbose")) c.verbose = 1;
     else { usage(); return 1; }
   }
 

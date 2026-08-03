@@ -127,7 +127,6 @@ class ShapeTNLP : public Ipopt::TNLP {
   double init_value;
   std::vector<double> final_alpha;
   double final_value;
-  int    solve_status;          // Ipopt::SolverReturn as int
   std::vector<TrajPoint> traj;
 
  private:

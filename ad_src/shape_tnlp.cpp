@@ -66,7 +66,7 @@ ShapeTNLP::ShapeTNLP(const Parametrization &shape, const Objective &obj,
                      const RunConfig &c, double h,
                      int max_iter, bool show_bar, double obj_scale,
                      const std::vector<const Constraint *> &constraints)
-  : init_value(0.0), final_value(0.0), solve_status(-1),
+  : init_value(0.0), final_value(0.0),
     shape_(shape), obj_(obj), ndesign_(shape.ndesign()),
     c_(c), h_(h), max_iter_(max_iter), show_bar_(show_bar),
     obj_scale_(obj_scale), constraints_(constraints),
@@ -263,9 +263,8 @@ void ShapeTNLP::finalize_solution(SolverReturn status, Index n, const Number *x,
                                   Number obj_value, const IpoptData *ip_data,
                                   IpoptCalculatedQuantities *ip_cq)
 {
-  (void) z_L; (void) z_U; (void) m; (void) g; (void) lambda;
+  (void) status; (void) z_L; (void) z_U; (void) m; (void) g; (void) lambda;
   (void) ip_data; (void) ip_cq;
-  solve_status = (int) status;
   final_value = obj_value;
   final_alpha.resize(n);
   for (Index i = 0; i < n; i++) final_alpha[i] = x[i];

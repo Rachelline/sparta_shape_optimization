@@ -15,9 +15,8 @@
    interface's to_lines()/jacobian() are 2D-line-shaped (a closed
    polyline + per-segment normals for a `dimension 2` SPARTA surf file).
    A body of revolution needs a triangulated 3D mesh instead, so this is
-   a parallel, minimal interface used by power_law_case.cpp/
-   power_law_main.cpp only -- not plugged into ShapeTNLP/Objective, which
-   are written against the 2D interface.
+   a parallel, minimal interface used by power_law_main.cpp only -- not
+   plugged into ShapeTNLP, which is written against the 2D interface.
 
    Mesh: 1 apex point (x=0, r=0) + NX rings of NTHETA points each
    (x=L/NX .. L) + 1 base-center point (x=L, r=0), triangulated as an

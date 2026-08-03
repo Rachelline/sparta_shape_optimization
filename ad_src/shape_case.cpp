@@ -11,6 +11,7 @@
 #include <cstdlib>
 #include <cstring>
 #include <string>
+#include <vector>
 #include <unistd.h>
 
 namespace {
@@ -84,12 +85,12 @@ double evaluate(const Parametrization &shape, const Objective &obj,
   int npt = shape.nsegments(c.nseg);      // unique loop points == line count
   int npt_closed = npt + 1;               // to_lines()'s own convention
 
-  double *pts = new double[2 * npt_closed];
-  double *norms = new double[2 * npt];
-  shape.to_lines(alpha, c.chord, c.nseg, pts, norms);
+  std::vector<double> pts(2 * npt_closed);
+  std::vector<double> norms(2 * npt);
+  shape.to_lines(alpha, c.chord, c.nseg, pts.data(), norms.data());
 
   std::string why;
-  if (!shape.validate(c.nseg, pts, &why)) die(why.c_str());
+  if (!shape.validate(c.nseg, pts.data(), &why)) die(why.c_str());
 
   for (int i = 0; i < npt; i++) {
     pts[2 * i]     += c.origin[0];
@@ -102,19 +103,16 @@ double evaluate(const Parametrization &shape, const Objective &obj,
   char surfpath[256];
   std::snprintf(surfpath, sizeof(surfpath), "tmp_surf_%d_%d.data",
                (int) getpid(), seed);
-  write_surf_tmp(surfpath, pts, npt);
-  delete[] pts;
-  delete[] norms;
+  write_surf_tmp(surfpath, pts.data(), npt);
 
 #ifdef SPARTA_AD
   char jacpath[256];
   std::snprintf(jacpath, sizeof(jacpath), "tmp_jac_%d_%d.data",
                (int) getpid(), seed);
   {
-    double *jac = new double[2 * npt_closed * ndesign];
-    shape.jacobian(c.nseg, jac);
-    write_jac_tmp(jacpath, jac, npt, ndesign);
-    delete[] jac;
+    std::vector<double> jac(2 * npt_closed * ndesign);
+    shape.jacobian(c.nseg, jac.data());
+    write_jac_tmp(jacpath, jac.data(), npt, ndesign);
   }
 #endif
 
@@ -215,16 +213,18 @@ double evaluate_avg(const Parametrization &shape, const Objective &obj,
                     const RunConfig &c, double *grad)
 {
   int ndesign = shape.ndesign();
-  double *g = grad ? new double[ndesign] : 0;
-  if (grad) for (int j = 0; j < ndesign; j++) grad[j] = 0.0;
+  std::vector<double> g;
+  if (grad) {
+    g.assign(ndesign, 0.0);
+    for (int j = 0; j < ndesign; j++) grad[j] = 0.0;
+  }
 
   double sum = 0.0;
   for (int k = 0; k < nseeds; k++) {
-    sum += evaluate(shape, obj, alpha, seeds[k], c, g);
+    sum += evaluate(shape, obj, alpha, seeds[k], c, grad ? g.data() : nullptr);
     if (grad) for (int j = 0; j < ndesign; j++) grad[j] += g[j];
   }
   if (grad) for (int j = 0; j < ndesign; j++) grad[j] /= nseeds;
-  delete[] g;
 
   return sum / nseeds;
 }
@@ -234,22 +234,20 @@ double grad_fd(const Parametrization &shape, const Objective &obj,
               const RunConfig &c, double h, double *grad)
 {
   int ndesign = shape.ndesign();
-  double *a = new double[ndesign];
-  for (int j = 0; j < ndesign; j++) a[j] = alpha[j];
+  std::vector<double> a(alpha, alpha + ndesign);
 
   for (int j = 0; j < ndesign; j++) {
     double orig = a[j];
 
     a[j] = orig + h;
-    double plus = evaluate_avg(shape, obj, a, seeds, nseeds, c);
+    double plus = evaluate_avg(shape, obj, a.data(), seeds, nseeds, c);
 
     a[j] = orig - h;
-    double minus = evaluate_avg(shape, obj, a, seeds, nseeds, c);
+    double minus = evaluate_avg(shape, obj, a.data(), seeds, nseeds, c);
 
     a[j] = orig;
     grad[j] = (plus - minus) / (2.0 * h);
   }
 
-  delete[] a;
   return evaluate_avg(shape, obj, alpha, seeds, nseeds, c);
 }

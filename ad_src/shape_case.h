@@ -42,7 +42,6 @@ struct RunConfig {
   int navg    = 500;
 
   int verbose  = 0;
-  int progress = 0;
 
   int specular   = 0;    // 1 = specular wall, 0 = diffuse
   double wall_temp  = 300.0;

@@ -73,9 +73,8 @@ class Parametrization {
   }
 
   // Box constraints an optimizer should apply to alpha, length
-  // ndesign() each. Not consumed anywhere yet (ShapeTNLP is a later
-  // milestone) -- part of the interface now so implementations declare
-  // sane defaults from day one.
+  // ndesign() each. Consumed by ShapeTNLP::get_bounds_info()
+  // (opt_main.cpp's IPOPT-driven optimizer).
   virtual void bounds(double *lo, double *hi) const = 0;
 };
 

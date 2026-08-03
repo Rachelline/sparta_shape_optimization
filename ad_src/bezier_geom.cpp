@@ -111,33 +111,6 @@ void bezier_to_lines(int nctrl, const double *alpha,
 }
 
 /* ----------------------------------------------------------------------
-   analytic Jacobian d(pts)/d(alpha), row-major [2*(nseg+1)] x [2*nctrl]
-   pts_x(t_i) = sum_k B_{k,n}(t_i) alpha_x[k]  (linear in alpha),
-   so jac is alpha-independent:
-     d pts[2i]   / d alpha[2k]   = B_{k,n}(t_i)
-     d pts[2i+1] / d alpha[2k+1] = B_{k,n}(t_i)
-   and zero for x/y cross terms
-------------------------------------------------------------------------- */
-
-void bezier_to_lines_jacobian(int nctrl, int nseg, double *jac)
-{
-  int ncol = 2*nctrl;
-  int nrow = 2*(nseg+1);
-  int n = nctrl-1;
-
-  for (int r = 0; r < nrow*ncol; r++) jac[r] = 0.0;
-
-  for (int i = 0; i <= nseg; i++) {
-    double t = (double) i / (double) nseg;
-    for (int k = 0; k < nctrl; k++) {
-      double b = bernstein(n,k,t);
-      jac[(2*i)  *ncol + 2*k]   = b;   // x wrt x-coord of ctrl pt k
-      jac[(2*i+1)*ncol + 2*k+1] = b;   // y wrt y-coord of ctrl pt k
-    }
-  }
-}
-
-/* ----------------------------------------------------------------------
    symmetric body: two mirrored cubic halves, closed, clockwise
    traversal: upper nose->tail (t = 0..1), lower tail->nose (mirrored)
 ------------------------------------------------------------------------- */
@@ -242,13 +215,6 @@ double min_segment_length(int nseg, const double *pts)
   return minlen;
 }
 
-int is_closed(int nseg, const double *pts, double tol)
-{
-  double dx = pts[2*nseg]   - pts[0];
-  double dy = pts[2*nseg+1] - pts[1];
-  return (sqrt(dx*dx + dy*dy) <= tol) ? 1 : 0;
-}
-
 double signed_area(int nseg, const double *pts)
 {
   // shoelace over the loop, implicitly closing last -> first
@@ -261,24 +227,6 @@ double signed_area(int nseg, const double *pts)
   }
   area2 += pts[2*nseg]*pts[1] - pts[0]*pts[2*nseg+1];
   return 0.5*area2;
-}
-
-/* ----------------------------------------------------------------------
-   convenience owner
-------------------------------------------------------------------------- */
-
-Tessellation::Tessellation(int nctrl, const double *alpha, int nseg_)
-  : nseg(nseg_)
-{
-  pts   = new double[2*(nseg+1)];
-  norms = new double[2*nseg];
-  bezier_to_lines(nctrl,alpha,nseg,pts,norms);
-}
-
-Tessellation::~Tessellation()
-{
-  delete [] pts;
-  delete [] norms;
 }
 
 }  // namespace BezierGeom

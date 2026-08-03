@@ -1,48 +1,40 @@
 # ----------------------------------------------------------------------
 # Standalone build for ad_src/'s shape-optimization driver.
 # Milestone 1: Parametrization x Objective, FD gradients (shape_main).
-# Milestone 2: ShapeTNLP + IPOPT optimizer loop (shape_opt), still FD
-#   gradients only -- no AD-linked target yet, see the deferred-AD note
-#   below.
+# Milestone 2: ShapeTNLP + IPOPT optimizer loop (shape_opt).
+# Milestone 3: AD-linked targets (shape_main_ad/shape_opt_ad), a general
+#   Constraint mechanism (--min-area), and the 3D power-law-body heatflux
+#   example (power_law_opt/power_law_opt_ad). See the AD-targets section
+#   below for how SPARTA_AD_BUILD_DIR/Sacado discovery works.
+# Milestone 4: cleanup + 2D/3D unification (in progress).
 #
 # This is a self-contained CMake project, deliberately NOT wired into
 # sparta/cmake or sparta/src/CMakeLists.txt (no add_subdirectory anywhere
 # references ad_src). Configuring/building the main SPARTA CMake tree
 # (sparta/build, with its SPARTA_ENABLE_AD/SPARTA_AD_NDIR options) is
-# completely unaffected by this file -- structure ported from the
-# reference implementation at
-#   /Users/olenamelnikov/Desktop/sparta_AD/sparta/ad_src/
-# which shells out the exact same way, for the exact same reason (that
-# fork has no CMake AD support at all, only the classic Makefile path;
-# this fork's own SPARTA_ENABLE_AD CMake option is a DIFFERENT mechanism
-# that this file does not use -- see the deferred-AD note below).
+# completely unaffected by this file.
 #
-# SPARTA itself is built as a side effect, via a CMake custom command
-# that shells out to SPARTA's own classic src/Makefile in "mode=lib"
-# (same as `cd src && make mode=lib serial` upstream): produces
-# src/libsparta_serial.a and src/STUBS/libmpi_stubs.a. Those live in
-# sparta/src/, alongside (but not overwriting) whatever per-machine .o
-# dir (Obj_serial) the classic Makefile already uses.
+# The STOCK (FD-gradient) side of this project builds SPARTA as a side
+# effect, via a CMake custom command that shells out to SPARTA's own
+# classic src/Makefile in "mode=lib" (same as `cd src && make mode=lib
+# serial` upstream): produces src/libsparta_serial.a and
+# src/STUBS/libmpi_stubs.a. Those live in sparta/src/, alongside (but not
+# overwriting) whatever per-machine .o dir (Obj_serial) the classic
+# Makefile already uses.
 #
-# Deferred (see docs/PLAN.md "What this milestone deliberately does NOT
-# include" and the plan this was built from): an AD-linked target. This
-# fork has no src/MAKE/Makefile.serial_ad for a classic-Makefile shell-
-# out to target (unlike the reference fork); the better long-term answer
-# is almost certainly linking this fork's REAL SPARTA_ENABLE_AD CMake
-# build directly (reusing FindSacado.cmake/SPARTA_AD_NDIR) instead of
-# adding a second, parallel classic-Makefile AD path here -- left as
-# follow-up work, not decided in this file.
+# The AD side does NOT use that classic-Makefile path (this fork has no
+# src/MAKE/Makefile.serial_ad) -- it instead links against an already-
+# built top-level SPARTA CMake build configured with
+# -DSPARTA_ENABLE_AD=ON, pointed at via the SPARTA_AD_BUILD_DIR cache
+# variable (see the AD-targets section below for the exact recipe).
 #
 # Usage, from ad_src/:
 #   cmake -S . -B build
 #   cmake --build build
 #   ./build/shape_main --alpha 1.3,1.0,2.7,0.8   # run from ad_src/ itself,
-#                                                  # where N.species/N.vss
-#                                                  # live (matches the
-#                                                  # reference's own
-#                                                  # "run from a dir with
-#                                                  # air.species/air.vss"
-#                                                  # convention)
+#                                                  # where N.species/N.vss live
+# See ad_src/README.md for the full build recipe, including the AD side
+# (Trilinos/Sacado + a top-level -DSPARTA_ENABLE_AD=ON SPARTA build).
 # ----------------------------------------------------------------------
 
 cmake_minimum_required(VERSION 3.16)
@@ -114,7 +106,7 @@ add_library(sparta_serial STATIC IMPORTED)
 set_target_properties(sparta_serial PROPERTIES IMPORTED_LOCATION ${SPARTA_SERIAL_A})
 add_dependencies(sparta_serial sparta_build_serial)
 
-# ---- shape_main: the framework, FD gradients only ----------------------
+# ---- shape_main: the framework, single-point evaluator ----------------
 # Links against SPARTA through its public C interface (src/library.h),
 # exactly like the reference's drag_run.
 
@@ -141,7 +133,7 @@ target_compile_definitions(power_law_opt PRIVATE SPARTA_UNORDERED_MAP)
 target_include_directories(power_law_opt PRIVATE ${SPARTA_SRC_DIR} ${SPARTA_SRC_DIR}/STUBS)
 target_link_libraries(power_law_opt PRIVATE sparta_serial mpi_stubs)
 
-# ---- shape_opt: IPOPT-driven optimizer loop, FD gradients only --------
+# ---- shape_opt: IPOPT-driven optimizer loop ----------------------------
 # Same SPARTA dependency as shape_main, plus IPOPT's TNLP interface.
 
 if(HAVE_IPOPT)
@@ -162,10 +154,15 @@ if(HAVE_IPOPT)
 endif()
 
 # ---- AD-linked targets: shape_main_ad / shape_opt_ad (Milestone 3) -----
-# AD gradients used exactly as the solver returns them -- no flux-measure-
-# derivative correction (docs/ad_phase_c_investigation/FINDINGS.md), per
-# explicit instruction. Optional: skipped entirely (stock targets above
-# unaffected) unless both SPARTA_AD_BUILD_DIR and Sacado are found.
+# AD gradients carry a known low bias on DSMC surface tallies (docs/
+# ad_phase_c_investigation/FINDINGS.md). A runtime toggle
+# (SPARTA_AD_SCORE_CORRECTION env var / --score-correction CLI flag)
+# corrects it for fluxscale-weighted tallies (press/shear/heat-flux);
+# off by default, so gradients are used exactly as the solver returns
+# them unless explicitly requested otherwise. force/torque tallies
+# (nfactor_inverse-scaled) are not yet covered -- see docs/AD_GRADIENTS.md.
+# Optional: skipped entirely (stock targets above unaffected) unless both
+# SPARTA_AD_BUILD_DIR and Sacado are found.
 #
 # SPARTA_AD_BUILD_DIR: path to an ALREADY-configured-and-built top-level
 # SPARTA CMake build (cmake/CMakeLists.txt) with -DSPARTA_ENABLE_AD=ON,
@@ -175,8 +172,7 @@ endif()
 #   cmake --build <dir>
 # Not auto-built by this file: the top-level AD path has real complexity
 # (Kokkos ODR guard, C++17+ bump, Sacado discovery) not worth duplicating
-# in a nested custom command -- see the reference's own classic-Makefile
-# equivalent for why the analogous shortcut was rejected there too.
+# in a nested custom command. See ad_src/README.md for the full recipe.
 #
 # SPARTA_AD_NDIR must match whatever SPARTA_AD_BUILD_DIR was itself
 # configured with (default 4 on both sides -- matches
