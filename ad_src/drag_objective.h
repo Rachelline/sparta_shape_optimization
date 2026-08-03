@@ -2,20 +2,20 @@
    SPARTA - Stochastic PArallel Rarefied-gas Time-accurate Analyzer
 
    drag_objective.h: x-component of net surface force (drag), summed
-   over the whole body. Ports the reference ad_src's measurement chain
-   (compute forces surf ... fx / fix ave/surf / compute reduce sum)
-   unchanged in spirit -- see drag_objective.cpp for the exact commands.
+   over the whole body. A thin named subclass of SurfSumObjective
+   (keyword "fx", tag "drag") -- see surf_sum_objective.h for the shared
+   measurement chain (compute surf .../ fix ave/surf / compute reduce
+   sum) that this and HeatFluxObjective both use.
 ------------------------------------------------------------------------- */
 
 #ifndef SPARTA_DRAG_OBJECTIVE_H
 #define SPARTA_DRAG_OBJECTIVE_H
 
-#include "objective.h"
+#include "surf_sum_objective.h"
 
-class DragObjective : public Objective {
+class DragObjective : public SurfSumObjective {
  public:
-  void setup(void *spa, int navg) const override;
-  double extract(void *spa, int ndesign, double *grad) const override;
+  DragObjective() : SurfSumObjective("fx", "drag") {}
 };
 
 #endif

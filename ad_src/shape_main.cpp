@@ -15,6 +15,7 @@
 
 #include "shape_case.h"
 #include "bezier_parametrization.h"
+#include "cli.h"
 #include "drag_objective.h"
 #include "heat_flux_objective.h"
 
@@ -22,6 +23,7 @@
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
+#include <exception>
 #include <vector>
 
 namespace {
@@ -45,29 +47,9 @@ void usage()
     "                       score-function correction (FINDINGS.md, FINDING 2)\n");
 }
 
-std::vector<double> parse_doubles(const char *s)
-{
-  std::vector<double> v;
-  char *buf = strdup(s);
-  char *tok = strtok(buf, ",");
-  while (tok) { v.push_back(atof(tok)); tok = strtok(0, ","); }
-  free(buf);
-  return v;
-}
-
-std::vector<int> parse_ints(const char *s)
-{
-  std::vector<int> v;
-  char *buf = strdup(s);
-  char *tok = strtok(buf, ",");
-  while (tok) { v.push_back(atoi(tok)); tok = strtok(0, ","); }
-  free(buf);
-  return v;
-}
-
 }  // namespace
 
-int main(int argc, char **argv)
+int main_impl(int argc, char **argv)
 {
   std::vector<double> alpha_v;
   std::vector<int> seeds_v;
@@ -170,4 +152,14 @@ int main(int argc, char **argv)
   std::printf("]  (base value used: %.10g)\n", base);
 
   return 0;
+}
+
+int main(int argc, char **argv)
+{
+  try {
+    return main_impl(argc, argv);
+  } catch (const std::exception &e) {
+    std::fprintf(stderr, "ERROR: %s\n", e.what());
+    return 1;
+  }
 }

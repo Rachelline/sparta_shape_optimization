@@ -4,7 +4,7 @@
 ------------------------------------------------------------------------- */
 
 #include "shape_case.h"
-#include "library.h"
+#include "sparta_util.h"
 
 #include <cmath>
 #include <cstdio>
@@ -15,19 +15,6 @@
 #include <unistd.h>
 
 namespace {
-
-void die(const char *msg)
-{
-  std::fprintf(stderr, "shape_case: %s\n", msg);
-  std::exit(1);
-}
-
-void cmd(void *spa, const char *str)
-{
-  char buf[1024];
-  std::snprintf(buf, sizeof(buf), "%s", str);
-  sparta_command(spa, buf);
-}
 
 // SPARTA surf-data format: npt points, npt lines (closed loop,
 // line i connects point i -> point (i+1)%npt). Generic over any
@@ -116,13 +103,7 @@ double evaluate(const Parametrization &shape, const Objective &obj,
   }
 #endif
 
-  void *spa;
-  char a0[] = "sparta", a1[] = "-log", a2[] = "none";
-  char a3[] = "-screen";
-  char *argv_verbose[] = {a0, a1, a2};
-  char *argv_quiet[]   = {a0, a1, a2, a3, a2};
-  if (c.verbose) sparta_open_no_mpi(3, argv_verbose, &spa);
-  else           sparta_open_no_mpi(5, argv_quiet, &spa);
+  void *spa = open_sparta(c.verbose);
 
   char line[512];
 
@@ -199,7 +180,7 @@ double evaluate(const Parametrization &shape, const Objective &obj,
 
   double value = obj.extract(spa, ndesign, grad);
 
-  sparta_close(spa);
+  close_sparta(spa);
   unlink(surfpath);
 #ifdef SPARTA_AD
   unlink(jacpath);

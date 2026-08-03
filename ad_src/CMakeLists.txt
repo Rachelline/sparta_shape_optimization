@@ -115,8 +115,9 @@ add_executable(shape_main
   shape_case.cpp
   bezier_geom.cpp
   bezier_parametrization.cpp
-  drag_objective.cpp
-  heat_flux_objective.cpp)
+  surf_sum_objective.cpp
+  sparta_util.cpp
+  cli.cpp)
 target_compile_definitions(shape_main PRIVATE SPARTA_UNORDERED_MAP)
 target_include_directories(shape_main PRIVATE ${SPARTA_SRC_DIR} ${SPARTA_SRC_DIR}/STUBS)
 target_link_libraries(shape_main PRIVATE sparta_serial mpi_stubs)
@@ -128,7 +129,9 @@ target_link_libraries(shape_main PRIVATE sparta_serial mpi_stubs)
 add_executable(power_law_opt
   power_law_main.cpp
   power_law_body.cpp
-  heat_flux_objective.cpp)
+  surf_sum_objective.cpp
+  sparta_util.cpp
+  run_output.cpp)
 target_compile_definitions(power_law_opt PRIVATE SPARTA_UNORDERED_MAP)
 target_include_directories(power_law_opt PRIVATE ${SPARTA_SRC_DIR} ${SPARTA_SRC_DIR}/STUBS)
 target_link_libraries(power_law_opt PRIVATE sparta_serial mpi_stubs)
@@ -144,9 +147,11 @@ if(HAVE_IPOPT)
     shape_case.cpp
     bezier_geom.cpp
     bezier_parametrization.cpp
-    drag_objective.cpp
-    heat_flux_objective.cpp
-    min_area_constraint.cpp)
+    surf_sum_objective.cpp
+    min_area_constraint.cpp
+    sparta_util.cpp
+    cli.cpp
+    run_output.cpp)
   target_compile_definitions(shape_opt PRIVATE SPARTA_UNORDERED_MAP)
   target_include_directories(shape_opt PRIVATE
     ${SPARTA_SRC_DIR} ${SPARTA_SRC_DIR}/STUBS ${IPOPT_INCLUDE_DIR})
@@ -208,7 +213,7 @@ if(SPARTA_AD_BUILD_DIR)
 
     add_executable(shape_main_ad
       shape_main.cpp shape_case.cpp bezier_geom.cpp bezier_parametrization.cpp
-      drag_objective.cpp heat_flux_objective.cpp)
+      surf_sum_objective.cpp sparta_util.cpp cli.cpp)
     target_compile_definitions(shape_main_ad PRIVATE ${AD_COMPILE_DEFS})
     target_include_directories(shape_main_ad PRIVATE ${SPARTA_SRC_DIR} ${SPARTA_SRC_DIR}/STUBS)
     target_link_libraries(shape_main_ad PRIVATE sparta_ad_lib mpi_stubs Sacado::Sacado)
@@ -219,7 +224,8 @@ if(SPARTA_AD_BUILD_DIR)
     set_target_properties(shape_main_ad PROPERTIES CXX_STANDARD 17 CXX_STANDARD_REQUIRED ON)
 
     add_executable(power_law_opt_ad
-      power_law_main.cpp power_law_body.cpp heat_flux_objective.cpp)
+      power_law_main.cpp power_law_body.cpp surf_sum_objective.cpp
+      sparta_util.cpp run_output.cpp)
     target_compile_definitions(power_law_opt_ad PRIVATE ${AD_COMPILE_DEFS})
     target_include_directories(power_law_opt_ad PRIVATE ${SPARTA_SRC_DIR} ${SPARTA_SRC_DIR}/STUBS)
     target_link_libraries(power_law_opt_ad PRIVATE sparta_ad_lib mpi_stubs Sacado::Sacado)
@@ -229,7 +235,8 @@ if(SPARTA_AD_BUILD_DIR)
       add_executable(shape_opt_ad
         opt_main.cpp shape_tnlp.cpp svg_shape.cpp shape_case.cpp
         bezier_geom.cpp bezier_parametrization.cpp
-        drag_objective.cpp heat_flux_objective.cpp min_area_constraint.cpp)
+        surf_sum_objective.cpp min_area_constraint.cpp
+        sparta_util.cpp cli.cpp run_output.cpp)
       target_compile_definitions(shape_opt_ad PRIVATE ${AD_COMPILE_DEFS})
       target_include_directories(shape_opt_ad PRIVATE
         ${SPARTA_SRC_DIR} ${SPARTA_SRC_DIR}/STUBS ${IPOPT_INCLUDE_DIR})

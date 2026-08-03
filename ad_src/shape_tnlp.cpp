@@ -8,6 +8,7 @@
 #include <cmath>
 #include <cstdio>
 #include <cstring>
+#include <exception>
 #include <unistd.h>   // isatty
 
 using namespace Ipopt;
@@ -180,10 +181,22 @@ bool ShapeTNLP::get_starting_point(Index n, bool init_x, Number *x,
   return true;
 }
 
+// evaluate() can throw (shape_case.cpp's die(), e.g. an IPOPT line-search
+// step that lands on a self-intersecting/out-of-box shape). Letting a C++
+// exception unwind through IPOPT's own OptimizeTNLP() call stack is not a
+// documented-safe thing to do, so it's caught here and translated to
+// IPOPT's own idiomatic failure signal (return false: "could not evaluate
+// at this point"), which lets IPOPT's line search back off and try a
+// different step instead of the whole process hard-crashing.
 bool ShapeTNLP::eval_f(Index n, const Number *x, bool new_x, Number &obj_value)
 {
   (void) n; (void) new_x;
-  obj_value = evaluate(x, /*want_grad=*/false, 0);
+  try {
+    obj_value = evaluate(x, /*want_grad=*/false, 0);
+  } catch (const std::exception &e) {
+    fprintf(stderr, "ShapeTNLP::eval_f: %s (rejecting this point)\n", e.what());
+    return false;
+  }
   return true;
 }
 
@@ -191,7 +204,12 @@ bool ShapeTNLP::eval_grad_f(Index n, const Number *x, bool new_x, Number *grad_f
 {
   (void) new_x;
   std::vector<double> g(n);
-  evaluate(x, /*want_grad=*/true, g.data());
+  try {
+    evaluate(x, /*want_grad=*/true, g.data());
+  } catch (const std::exception &e) {
+    fprintf(stderr, "ShapeTNLP::eval_grad_f: %s (rejecting this point)\n", e.what());
+    return false;
+  }
   for (Index i = 0; i < n; i++) grad_f[i] = g[i];
   return true;
 }

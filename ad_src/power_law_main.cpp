@@ -26,29 +26,20 @@
 
 #include "power_law_body.h"
 #include "heat_flux_objective.h"
-#include "library.h"
+#include "run_output.h"
+#include "sparta_util.h"
 
 #include <cmath>
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
-#include <ctime>
+#include <exception>
 #include <fstream>
 #include <string>
-#include <sys/stat.h>
 #include <unistd.h>
 #include <vector>
 
 namespace {
-
-void die(const char *msg) { std::fprintf(stderr, "power_law_main: %s\n", msg); std::exit(1); }
-
-void cmd(void *spa, const char *str)
-{
-  char buf[1024];
-  std::snprintf(buf, sizeof(buf), "%s", str);
-  sparta_command(spa, buf);
-}
 
 void write_surf3d_tmp(const char *path, const double *pts, int npt,
                       const int *tris, int ntri)
@@ -147,12 +138,7 @@ double evaluate(const PowerLawBody &body, const HeatFluxObjective &obj,
   }
 #endif
 
-  void *spa;
-  char a0[] = "sparta", a1[] = "-log", a2[] = "none", a3[] = "-screen";
-  char *argv_verbose[] = {a0, a1, a2};
-  char *argv_quiet[]   = {a0, a1, a2, a3, a2};
-  if (c.verbose) sparta_open_no_mpi(3, argv_verbose, &spa);
-  else           sparta_open_no_mpi(5, argv_quiet, &spa);
+  void *spa = open_sparta(c.verbose);
 
   char line[512];
   std::snprintf(line, sizeof(line), "seed %d", seed);
@@ -202,7 +188,7 @@ double evaluate(const PowerLawBody &body, const HeatFluxObjective &obj,
 
   double value = obj.extract(spa, 1, grad);
 
-  sparta_close(spa);
+  close_sparta(spa);
   unlink(surfpath);
 #ifdef SPARTA_AD
   unlink(jacpath);
@@ -210,28 +196,7 @@ double evaluate(const PowerLawBody &body, const HeatFluxObjective &obj,
   return value;
 }
 
-std::string make_output_dir(const std::string &experiment)
-{
-  mkdir("output", 0755);
-  char datestr[32];
-  time_t t = time(0);
-  strftime(datestr, sizeof(datestr), "%Y-%m-%d", localtime(&t));
-#ifdef SPARTA_AD
-  std::string base = std::string("output/pl_ad_") + datestr + "_" + experiment;
-#else
-  std::string base = std::string("output/pl_fd_") + datestr + "_" + experiment;
-#endif
-  std::string dir = base;
-  int suffix = 2;
-  struct stat st;
-  while (stat(dir.c_str(), &st) == 0) dir = base + "_" + std::to_string(suffix++);
-  mkdir(dir.c_str(), 0755);
-  return dir;
-}
-
-}  // namespace
-
-int main(int argc, char **argv)
+int main_impl(int argc, char **argv)
 {
   Config cfg;
   int seed = 12345;
@@ -258,7 +223,11 @@ int main(int argc, char **argv)
   PowerLawBody body(cfg.L, cfg.Rmax, cfg.nx, cfg.ntheta);
   HeatFluxObjective obj;
 
-  std::string dir = make_output_dir(cfg.experiment);
+#ifdef SPARTA_AD
+  std::string dir = make_output_dir("pl_ad", cfg.experiment);
+#else
+  std::string dir = make_output_dir("pl_fd", cfg.experiment);
+#endif
   std::printf("power-law 3D heatflux optimization (%s gradient)\n",
 #ifdef SPARTA_AD
              "AD"
@@ -371,4 +340,16 @@ int main(int argc, char **argv)
   std::printf("done: n %.5f -> %.5f, value=%.6e\n  results in %s/\n",
              cfg.n0, n, value, dir.c_str());
   return 0;
+}
+
+}  // namespace
+
+int main(int argc, char **argv)
+{
+  try {
+    return main_impl(argc, argv);
+  } catch (const std::exception &e) {
+    std::fprintf(stderr, "ERROR: %s\n", e.what());
+    return 1;
+  }
 }

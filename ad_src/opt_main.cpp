@@ -44,9 +44,11 @@
 
 #include "bezier_geom.h"
 #include "bezier_parametrization.h"
+#include "cli.h"
 #include "drag_objective.h"
 #include "heat_flux_objective.h"
 #include "min_area_constraint.h"
+#include "run_output.h"
 #include "shape_case.h"
 #include "shape_tnlp.h"
 #include "svg_shape.h"
@@ -55,17 +57,14 @@
 
 #include <algorithm>
 #include <cctype>
-#include <cerrno>
 #include <cmath>
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
 #include <ctime>
+#include <exception>
 #include <fstream>
-#include <sstream>
 #include <string>
-#include <sys/stat.h>
-#include <sys/types.h>
 #include <unistd.h>
 #include <vector>
 
@@ -119,37 +118,6 @@ struct Config {
   double min_area = 0.0;
 };
 
-// ---- small string helpers -----------------------------------------------
-
-static std::string trim(const std::string &s)
-{
-  size_t a = 0, b = s.size();
-  while (a < b && isspace((unsigned char) s[a])) a++;
-  while (b > a && isspace((unsigned char) s[b - 1])) b--;
-  return s.substr(a, b - a);
-}
-
-static int parse_doubles(const std::string &v, std::vector<double> &out)
-{
-  out.clear();
-  std::string tmp = v;
-  for (char &ch : tmp) if (ch == ',') ch = ' ';
-  std::istringstream ss(tmp);
-  double d;
-  while (ss >> d) out.push_back(d);
-  return (int) out.size();
-}
-
-static void parse_ints(const std::string &v, std::vector<int> &out)
-{
-  out.clear();
-  std::string tmp = v;
-  for (char &ch : tmp) if (ch == ',') ch = ' ';
-  std::istringstream ss(tmp);
-  int d;
-  while (ss >> d) out.push_back(d);
-}
-
 // ---- input-file parsing (drag.in-style, '#' starts a comment) -----------
 
 static bool parse_input_file(const char *path, Config &cfg)
@@ -169,8 +137,9 @@ static bool parse_input_file(const char *path, Config &cfg)
     if (key == "objective") { cfg.objective_name = val;
     } else if (key == "shape") { cfg.shape_name = val;
     } else if (key == "alpha") {
-      if (parse_doubles(val, cfg.alpha) > 0) cfg.alpha_set = true;
-    } else if (key == "seeds") { parse_ints(val, cfg.seeds);
+      cfg.alpha = parse_doubles(val);
+      if (!cfg.alpha.empty()) cfg.alpha_set = true;
+    } else if (key == "seeds") { cfg.seeds = parse_ints(val);
     } else if (key == "max_iter") { cfg.max_iter = atoi(val.c_str());
     } else if (key == "tol") { cfg.tol = atof(val.c_str());
     } else if (key == "acceptable_tol") { cfg.acc_tol = atof(val.c_str());
@@ -193,41 +162,6 @@ static bool parse_input_file(const char *path, Config &cfg)
     // unknown keys ignored
   }
   return true;
-}
-
-// ---- filesystem ----------------------------------------------------------
-
-static bool dir_exists(const std::string &p)
-{
-  struct stat st;
-  return stat(p.c_str(), &st) == 0 && S_ISDIR(st.st_mode);
-}
-
-// Create output/<fd|ad>_<date>_<experiment>[_N]/ and return its path
-// (empty on fail). Prefix reflects the actual gradient method so AD and
-// FD runs land in distinguishable, non-colliding places.
-static std::string make_output_dir(const std::string &experiment)
-{
-  mkdir("output", 0755);   // ok if it already exists
-  char datestr[32];
-  time_t t = time(0);
-  strftime(datestr, sizeof(datestr), "%Y-%m-%d", localtime(&t));
-#ifdef SPARTA_AD
-  std::string base = std::string("output/ad_") + datestr + "_" + experiment;
-#else
-  std::string base = std::string("output/fd_") + datestr + "_" + experiment;
-#endif
-  std::string dir = base;
-  int suffix = 2;
-  while (dir_exists(dir)) {
-    dir = base + "_" + std::to_string(suffix++);
-  }
-  if (mkdir(dir.c_str(), 0755) != 0 && errno != EEXIST) {
-    fprintf(stderr, "ERROR: cannot create output dir '%s': %s\n",
-            dir.c_str(), strerror(errno));
-    return std::string();
-  }
-  return dir;
 }
 
 // ---- geometry: |area| of the final body (bezier only) --------------------
@@ -268,7 +202,7 @@ static const char *status_str(ApplicationReturnStatus s)
 
 // ---- main -----------------------------------------------------------------
 
-int main(int narg, char **arg)
+int main_impl(int narg, char **arg)
 {
   Config cfg;
 
@@ -287,9 +221,10 @@ int main(int narg, char **arg)
     else if (!strcmp(arg[i], "--objective") && i + 1 < narg) { cfg.objective_name = arg[++i];
     } else if (!strcmp(arg[i], "--shape") && i + 1 < narg) { cfg.shape_name = arg[++i];
     } else if (!strcmp(arg[i], "--alpha") && i + 1 < narg) {
-      if (parse_doubles(arg[++i], cfg.alpha) > 0) cfg.alpha_set = true;
+      cfg.alpha = parse_doubles(arg[++i]);
+      if (!cfg.alpha.empty()) cfg.alpha_set = true;
     } else if (!strcmp(arg[i], "--seeds") && i + 1 < narg) {
-      parse_ints(arg[++i], cfg.seeds);
+      cfg.seeds = parse_ints(arg[++i]);
     } else if (!strcmp(arg[i], "--max-iter") && i + 1 < narg) { cfg.max_iter = atoi(arg[++i]);
     } else if (!strcmp(arg[i], "--tol") && i + 1 < narg) { cfg.tol = atof(arg[++i]);
     } else if (!strcmp(arg[i], "--acceptable-tol") && i + 1 < narg) { cfg.acc_tol = atof(arg[++i]);
@@ -366,9 +301,14 @@ int main(int narg, char **arg)
                            (int) cfg.seeds.size(), cfg.c);
   double obj_scale = 1.0 / std::max(fabs(f0), 1e-300);
 
-  // output folder + config echo
-  std::string dir = make_output_dir(cfg.experiment);
-  if (dir.empty()) return 1;
+  // output folder + config echo. Prefix reflects the actual gradient
+  // method so AD and FD runs land in distinguishable, non-colliding
+  // places.
+#ifdef SPARTA_AD
+  std::string dir = make_output_dir("ad", cfg.experiment);
+#else
+  std::string dir = make_output_dir("fd", cfg.experiment);
+#endif
 
   char timestamp[64];
   { time_t t = time(0); strftime(timestamp, sizeof(timestamp),
@@ -531,4 +471,14 @@ int main(int narg, char **arg)
   printf("\n  results in  %s/\n", dir.c_str());
 
   return (st == Solve_Succeeded || st == Solved_To_Acceptable_Level) ? 0 : 1;
+}
+
+int main(int narg, char **arg)
+{
+  try {
+    return main_impl(narg, arg);
+  } catch (const std::exception &e) {
+    fprintf(stderr, "ERROR: %s\n", e.what());
+    return 1;
+  }
 }
