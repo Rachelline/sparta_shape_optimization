@@ -14,8 +14,8 @@
 using namespace Ipopt;
 
 // ---- colorful progress bar (rendered on stderr) -----------------------
-// Pure terminal-escape-code logic, no Parametrization/Objective
-// dependency at all -- ported verbatim from the reference's drag_tnlp.cpp.
+// Pure terminal-escape-code logic, no Shape/Objective dependency at all
+// -- ported verbatim from the reference's drag_tnlp.cpp.
 
 static int bar_color(double t)
 {
@@ -61,7 +61,7 @@ static bool same_vec(const double *a, const std::vector<double> &b, int n)
 
 // ---- construction ---------------------------------------------------------
 
-ShapeTNLP::ShapeTNLP(const Parametrization &shape, const Objective &obj,
+ShapeTNLP::ShapeTNLP(const Shape &shape, const Objective &obj,
                      const double *alpha0, const double *xlo, const double *xhi,
                      const int *seeds, int nseeds,
                      const RunConfig &c, double h,
@@ -219,7 +219,7 @@ bool ShapeTNLP::eval_g(Index n, const Number *x, bool new_x, Index m, Number *g)
   (void) new_x;
   std::vector<double> alpha(x, x + n);
   for (Index i = 0; i < m; i++)
-    g[i] = constraints_[i]->eval(shape_, alpha.data(), c_.chord, c_.nseg);
+    g[i] = constraints_[i]->eval(shape_, alpha.data());
   return true;
 }
 
@@ -238,7 +238,7 @@ bool ShapeTNLP::eval_jac_g(Index n, const Number *x, bool new_x, Index m,
     std::vector<double> g(n);
     int k = 0;
     for (Index i = 0; i < m; i++) {
-      constraints_[i]->grad(shape_, alpha.data(), c_.chord, c_.nseg, g.data());
+      constraints_[i]->grad(shape_, alpha.data(), g.data());
       for (Index j = 0; j < n; j++) values[k++] = g[j];
     }
   }

@@ -11,12 +11,10 @@
    trade studies -- exactly the "pointy vs blunt" knob heat-flux shape
    optimization is meant to explore.
 
-   Deliberately NOT an implementation of parametrization.h: that
-   interface's to_lines()/jacobian() are 2D-line-shaped (a closed
-   polyline + per-segment normals for a `dimension 2` SPARTA surf file).
-   A body of revolution needs a triangulated 3D mesh instead, so this is
-   a parallel, minimal interface used by power_law_main.cpp only -- not
-   plugged into ShapeTNLP, which is written against the 2D interface.
+   This is the pure geometry kernel -- no Shape interface (dim()/
+   to_mesh()/jacobian() with alpha, see shape.h), no SPARTA, no I/O.
+   power_law_shape.h wraps it as a Shape, the same relationship
+   bezier_shape.h has with bezier_geom.h.
 
    Mesh: 1 apex point (x=0, r=0) + NX rings of NTHETA points each
    (x=L/NX .. L) + 1 base-center point (x=L, r=0), triangulated as an

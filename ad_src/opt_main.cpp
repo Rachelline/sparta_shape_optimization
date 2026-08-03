@@ -11,15 +11,15 @@
    exactly as the solver returns them, with a known ~50%/~40% low bias,
    not corrected here.
 
-   Bounds come from Parametrization::bounds() (built in Milestone 1), not
-   CLI flags -- the reference's --x-lo/--x-hi/--y-lo/--y-hi are
-   Bezier-specific naming baked into what's meant to be a generic driver.
+   Bounds come from Shape::bounds(), not CLI flags -- the reference's
+   --x-lo/--x-hi/--y-lo/--y-hi are Bezier-specific naming baked into
+   what's meant to be a generic driver.
 
-   Optional general constraints (Milestone 3): --min-area A imposes
-   |body area| >= A via MinAreaConstraint, so the optimizer can't collapse
-   the Bezier body to a needle chasing a smaller objective. Uses an exact
-   analytic gradient (shoelace formula chained through
-   Parametrization::jacobian()), not FD/AD -- see min_area_constraint.cpp.
+   Optional general constraints: --min-area A imposes |measure(alpha)|
+   >= A via MinSizeConstraint, so the optimizer can't collapse the body
+   to a needle chasing a smaller objective. Uses an exact analytic
+   gradient chained through Shape::jacobian(), not FD/AD -- see
+   min_size_constraint.cpp.
 
    Results are written to a dated output folder:
      output/fd_<YYYY-MM-DD>_<experiment>[_N]/
@@ -43,11 +43,11 @@
 ------------------------------------------------------------------------- */
 
 #include "bezier_geom.h"
-#include "bezier_parametrization.h"
+#include "bezier_shape.h"
 #include "cli.h"
 #include "drag_objective.h"
 #include "heat_flux_objective.h"
-#include "min_area_constraint.h"
+#include "min_size_constraint.h"
 #include "run_output.h"
 #include "shape_case.h"
 #include "shape_tnlp.h"
@@ -93,7 +93,7 @@ static const char *USAGE =
   "                               No effect on stock builds. Off by default.\n"
   "\n"
   "  Minimizes the chosen objective with IPOPT, subject to the shape's\n"
-  "  own box bounds (Parametrization::bounds()). Run from a dir with\n"
+  "  own box bounds (Shape::bounds()). Run from a dir with\n"
   "  N.species/N.vss. Output written to output/<fd|ad>_<date>_<experiment>/.\n";
 
 // ---- config ------------------------------------------------------------
@@ -112,6 +112,8 @@ struct Config {
   double h = 0.05, tol = 1e-4, acc_tol = 1e-3;
   int max_iter = 40, acc_iter = 5;
   std::string experiment = "run";
+  double chord = 4.0;   // BezierShape ctor arg -- no longer a RunConfig field
+  int nseg = 25;        // (chord/nseg are per-shape discretization, not deck config)
   RunConfig c;
   bool alpha_set = false;
   bool min_area_set = false;
@@ -147,8 +149,8 @@ static bool parse_input_file(const char *path, Config &cfg)
     } else if (key == "h") { cfg.h = atof(val.c_str());
     } else if (key == "experiment") { cfg.experiment = val;
     } else if (key == "min_area") { cfg.min_area = atof(val.c_str()); cfg.min_area_set = true;
-    } else if (key == "nseg") { cfg.c.nseg = atoi(val.c_str());
-    } else if (key == "chord") { cfg.c.chord = atof(val.c_str());
+    } else if (key == "nseg") { cfg.nseg = atoi(val.c_str());
+    } else if (key == "chord") { cfg.chord = atof(val.c_str());
     } else if (key == "nsettle") { cfg.c.nsettle = atoi(val.c_str());
     } else if (key == "navg") { cfg.c.navg = atoi(val.c_str());
     } else if (key == "vstream") { cfg.c.vstream = atof(val.c_str());
@@ -167,7 +169,7 @@ static bool parse_input_file(const char *path, Config &cfg)
 // ---- geometry: |area| of the final body (bezier only) --------------------
 // NOTE: BezierGeom::signed_area is NEGATIVE for a valid (clockwise) body
 // -- callers that want a plain "how big is it" number, comparable
-// against MinAreaConstraint's own |signed_area| convention, want the
+// against MinSizeConstraint's own |signed_area| convention, want the
 // absolute value, not the raw signed one.
 
 static double body_area(const double alpha[4], double chord, int nseg)
@@ -233,8 +235,8 @@ int main_impl(int narg, char **arg)
     } else if (!strcmp(arg[i], "--experiment") && i + 1 < narg) { cfg.experiment = arg[++i];
     } else if (!strcmp(arg[i], "--min-area") && i + 1 < narg) {
       cfg.min_area = atof(arg[++i]); cfg.min_area_set = true;
-    } else if (!strcmp(arg[i], "--nseg") && i + 1 < narg) { cfg.c.nseg = atoi(arg[++i]);
-    } else if (!strcmp(arg[i], "--chord") && i + 1 < narg) { cfg.c.chord = atof(arg[++i]);
+    } else if (!strcmp(arg[i], "--nseg") && i + 1 < narg) { cfg.nseg = atoi(arg[++i]);
+    } else if (!strcmp(arg[i], "--chord") && i + 1 < narg) { cfg.chord = atof(arg[++i]);
     } else if (!strcmp(arg[i], "--nsettle") && i + 1 < narg) { cfg.c.nsettle = atoi(arg[++i]);
     } else if (!strcmp(arg[i], "--navg") && i + 1 < narg) { cfg.c.navg = atoi(arg[++i]);
     } else if (!strcmp(arg[i], "--vstream") && i + 1 < narg) { cfg.c.vstream = atof(arg[++i]);
@@ -251,8 +253,8 @@ int main_impl(int narg, char **arg)
   if (!cfg.alpha_set) { fprintf(stderr, "ERROR: --alpha required\n%s", USAGE); return 1; }
   if (cfg.seeds.empty()) cfg.seeds = {12345, 67890, 13579};
 
-  BezierParametrization bezier_shape;
-  Parametrization *shape = 0;
+  BezierShape bezier_shape(cfg.chord, cfg.nseg);
+  Shape *shape = 0;
   if (cfg.shape_name == "bezier") shape = &bezier_shape;
   else { fprintf(stderr, "unknown --shape '%s'\n", cfg.shape_name.c_str()); return 1; }
 
@@ -346,8 +348,8 @@ int main_impl(int narg, char **arg)
     cf << "acceptable_tol  = " << cfg.acc_tol << "\n";
     cf << "acceptable_iter = " << cfg.acc_iter << "\n";
     cf << "h (FD step)  = " << cfg.h << "\n";
-    cf << "chord        = " << cfg.c.chord << "\n";
-    cf << "nseg         = " << cfg.c.nseg << "\n";
+    cf << "chord        = " << cfg.chord << "\n";
+    cf << "nseg         = " << cfg.nseg << "\n";
     cf << "nsettle      = " << cfg.c.nsettle << "\n";
     cf << "navg         = " << cfg.c.navg << "\n";
     cf << "vstream      = " << cfg.c.vstream << "\n";
@@ -372,9 +374,9 @@ int main_impl(int narg, char **arg)
   printf("\n  output dir  = %s\n", dir.c_str());
   fflush(stdout);
 
-  MinAreaConstraint min_area_constraint(cfg.min_area);
+  MinSizeConstraint min_size_constraint(cfg.min_area);
   std::vector<const Constraint *> constraints;
-  if (cfg.min_area_set) constraints.push_back(&min_area_constraint);
+  if (cfg.min_area_set) constraints.push_back(&min_size_constraint);
 
   SmartPtr<ShapeTNLP> nlp = new ShapeTNLP(*shape, *obj, cfg.alpha.data(),
                                           xl.data(), xu.data(),
@@ -419,7 +421,7 @@ int main_impl(int narg, char **arg)
   }
 
   bool have_area = (cfg.shape_name == "bezier" && n == 4);
-  double area = have_area ? body_area(nlp->final_alpha.data(), cfg.c.chord, cfg.c.nseg) : 0.0;
+  double area = have_area ? body_area(nlp->final_alpha.data(), cfg.chord, cfg.nseg) : 0.0;
 
   // result.txt
   {
@@ -458,7 +460,7 @@ int main_impl(int narg, char **arg)
     int svg = write_shapes_svg(dir + "/shapes.svg",
                                nlp->init_alpha.data(), nlp->init_value,
                                nlp->final_alpha.data(), nlp->final_value,
-                               cfg.c.chord, cfg.c.nseg, cfg.objective_name);
+                               cfg.chord, cfg.nseg, cfg.objective_name);
     if (svg != 0)
       fprintf(stderr, "WARNING: failed to write shapes.svg\n");
   }

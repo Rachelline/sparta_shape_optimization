@@ -2,19 +2,19 @@
    SPARTA - Stochastic PArallel Rarefied-gas Time-accurate Analyzer
 
    shape_tnlp: an IPOPT TNLP that minimizes obj(alpha) for a given
-   Parametrization/Objective pair, subject to box bounds:
+   Shape/Objective pair, subject to box bounds:
 
        shape.bounds(lo,hi)[j] <= alpha[j] <= shape.bounds(lo,hi)[j]
 
    plus an optional list of general inequality constraints (Constraint,
-   e.g. MinAreaConstraint) -- empty by default, unconstrained behavior
+   e.g. MinSizeConstraint) -- empty by default, unconstrained behavior
    unchanged when no constraints are passed.
 
    Generalizes the reference ad_src's DragTNLP (fixed double[4], hardcoded
    Bezier + drag) to a runtime-sized alpha (length shape.ndesign()) and an
-   arbitrary Parametrization/Objective pair -- the same generalization
-   shape_main.cpp already did for single evaluations, applied to the
-   optimizer loop.
+   arbitrary Shape/Objective pair (2D or 3D -- see shape.h) -- the same
+   generalization shape_main.cpp already did for single evaluations,
+   applied to the optimizer loop.
 
    Gradient source: stock build always uses shape_case.h's grad_fd()
    (common-random-number central finite difference). AD build (compiled
@@ -43,7 +43,7 @@
 #include "IpTNLP.hpp"
 #include "constraint.h"
 #include "objective.h"
-#include "parametrization.h"
+#include "shape.h"
 #include "shape_case.h"
 
 #include <vector>
@@ -63,7 +63,7 @@ class ShapeTNLP : public Ipopt::TNLP {
   // unchanged); each is g_lo <= constraint->eval(...) <= g_hi. Pointers
   // are not owned -- caller (opt_main.cpp) keeps them alive for the
   // TNLP's lifetime.
-  ShapeTNLP(const Parametrization &shape, const Objective &obj,
+  ShapeTNLP(const Shape &shape, const Objective &obj,
            const double *alpha0, const double *xlo, const double *xhi,
            const int *seeds, int nseeds,
            const RunConfig &c, double h,
@@ -134,7 +134,7 @@ class ShapeTNLP : public Ipopt::TNLP {
   // want_grad; grad may be NULL). Reuses the cache when x is unchanged.
   double evaluate(const double *x, bool want_grad, double *grad);
 
-  const Parametrization &shape_;
+  const Shape &shape_;
   const Objective &obj_;
   int ndesign_;
   std::vector<double> a0_;

@@ -5,16 +5,14 @@
    seeds, prints per-seed value/mean/stderr, and the grad_fd() gradient.
 
    Generalizes the reference ad_src's drag_main.cpp: --objective selects
-   the Objective, --shape selects the Parametrization (one value today,
-   "bezier" -- the flag exists so the seam is visible for when a second
-   shape family lands). AD gradient printing (what the reference's
-   drag_main did, in its AD build) is replaced by grad_fd() here, since
-   this milestone's gradients come from finite differences only -- see
-   docs/PLAN.md and docs/ad_phase_c_investigation/FINDINGS.md for why.
+   the Objective, --shape selects the Shape ("bezier" today; the flag
+   exists so the seam is visible for a second shape family). Stock
+   builds print grad_fd()'s finite-difference gradient; AD builds print
+   the gradient that comes free with evaluate_avg() -- see shape_case.h.
 ------------------------------------------------------------------------- */
 
 #include "shape_case.h"
-#include "bezier_parametrization.h"
+#include "bezier_shape.h"
 #include "cli.h"
 #include "drag_objective.h"
 #include "heat_flux_objective.h"
@@ -56,6 +54,8 @@ int main_impl(int argc, char **argv)
   const char *objective_name = "drag";
   const char *shape_name = "bezier";
   double h = 0.05;
+  double chord = 4.0;
+  int nseg = 25;
   RunConfig c;
 
   for (int i = 1; i < argc; i++) {
@@ -66,8 +66,8 @@ int main_impl(int argc, char **argv)
     else if (!strcmp(argv[i], "--h") && i + 1 < argc) h = atof(argv[++i]);
     else if (!strcmp(argv[i], "--nsettle") && i + 1 < argc) c.nsettle = atoi(argv[++i]);
     else if (!strcmp(argv[i], "--navg") && i + 1 < argc) c.navg = atoi(argv[++i]);
-    else if (!strcmp(argv[i], "--nseg") && i + 1 < argc) c.nseg = atoi(argv[++i]);
-    else if (!strcmp(argv[i], "--chord") && i + 1 < argc) c.chord = atof(argv[++i]);
+    else if (!strcmp(argv[i], "--nseg") && i + 1 < argc) nseg = atoi(argv[++i]);
+    else if (!strcmp(argv[i], "--chord") && i + 1 < argc) chord = atof(argv[++i]);
     else if (!strcmp(argv[i], "--vstream") && i + 1 < argc) c.vstream = atof(argv[++i]);
     else if (!strcmp(argv[i], "--wall-temp") && i + 1 < argc) c.wall_temp = atof(argv[++i]);
     else if (!strcmp(argv[i], "--wall-accom") && i + 1 < argc) c.wall_accom = atof(argv[++i]);
@@ -81,8 +81,8 @@ int main_impl(int argc, char **argv)
   if (alpha_v.empty()) { usage(); return 1; }
   if (seeds_v.empty()) seeds_v.push_back(12345);
 
-  BezierParametrization bezier_shape;
-  Parametrization *shape = 0;
+  BezierShape bezier_shape(chord, nseg);
+  Shape *shape = 0;
   if (!strcmp(shape_name, "bezier")) shape = &bezier_shape;
   else {
     std::fprintf(stderr, "unknown --shape '%s'\n", shape_name);

@@ -16,39 +16,49 @@
 
 namespace {
 
-// SPARTA surf-data format: npt points, npt lines (closed loop,
-// line i connects point i -> point (i+1)%npt). Generic over any
-// closed polyline -- not shape-family-specific.
-void write_surf_tmp(const char *path, const double *pts, int npt)
+// SurfMesh -> SPARTA surf-data file. dim==2 writes a Lines section (each
+// element 2 point indices); dim==3 writes a Triangles section (each
+// element 3 point indices). Point/element counts and the element kind
+// keyword are the only things that differ between the two.
+void write_surf_tmp(const char *path, const SurfMesh &m)
 {
   FILE *fp = std::fopen(path, "w");
   if (!fp) die("cannot open surf tmp file for writing");
+
+  int npt = m.npoints(), nel = m.nelems();
+  const char *elem_kind = (m.dim == 2) ? "lines" : "triangles";
   std::fprintf(fp, "shape_case generated surf\n\n");
-  std::fprintf(fp, "%d points\n%d lines\n\nPoints\n\n", npt, npt);
-  for (int i = 0; i < npt; i++)
-    std::fprintf(fp, "%d %.15g %.15g\n", i + 1, pts[2 * i], pts[2 * i + 1]);
-  std::fprintf(fp, "\nLines\n\n");
-  for (int i = 0; i < npt; i++)
-    std::fprintf(fp, "%d %d %d\n", i + 1, i + 1, (i + 1) % npt + 1);
+  std::fprintf(fp, "%d points\n%d %s\n\nPoints\n\n", npt, nel, elem_kind);
+  for (int i = 0; i < npt; i++) {
+    std::fprintf(fp, "%d", i + 1);
+    for (int d = 0; d < m.dim; d++) std::fprintf(fp, " %.15g", m.pts[m.dim * i + d]);
+    std::fprintf(fp, "\n");
+  }
+  std::fprintf(fp, "\n%s\n\n", (m.dim == 2) ? "Lines" : "Triangles");
+  for (int i = 0; i < nel; i++) {
+    std::fprintf(fp, "%d", i + 1);
+    for (int d = 0; d < m.dim; d++) std::fprintf(fp, " %d", m.elems[m.dim * i + d] + 1);
+    std::fprintf(fp, "\n");
+  }
   std::fclose(fp);
 }
 
 #ifdef SPARTA_AD
 // Side file read_surf.cpp's SPARTA_AD_SEED_JACFILE hook (src/read_surf.cpp,
-// read_points()) consumes: one line per point (same order write_surf_tmp
-// used), 2*ndesign doubles per line (dx/dalpha_j dy/dalpha_j, j=0..ndesign-1).
-// jac is shape.jacobian()'s own row-major output, [2*(npt+1)] x [ndesign];
-// only the first npt points' rows are written, matching write_surf_tmp's
-// own "drop the duplicate closing point" convention.
-void write_jac_tmp(const char *path, const double *jac, int npt, int ndesign)
+// read_points()) consumes: one line per point, `dim` doubles per design
+// column (dx/dalpha_k dy/dalpha_k [dz/dalpha_k], k=0..ndesign-1). jac is
+// shape.jacobian()'s own row-major output, [dim*npoints] x [ndesign].
+void write_jac_tmp(const char *path, const double *jac, int npt, int dim,
+                   int ndesign)
 {
   FILE *fp = std::fopen(path, "w");
   if (!fp) die("cannot open jacobian tmp file for writing");
   for (int i = 0; i < npt; i++) {
     for (int c = 0; c < ndesign; c++) {
-      std::fprintf(fp, "%.15g %.15g%s",
-                   jac[(2 * i) * ndesign + c], jac[(2 * i + 1) * ndesign + c],
-                   c + 1 < ndesign ? "  " : "\n");
+      for (int d = 0; d < dim; d++)
+        std::fprintf(fp, "%.15g%s", jac[(dim * i + d) * ndesign + c],
+                    (d + 1 < dim) ? " " : "");
+      std::fprintf(fp, "%s", (c + 1 < ndesign) ? "  " : "\n");
     }
   }
   std::fclose(fp);
@@ -57,7 +67,7 @@ void write_jac_tmp(const char *path, const double *jac, int npt, int ndesign)
 
 }  // namespace
 
-double evaluate(const Parametrization &shape, const Objective &obj,
+double evaluate(const Shape &shape, const Objective &obj,
                 const double *alpha, int seed, const RunConfig &c,
                 double *grad)
 {
@@ -69,37 +79,36 @@ double evaluate(const Parametrization &shape, const Objective &obj,
         "if this is wrong)");
 
   int ndesign = shape.ndesign();
-  int npt = shape.nsegments(c.nseg);      // unique loop points == line count
-  int npt_closed = npt + 1;               // to_lines()'s own convention
+  int dim = shape.dim();
 
-  std::vector<double> pts(2 * npt_closed);
-  std::vector<double> norms(2 * npt);
-  shape.to_lines(alpha, c.chord, c.nseg, pts.data(), norms.data());
+  SurfMesh m;
+  shape.to_mesh(alpha, m);
 
   std::string why;
-  if (!shape.validate(c.nseg, pts.data(), &why)) die(why.c_str());
+  if (!shape.validate(m, &why)) die(why);
 
+  int npt = m.npoints();
   for (int i = 0; i < npt; i++) {
-    pts[2 * i]     += c.origin[0];
-    pts[2 * i + 1] += c.origin[1];
-    if (pts[2 * i] <= 0.0 || pts[2 * i] >= c.boxhi[0] ||
-        pts[2 * i + 1] <= 0.0 || pts[2 * i + 1] >= c.boxhi[1])
-      die("body outside box");
+    for (int d = 0; d < dim; d++) {
+      m.pts[dim * i + d] += c.origin[d];
+      if (m.pts[dim * i + d] <= c.boxlo[d] || m.pts[dim * i + d] >= c.boxhi[d])
+        die("body outside box");
+    }
   }
 
   char surfpath[256];
   std::snprintf(surfpath, sizeof(surfpath), "tmp_surf_%d_%d.data",
                (int) getpid(), seed);
-  write_surf_tmp(surfpath, pts.data(), npt);
+  write_surf_tmp(surfpath, m);
 
 #ifdef SPARTA_AD
   char jacpath[256];
   std::snprintf(jacpath, sizeof(jacpath), "tmp_jac_%d_%d.data",
                (int) getpid(), seed);
   {
-    std::vector<double> jac(2 * npt_closed * ndesign);
-    shape.jacobian(c.nseg, jac.data());
-    write_jac_tmp(jacpath, jac.data(), npt, ndesign);
+    std::vector<double> jac;
+    shape.jacobian(alpha, jac);
+    write_jac_tmp(jacpath, jac.data(), npt, dim, ndesign);
   }
 #endif
 
@@ -109,13 +118,16 @@ double evaluate(const Parametrization &shape, const Objective &obj,
 
   std::snprintf(line, sizeof(line), "seed %d", seed);
   cmd(spa, line);
-  cmd(spa, "dimension 2");
-  cmd(spa, "global gridcut 0.0 comm/sort yes");
-  cmd(spa, "boundary o r p");
-  std::snprintf(line, sizeof(line), "create_box 0 %.15g 0 %.15g -0.5 0.5",
-               c.boxhi[0], c.boxhi[1]);
+  std::snprintf(line, sizeof(line), "dimension %d", dim);
   cmd(spa, line);
-  std::snprintf(line, sizeof(line), "create_grid %d %d 1", c.grid[0], c.grid[1]);
+  cmd(spa, "global gridcut 0.0 comm/sort yes");
+  std::snprintf(line, sizeof(line), "boundary %s", c.boundary);
+  cmd(spa, line);
+  std::snprintf(line, sizeof(line), "create_box %.15g %.15g %.15g %.15g %.15g %.15g",
+               c.boxlo[0], c.boxhi[0], c.boxlo[1], c.boxhi[1], c.boxlo[2], c.boxhi[2]);
+  cmd(spa, line);
+  std::snprintf(line, sizeof(line), "create_grid %d %d %d",
+               c.grid[0], c.grid[1], c.grid[2]);
   cmd(spa, line);
   cmd(spa, "balance_grid rcb cell");
   std::snprintf(line, sizeof(line), "global nrho %.15g fnum %.15g", c.nrho, c.fnum);
@@ -158,7 +170,10 @@ double evaluate(const Parametrization &shape, const Objective &obj,
   cmd(spa, "fix in emit/face gas xlo twopass");
   std::snprintf(line, sizeof(line), "timestep %.15g", c.tstep);
   cmd(spa, line);
-  if (c.verbose) cmd(spa, "stats 100");
+  if (c.verbose) {
+    std::snprintf(line, sizeof(line), "stats %d", c.stats_every);
+    cmd(spa, line);
+  }
 
   std::snprintf(line, sizeof(line), "run %d", c.nsettle);
   cmd(spa, line);
@@ -189,7 +204,7 @@ double evaluate(const Parametrization &shape, const Objective &obj,
   return value;
 }
 
-double evaluate_avg(const Parametrization &shape, const Objective &obj,
+double evaluate_avg(const Shape &shape, const Objective &obj,
                     const double *alpha, const int *seeds, int nseeds,
                     const RunConfig &c, double *grad)
 {
@@ -210,7 +225,7 @@ double evaluate_avg(const Parametrization &shape, const Objective &obj,
   return sum / nseeds;
 }
 
-double grad_fd(const Parametrization &shape, const Objective &obj,
+double grad_fd(const Shape &shape, const Objective &obj,
               const double *alpha, const int *seeds, int nseeds,
               const RunConfig &c, double h, double *grad)
 {

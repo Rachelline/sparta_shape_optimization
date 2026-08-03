@@ -6,7 +6,12 @@
 #   Constraint mechanism (--min-area), and the 3D power-law-body heatflux
 #   example (power_law_opt/power_law_opt_ad). See the AD-targets section
 #   below for how SPARTA_AD_BUILD_DIR/Sacado discovery works.
-# Milestone 4: cleanup + 2D/3D unification (in progress).
+# Milestone 4: cleanup (done) + 2D/3D unification (done -- Parametrization
+#   replaced by shape.h's Shape interface, used by both BezierShape and
+#   PowerLawShape; MinAreaConstraint generalized to MinSizeConstraint;
+#   power_law_main.cpp now drives the same shared shape_case.h runner as
+#   shape_main.cpp/opt_main.cpp instead of its own duplicate evaluate()).
+#   Driver consolidation still in progress.
 #
 # This is a self-contained CMake project, deliberately NOT wired into
 # sparta/cmake or sparta/src/CMakeLists.txt (no add_subdirectory anywhere
@@ -114,7 +119,8 @@ add_executable(shape_main
   shape_main.cpp
   shape_case.cpp
   bezier_geom.cpp
-  bezier_parametrization.cpp
+  bezier_shape.cpp
+  polygon2d.cpp
   surf_sum_objective.cpp
   sparta_util.cpp
   cli.cpp)
@@ -129,6 +135,8 @@ target_link_libraries(shape_main PRIVATE sparta_serial mpi_stubs)
 add_executable(power_law_opt
   power_law_main.cpp
   power_law_body.cpp
+  power_law_shape.cpp
+  shape_case.cpp
   surf_sum_objective.cpp
   sparta_util.cpp
   run_output.cpp)
@@ -146,9 +154,10 @@ if(HAVE_IPOPT)
     svg_shape.cpp
     shape_case.cpp
     bezier_geom.cpp
-    bezier_parametrization.cpp
+    bezier_shape.cpp
+    polygon2d.cpp
     surf_sum_objective.cpp
-    min_area_constraint.cpp
+    min_size_constraint.cpp
     sparta_util.cpp
     cli.cpp
     run_output.cpp)
@@ -180,9 +189,9 @@ endif()
 # in a nested custom command. See ad_src/README.md for the full recipe.
 #
 # SPARTA_AD_NDIR must match whatever SPARTA_AD_BUILD_DIR was itself
-# configured with (default 4 on both sides -- matches
-# BezierParametrization::ndesign(), letting a normal-default AD build get
-# a shape's whole gradient from one SPARTA run). This is an ABI-affecting
+# configured with (default 4 on both sides -- matches BezierShape's
+# ndesign()==4, letting a normal-default AD build get a shape's whole
+# gradient from one SPARTA run). This is an ABI-affecting
 # parameter (sfloat's Sacado::Fad::SFad<double,N> size); mismatched values
 # on either side of the link boundary is undefined behavior, not just a
 # performance question.
@@ -212,7 +221,7 @@ if(SPARTA_AD_BUILD_DIR)
     set(AD_COMPILE_DEFS SPARTA_AD SPARTA_AD_NDIR=${SPARTA_AD_NDIR} SPARTA_UNORDERED_MAP)
 
     add_executable(shape_main_ad
-      shape_main.cpp shape_case.cpp bezier_geom.cpp bezier_parametrization.cpp
+      shape_main.cpp shape_case.cpp bezier_geom.cpp bezier_shape.cpp polygon2d.cpp
       surf_sum_objective.cpp sparta_util.cpp cli.cpp)
     target_compile_definitions(shape_main_ad PRIVATE ${AD_COMPILE_DEFS})
     target_include_directories(shape_main_ad PRIVATE ${SPARTA_SRC_DIR} ${SPARTA_SRC_DIR}/STUBS)
@@ -224,8 +233,8 @@ if(SPARTA_AD_BUILD_DIR)
     set_target_properties(shape_main_ad PROPERTIES CXX_STANDARD 17 CXX_STANDARD_REQUIRED ON)
 
     add_executable(power_law_opt_ad
-      power_law_main.cpp power_law_body.cpp surf_sum_objective.cpp
-      sparta_util.cpp run_output.cpp)
+      power_law_main.cpp power_law_body.cpp power_law_shape.cpp shape_case.cpp
+      surf_sum_objective.cpp sparta_util.cpp run_output.cpp)
     target_compile_definitions(power_law_opt_ad PRIVATE ${AD_COMPILE_DEFS})
     target_include_directories(power_law_opt_ad PRIVATE ${SPARTA_SRC_DIR} ${SPARTA_SRC_DIR}/STUBS)
     target_link_libraries(power_law_opt_ad PRIVATE sparta_ad_lib mpi_stubs Sacado::Sacado)
@@ -234,8 +243,8 @@ if(SPARTA_AD_BUILD_DIR)
     if(HAVE_IPOPT)
       add_executable(shape_opt_ad
         opt_main.cpp shape_tnlp.cpp svg_shape.cpp shape_case.cpp
-        bezier_geom.cpp bezier_parametrization.cpp
-        surf_sum_objective.cpp min_area_constraint.cpp
+        bezier_geom.cpp bezier_shape.cpp polygon2d.cpp
+        surf_sum_objective.cpp min_size_constraint.cpp
         sparta_util.cpp cli.cpp run_output.cpp)
       target_compile_definitions(shape_opt_ad PRIVATE ${AD_COMPILE_DEFS})
       target_include_directories(shape_opt_ad PRIVATE
