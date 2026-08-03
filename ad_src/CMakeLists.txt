@@ -129,6 +129,18 @@ target_compile_definitions(shape_main PRIVATE SPARTA_UNORDERED_MAP)
 target_include_directories(shape_main PRIVATE ${SPARTA_SRC_DIR} ${SPARTA_SRC_DIR}/STUBS)
 target_link_libraries(shape_main PRIVATE sparta_serial mpi_stubs)
 
+# ---- power_law_opt: standalone 3D heatflux demo, FD gradient (stock) ---
+# ndesign()==1 (nose-bluntness exponent), so a hand-rolled gradient-descent
+# loop is used instead of ShapeTNLP/IPOPT -- see power_law_main.cpp.
+
+add_executable(power_law_opt
+  power_law_main.cpp
+  power_law_body.cpp
+  heat_flux_objective.cpp)
+target_compile_definitions(power_law_opt PRIVATE SPARTA_UNORDERED_MAP)
+target_include_directories(power_law_opt PRIVATE ${SPARTA_SRC_DIR} ${SPARTA_SRC_DIR}/STUBS)
+target_link_libraries(power_law_opt PRIVATE sparta_serial mpi_stubs)
+
 # ---- shape_opt: IPOPT-driven optimizer loop, FD gradients only --------
 # Same SPARTA dependency as shape_main, plus IPOPT's TNLP interface.
 
@@ -209,6 +221,13 @@ if(SPARTA_AD_BUILD_DIR)
     # C++17"); the project-wide CMAKE_CXX_STANDARD above (14) is fine for
     # the stock targets but not this one.
     set_target_properties(shape_main_ad PROPERTIES CXX_STANDARD 17 CXX_STANDARD_REQUIRED ON)
+
+    add_executable(power_law_opt_ad
+      power_law_main.cpp power_law_body.cpp heat_flux_objective.cpp)
+    target_compile_definitions(power_law_opt_ad PRIVATE ${AD_COMPILE_DEFS})
+    target_include_directories(power_law_opt_ad PRIVATE ${SPARTA_SRC_DIR} ${SPARTA_SRC_DIR}/STUBS)
+    target_link_libraries(power_law_opt_ad PRIVATE sparta_ad_lib mpi_stubs Sacado::Sacado)
+    set_target_properties(power_law_opt_ad PROPERTIES CXX_STANDARD 17 CXX_STANDARD_REQUIRED ON)
 
     if(HAVE_IPOPT)
       add_executable(shape_opt_ad

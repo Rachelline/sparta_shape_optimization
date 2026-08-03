@@ -923,15 +923,17 @@ void ReadSurf::read_points()
   // closed-form shortcut; it has to be supplied from outside).
   //
   // File format: one line per point (matching this file's own point
-  // count and order), 2*ndesign whitespace-separated doubles per line:
-  //   dx/dalpha_0 dy/dalpha_0  dx/dalpha_1 dy/dalpha_1  ...
-  // All ndesign directions are seeded in one pass -- SPARTA_AD_NDIR's
-  // build-time default (4) already matches BezierParametrization's
-  // ndesign(), so a normal AD build gets a shape's WHOLE gradient from
-  // ONE SPARTA run, which is the actual point of using AD here.
+  // count and order), ncoord*ndesign whitespace-separated doubles per
+  // line (ncoord = 2 for dim==2: dx/dalpha_0 dy/dalpha_0 ...; ncoord = 3
+  // for dim==3: dx/dalpha_0 dy/dalpha_0 dz/dalpha_0 ...). All ndesign
+  // directions are seeded in one pass -- SPARTA_AD_NDIR's build-time
+  // default (4) already matches BezierParametrization's ndesign(), so a
+  // normal AD build gets a shape's WHOLE gradient from ONE SPARTA run,
+  // which is the actual point of using AD here.
   {
     const char *jacfile = getenv("SPARTA_AD_SEED_JACFILE");
     if (jacfile) {
+      int ncoord = (dim == 3) ? 3 : 2;
       FILE *jf = fopen(jacfile,"r");
       if (!jf) error->one(FLERR,"Cannot open SPARTA_AD_SEED_JACFILE");
       for (int i = 0; i < npoint_file; i++) {
@@ -940,14 +942,16 @@ void ReadSurf::read_points()
           error->one(FLERR,"SPARTA_AD_SEED_JACFILE has too few lines");
         char *tok = strtok(line," \t\n\r\f");
         for (int j = 0; tok != NULL; j++) {
-          double dx = atof(tok);
-          tok = strtok(NULL," \t\n\r\f");
-          if (!tok) error->one(FLERR,"SPARTA_AD_SEED_JACFILE row has an odd "
-                               "number of values (need dx,dy pairs)");
-          double dy = atof(tok);
-          tok = strtok(NULL," \t\n\r\f");
-          pts[i].x[0].fastAccessDx(j) = dx;
-          pts[i].x[1].fastAccessDx(j) = dy;
+          double d[3];
+          for (int c = 0; c < ncoord; c++) {
+            if (!tok) error->one(FLERR,"SPARTA_AD_SEED_JACFILE row has too "
+                                 "few values (need ncoord*ndesign doubles)");
+            d[c] = atof(tok);
+            tok = strtok(NULL," \t\n\r\f");
+          }
+          pts[i].x[0].fastAccessDx(j) = d[0];
+          pts[i].x[1].fastAccessDx(j) = d[1];
+          if (dim == 3) pts[i].x[2].fastAccessDx(j) = d[2];
         }
       }
       fclose(jf);
