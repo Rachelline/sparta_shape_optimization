@@ -3,15 +3,16 @@
 # Milestone 1: Parametrization x Objective, FD gradients (shape_main).
 # Milestone 2: ShapeTNLP + IPOPT optimizer loop (shape_opt).
 # Milestone 3: AD-linked targets (shape_main_ad/shape_opt_ad), a general
-#   Constraint mechanism (--min-area), and the 3D power-law-body heatflux
-#   example (power_law_opt/power_law_opt_ad). See the AD-targets section
-#   below for how SPARTA_AD_BUILD_DIR/Sacado discovery works.
-# Milestone 4: cleanup (done) + 2D/3D unification (done -- Parametrization
-#   replaced by shape.h's Shape interface, used by both BezierShape and
-#   PowerLawShape; MinAreaConstraint generalized to MinSizeConstraint;
-#   power_law_main.cpp now drives the same shared shape_case.h runner as
-#   shape_main.cpp/opt_main.cpp instead of its own duplicate evaluate()).
-#   Driver consolidation still in progress.
+#   Constraint mechanism (--min-area), and a standalone 3D power-law-body
+#   heatflux example. See the AD-targets section below for how
+#   SPARTA_AD_BUILD_DIR/Sacado discovery works.
+# Milestone 4: cleanup, 2D/3D unification (Parametrization replaced by
+#   shape.h's Shape interface, used by both BezierShape and
+#   PowerLawShape; MinAreaConstraint generalized to MinSizeConstraint),
+#   and driver consolidation: the standalone power_law_main.cpp /
+#   power_law_opt(_ad) targets are gone -- shape_opt(_ad)'s
+#   --shape powerlaw absorbs that capability via the same Shape/
+#   ShapeTNLP/Constraint machinery the 2D case already used.
 #
 # This is a self-contained CMake project, deliberately NOT wired into
 # sparta/cmake or sparta/src/CMakeLists.txt (no add_subdirectory anywhere
@@ -128,34 +129,22 @@ target_compile_definitions(shape_main PRIVATE SPARTA_UNORDERED_MAP)
 target_include_directories(shape_main PRIVATE ${SPARTA_SRC_DIR} ${SPARTA_SRC_DIR}/STUBS)
 target_link_libraries(shape_main PRIVATE sparta_serial mpi_stubs)
 
-# ---- power_law_opt: standalone 3D heatflux demo, FD gradient (stock) ---
-# ndesign()==1 (nose-bluntness exponent), so a hand-rolled gradient-descent
-# loop is used instead of ShapeTNLP/IPOPT -- see power_law_main.cpp.
-
-add_executable(power_law_opt
-  power_law_main.cpp
-  power_law_body.cpp
-  power_law_shape.cpp
-  shape_case.cpp
-  surf_sum_objective.cpp
-  sparta_util.cpp
-  run_output.cpp)
-target_compile_definitions(power_law_opt PRIVATE SPARTA_UNORDERED_MAP)
-target_include_directories(power_law_opt PRIVATE ${SPARTA_SRC_DIR} ${SPARTA_SRC_DIR}/STUBS)
-target_link_libraries(power_law_opt PRIVATE sparta_serial mpi_stubs)
-
-# ---- shape_opt: IPOPT-driven optimizer loop ----------------------------
+# ---- shape_opt: IPOPT-driven optimizer loop, both dims -----------------
 # Same SPARTA dependency as shape_main, plus IPOPT's TNLP interface.
+# --shape bezier|powerlaw selects the 2D or 3D Shape at runtime -- see
+# shape_opt_main.cpp for the absorbed power-law-body demo.
 
 if(HAVE_IPOPT)
   add_executable(shape_opt
-    opt_main.cpp
+    shape_opt_main.cpp
     shape_tnlp.cpp
     svg_shape.cpp
     shape_case.cpp
     bezier_geom.cpp
     bezier_shape.cpp
     polygon2d.cpp
+    power_law_body.cpp
+    power_law_shape.cpp
     surf_sum_objective.cpp
     min_size_constraint.cpp
     sparta_util.cpp
@@ -232,18 +221,11 @@ if(SPARTA_AD_BUILD_DIR)
     # the stock targets but not this one.
     set_target_properties(shape_main_ad PROPERTIES CXX_STANDARD 17 CXX_STANDARD_REQUIRED ON)
 
-    add_executable(power_law_opt_ad
-      power_law_main.cpp power_law_body.cpp power_law_shape.cpp shape_case.cpp
-      surf_sum_objective.cpp sparta_util.cpp run_output.cpp)
-    target_compile_definitions(power_law_opt_ad PRIVATE ${AD_COMPILE_DEFS})
-    target_include_directories(power_law_opt_ad PRIVATE ${SPARTA_SRC_DIR} ${SPARTA_SRC_DIR}/STUBS)
-    target_link_libraries(power_law_opt_ad PRIVATE sparta_ad_lib mpi_stubs Sacado::Sacado)
-    set_target_properties(power_law_opt_ad PROPERTIES CXX_STANDARD 17 CXX_STANDARD_REQUIRED ON)
-
     if(HAVE_IPOPT)
       add_executable(shape_opt_ad
-        opt_main.cpp shape_tnlp.cpp svg_shape.cpp shape_case.cpp
+        shape_opt_main.cpp shape_tnlp.cpp svg_shape.cpp shape_case.cpp
         bezier_geom.cpp bezier_shape.cpp polygon2d.cpp
+        power_law_body.cpp power_law_shape.cpp
         surf_sum_objective.cpp min_size_constraint.cpp
         sparta_util.cpp cli.cpp run_output.cpp)
       target_compile_definitions(shape_opt_ad PRIVATE ${AD_COMPILE_DEFS})

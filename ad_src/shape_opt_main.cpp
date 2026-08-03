@@ -1,15 +1,24 @@
 /* ----------------------------------------------------------------------
    SPARTA - Stochastic PArallel Rarefied-gas Time-accurate Analyzer
 
-   opt_main: IPOPT-driven shape-optimization driver. Generalizes the
-   reference ad_src's opt_ipopt.cpp: --objective drag|heatflux --shape
-   bezier selection (mirrors shape_main.cpp exactly). Gradient source
-   depends on which binary this is: shape_opt (stock) always uses
-   grad_fd(); shape_opt_ad (built with -DSPARTA_AD, Milestone 3) gets the
-   whole gradient from one SPARTA run instead -- see shape_tnlp.h for
-   both, including the important caveat that AD gradients are used
-   exactly as the solver returns them, with a known ~50%/~40% low bias,
-   not corrected here.
+   shape_opt_main: IPOPT-driven shape-optimization driver, dimension-
+   agnostic. --shape bezier|powerlaw selects a 2D or 3D Shape;
+   --objective drag|heatflux selects the QOI. Gradient source depends on
+   which binary this is: shape_opt (stock) always uses grad_fd();
+   shape_opt_ad (built with -DSPARTA_AD) gets the whole gradient from one
+   SPARTA run instead -- see shape_tnlp.h for both, including the
+   important caveat that AD gradients are used exactly as the solver
+   returns them, with a known low bias, not corrected here (see
+   docs/AD_GRADIENTS.md and the --score-correction flag below).
+
+   Absorbs what used to be power_law_main.cpp's own standalone gradient-
+   descent driver: with a 3D PowerLawShape now going through the same
+   Shape/ShapeTNLP/Constraint machinery as the 2D Bezier case, a second
+   driver isn't needed. Tradeoff accepted explicitly: 3D optimization now
+   requires IPOPT, where the old standalone driver had a built-in
+   gradient-descent fallback; in exchange it gets IPOPT's objective
+   scaling, the principled fix for the old driver's hand-rolled
+   "normalized step" hack (raw gradient O(1e4) vs design variable O(1)).
 
    Bounds come from Shape::bounds(), not CLI flags -- the reference's
    --x-lo/--x-hi/--y-lo/--y-hi are Bezier-specific naming baked into
@@ -17,37 +26,42 @@
 
    Optional general constraints: --min-area A imposes |measure(alpha)|
    >= A via MinSizeConstraint, so the optimizer can't collapse the body
-   to a needle chasing a smaller objective. Uses an exact analytic
-   gradient chained through Shape::jacobian(), not FD/AD -- see
-   min_size_constraint.cpp.
+   to a needle (2D: area) or a sliver (3D: volume) chasing a smaller
+   objective. Uses an exact analytic gradient chained through
+   Shape::jacobian(), not FD/AD -- see min_size_constraint.cpp.
 
    Results are written to a dated output folder:
-     output/fd_<YYYY-MM-DD>_<experiment>[_N]/
-       config.txt      resolved parameters
-       ipopt.log       IPOPT's own iteration log
-       trajectory.csv  per-iteration alpha / value / infeasibility
-       result.txt      start & final alpha, value, status, area
-       shapes.svg      initial (faint) vs optimized (bold) outline
-                        -- only written for --shape bezier
+     output/<fd|ad>_<YYYY-MM-DD>_<experiment>[_N]/
+       config.txt         resolved parameters
+       ipopt.log          IPOPT's own iteration log
+       trajectory.csv     per-iteration alpha / value / infeasibility
+       result.txt         start & final alpha, value, status, size measure
+       shape_initial.txt  initial mesh (points + line/triangle indices)
+       shape_final.txt    final mesh, same format
+       shapes.svg         initial (faint) vs optimized (bold) outline
+                           -- only written when the shape is 2D
 
    IMPORTANT for --objective heatflux: total heat flux needs a
    thermally-accommodating wall (--wall-accom > 0) and enough averaging
    to see past its noise floor (energy is a higher/quadratic velocity
    moment than momentum, so it's inherently noisier than drag at the
-   same sample size -- see docs/PLAN.md's Milestone-1 section). This
-   driver does not auto-inject those; pass them explicitly, e.g.
-   --wall-accom 1.0 --navg 4000.
+   same sample size). This driver does not auto-inject those for the
+   bezier shape; pass them explicitly, e.g. --wall-accom 1.0 --navg 4000
+   (--shape powerlaw defaults wall_accom to 1.0 already, matching the
+   old standalone driver's own default).
 
    Run from ad_src/ (where N.species/N.vss live):
      ./build/shape_opt --alpha 1.3,1.0,2.7,0.8 --experiment baseline
+     ./build/shape_opt --shape powerlaw --objective heatflux \
+       --alpha 1.4 --experiment pl_baseline
 ------------------------------------------------------------------------- */
 
-#include "bezier_geom.h"
 #include "bezier_shape.h"
 #include "cli.h"
 #include "drag_objective.h"
 #include "heat_flux_objective.h"
 #include "min_size_constraint.h"
+#include "power_law_shape.h"
 #include "run_output.h"
 #include "shape_case.h"
 #include "shape_tnlp.h"
@@ -73,8 +87,9 @@ using namespace Ipopt;
 static const char *USAGE =
   "usage: shape_opt [--input FILE] [options]\n"
   "  --objective drag|heatflux   (default: drag)\n"
-  "  --shape bezier              (default: bezier; only value today)\n"
-  "  --alpha x1,y1,x2,y2         (required unless set in --input)\n"
+  "  --shape bezier|powerlaw     (default: bezier)\n"
+  "  --alpha x1,y1,x2,y2         bezier: 4 values. powerlaw: 1 (n).\n"
+  "                              (required unless set in --input)\n"
   "  --seeds s1,s2,...           (default: 12345,67890,13579 -- more\n"
   "                               than shape_main's single-seed default,\n"
   "                               since a real optimization loop needs a\n"
@@ -82,14 +97,17 @@ static const char *USAGE =
   "  --max-iter N  --tol T  --acceptable-tol T  --acceptable-iter N\n"
   "  --h H                       FD step (default: 0.05)\n"
   "  --experiment NAME\n"
-  "  --nsettle N  --navg N  --nseg N  --chord L  --vstream V\n"
-  "  --min-area A                 constrain |body area| >= A (default: none)\n"
+  "  --nsettle N  --navg N  --vstream V\n"
+  "  --chord L  --nseg N          bezier-only discretization\n"
+  "  --pl-L L  --pl-rmax R  --pl-nx N  --pl-ntheta N   powerlaw-only mesh\n"
+  "  --min-area A                 constrain |measure(alpha)| >= A (area\n"
+  "                                for a 2D shape, volume for 3D). Default: none.\n"
   "  --wall-temp T  --wall-accom A   (diffuse wall; see note above for\n"
   "                                   --objective heatflux)\n"
   "  --specular  --nocoll  --verbose\n"
   "  --score-correction          AD build only: enable the flux-measure\n"
   "                               score-function correction in\n"
-  "                               compute_surf.cpp (FINDINGS.md, FINDING 2).\n"
+  "                               compute_surf.cpp (see docs/AD_GRADIENTS.md).\n"
   "                               No effect on stock builds. Off by default.\n"
   "\n"
   "  Minimizes the chosen objective with IPOPT, subject to the shape's\n"
@@ -112,13 +130,70 @@ struct Config {
   double h = 0.05, tol = 1e-4, acc_tol = 1e-3;
   int max_iter = 40, acc_iter = 5;
   std::string experiment = "run";
-  double chord = 4.0;   // BezierShape ctor arg -- no longer a RunConfig field
-  int nseg = 25;        // (chord/nseg are per-shape discretization, not deck config)
-  RunConfig c;
+  double chord = 4.0;    // BezierShape ctor arg
+  int nseg = 25;
+  double pl_L = 1.0, pl_Rmax = 0.3;   // PowerLawShape ctor args
+  int pl_nx = 8, pl_ntheta = 12;
+  RunConfig run;
   bool alpha_set = false;
   bool min_area_set = false;
   double min_area = 0.0;
 };
+
+// A --shape powerlaw run needs a different deck "profile" (box, grid,
+// gas scales, boundary conditions -- see shape_case.h's RunConfig
+// comment) than the 2D-Bezier-oriented defaults Config::run starts with.
+// Applied BEFORE the real argument parsing below (which can still
+// override any individual field), matching what the old standalone
+// power_law_main.cpp hardcoded.
+static void apply_powerlaw_profile(Config &cfg)
+{
+  cfg.objective_name = "heatflux";
+  cfg.run.nsettle = 1500;
+  cfg.run.navg = 3000;
+  cfg.run.vstream = 1000.0;
+  cfg.run.tinf = 300.0;
+  cfg.run.wall_temp = 300.0;
+  cfg.run.wall_accom = 1.0;
+  cfg.run.nrho = 1.0e20;
+  cfg.run.fnum = 5.0e15;
+  cfg.run.tstep = 1e-6;
+  cfg.run.collisions = 0;    // free-molecular
+  cfg.run.boundary = "o p p";
+  cfg.run.stats_every = 200;
+  cfg.run.origin[0] = 1.0; cfg.run.origin[1] = 0.0; cfg.run.origin[2] = 0.0;
+  cfg.run.boxlo[0]  = 0.0; cfg.run.boxhi[0]  = 4.0;
+  cfg.run.boxlo[1]  = -1.0; cfg.run.boxhi[1] = 1.0;
+  cfg.run.boxlo[2]  = -1.0; cfg.run.boxhi[2] = 1.0;
+  cfg.run.grid[0] = 20; cfg.run.grid[1] = 10; cfg.run.grid[2] = 10;
+}
+
+// Looks only for the shape choice (--shape / --input's "shape=" key,
+// same precedence as the real parse below) so apply_powerlaw_profile()
+// can run before any other field is parsed -- otherwise it would
+// clobber whatever the user explicitly set.
+static std::string prescan_shape_name(int narg, char **arg)
+{
+  std::string shape_name = "bezier";
+  for (int i = 1; i < narg; i++) {
+    if (!strcmp(arg[i], "--input") && i + 1 < narg) {
+      std::ifstream f(arg[i + 1]);
+      std::string line;
+      while (std::getline(f, line)) {
+        size_t hash = line.find('#');
+        if (hash != std::string::npos) line = line.substr(0, hash);
+        size_t eq = line.find('=');
+        if (eq == std::string::npos) continue;
+        std::string key = trim(line.substr(0, eq));
+        std::string val = trim(line.substr(eq + 1));
+        if (key == "shape") shape_name = val;
+      }
+    }
+  }
+  for (int i = 1; i < narg; i++)
+    if (!strcmp(arg[i], "--shape") && i + 1 < narg) shape_name = arg[i + 1];
+  return shape_name;
+}
 
 // ---- input-file parsing (drag.in-style, '#' starts a comment) -----------
 
@@ -151,34 +226,45 @@ static bool parse_input_file(const char *path, Config &cfg)
     } else if (key == "min_area") { cfg.min_area = atof(val.c_str()); cfg.min_area_set = true;
     } else if (key == "nseg") { cfg.nseg = atoi(val.c_str());
     } else if (key == "chord") { cfg.chord = atof(val.c_str());
-    } else if (key == "nsettle") { cfg.c.nsettle = atoi(val.c_str());
-    } else if (key == "navg") { cfg.c.navg = atoi(val.c_str());
-    } else if (key == "vstream") { cfg.c.vstream = atof(val.c_str());
-    } else if (key == "wall_temp") { cfg.c.wall_temp = atof(val.c_str());
-    } else if (key == "wall_accom") { cfg.c.wall_accom = atof(val.c_str());
-    } else if (key == "specular") { cfg.c.specular = atoi(val.c_str());
-    } else if (key == "collisions") { cfg.c.collisions = atoi(val.c_str());
-    } else if (key == "verbose") { cfg.c.verbose = atoi(val.c_str());
-    } else if (key == "score_correction") { cfg.c.score_correction = atoi(val.c_str()) != 0;
+    } else if (key == "pl_L") { cfg.pl_L = atof(val.c_str());
+    } else if (key == "pl_rmax") { cfg.pl_Rmax = atof(val.c_str());
+    } else if (key == "pl_nx") { cfg.pl_nx = atoi(val.c_str());
+    } else if (key == "pl_ntheta") { cfg.pl_ntheta = atoi(val.c_str());
+    } else if (key == "nsettle") { cfg.run.nsettle = atoi(val.c_str());
+    } else if (key == "navg") { cfg.run.navg = atoi(val.c_str());
+    } else if (key == "vstream") { cfg.run.vstream = atof(val.c_str());
+    } else if (key == "wall_temp") { cfg.run.wall_temp = atof(val.c_str());
+    } else if (key == "wall_accom") { cfg.run.wall_accom = atof(val.c_str());
+    } else if (key == "specular") { cfg.run.specular = atoi(val.c_str());
+    } else if (key == "collisions") { cfg.run.collisions = atoi(val.c_str());
+    } else if (key == "verbose") { cfg.run.verbose = atoi(val.c_str());
+    } else if (key == "score_correction") { cfg.run.score_correction = atoi(val.c_str()) != 0;
     }
     // unknown keys ignored
   }
   return true;
 }
 
-// ---- geometry: |area| of the final body (bezier only) --------------------
-// NOTE: BezierGeom::signed_area is NEGATIVE for a valid (clockwise) body
-// -- callers that want a plain "how big is it" number, comparable
-// against MinSizeConstraint's own |signed_area| convention, want the
-// absolute value, not the raw signed one.
+// ---- generic mesh dump (both dims) --------------------------------------
 
-static double body_area(const double alpha[4], double chord, int nseg)
+static void write_mesh_txt(const std::string &path, const Shape &shape,
+                           const double *alpha)
 {
-  int npt = 2 * nseg + 1;
-  std::vector<double> pts(2 * npt), norms(2 * (2 * nseg));
-  BezierGeom::symmetric_body_to_lines(alpha, chord, nseg, pts.data(),
-                                      norms.data());
-  return std::fabs(BezierGeom::signed_area(2 * nseg, pts.data()));
+  SurfMesh m;
+  shape.to_mesh(alpha, m);
+  std::ofstream f(path);
+  f << "# dim=" << m.dim << " npoints=" << m.npoints()
+    << " nelems=" << m.nelems() << "\n";
+  f << "POINTS\n";
+  for (int i = 0; i < m.npoints(); i++) {
+    for (int d = 0; d < m.dim; d++)
+      f << m.pts[m.dim * i + d] << (d + 1 < m.dim ? " " : "\n");
+  }
+  f << ((m.dim == 2) ? "LINES\n" : "TRIANGLES\n");
+  for (int i = 0; i < m.nelems(); i++) {
+    for (int d = 0; d < m.dim; d++)
+      f << m.elems[m.dim * i + d] << (d + 1 < m.dim ? " " : "\n");
+  }
 }
 
 static const char *status_str(ApplicationReturnStatus s)
@@ -207,6 +293,8 @@ static const char *status_str(ApplicationReturnStatus s)
 int main_impl(int narg, char **arg)
 {
   Config cfg;
+
+  if (prescan_shape_name(narg, arg) == "powerlaw") apply_powerlaw_profile(cfg);
 
   // pass 1: --input FILE (so CLI flags below can still override it)
   for (int i = 1; i < narg; i++) {
@@ -237,15 +325,19 @@ int main_impl(int narg, char **arg)
       cfg.min_area = atof(arg[++i]); cfg.min_area_set = true;
     } else if (!strcmp(arg[i], "--nseg") && i + 1 < narg) { cfg.nseg = atoi(arg[++i]);
     } else if (!strcmp(arg[i], "--chord") && i + 1 < narg) { cfg.chord = atof(arg[++i]);
-    } else if (!strcmp(arg[i], "--nsettle") && i + 1 < narg) { cfg.c.nsettle = atoi(arg[++i]);
-    } else if (!strcmp(arg[i], "--navg") && i + 1 < narg) { cfg.c.navg = atoi(arg[++i]);
-    } else if (!strcmp(arg[i], "--vstream") && i + 1 < narg) { cfg.c.vstream = atof(arg[++i]);
-    } else if (!strcmp(arg[i], "--wall-temp") && i + 1 < narg) { cfg.c.wall_temp = atof(arg[++i]);
-    } else if (!strcmp(arg[i], "--wall-accom") && i + 1 < narg) { cfg.c.wall_accom = atof(arg[++i]);
-    } else if (!strcmp(arg[i], "--specular")) { cfg.c.specular = 1;
-    } else if (!strcmp(arg[i], "--score-correction")) { cfg.c.score_correction = true;
-    } else if (!strcmp(arg[i], "--nocoll")) { cfg.c.collisions = 0;
-    } else if (!strcmp(arg[i], "--verbose")) { cfg.c.verbose = 1;
+    } else if (!strcmp(arg[i], "--pl-L") && i + 1 < narg) { cfg.pl_L = atof(arg[++i]);
+    } else if (!strcmp(arg[i], "--pl-rmax") && i + 1 < narg) { cfg.pl_Rmax = atof(arg[++i]);
+    } else if (!strcmp(arg[i], "--pl-nx") && i + 1 < narg) { cfg.pl_nx = atoi(arg[++i]);
+    } else if (!strcmp(arg[i], "--pl-ntheta") && i + 1 < narg) { cfg.pl_ntheta = atoi(arg[++i]);
+    } else if (!strcmp(arg[i], "--nsettle") && i + 1 < narg) { cfg.run.nsettle = atoi(arg[++i]);
+    } else if (!strcmp(arg[i], "--navg") && i + 1 < narg) { cfg.run.navg = atoi(arg[++i]);
+    } else if (!strcmp(arg[i], "--vstream") && i + 1 < narg) { cfg.run.vstream = atof(arg[++i]);
+    } else if (!strcmp(arg[i], "--wall-temp") && i + 1 < narg) { cfg.run.wall_temp = atof(arg[++i]);
+    } else if (!strcmp(arg[i], "--wall-accom") && i + 1 < narg) { cfg.run.wall_accom = atof(arg[++i]);
+    } else if (!strcmp(arg[i], "--specular")) { cfg.run.specular = 1;
+    } else if (!strcmp(arg[i], "--score-correction")) { cfg.run.score_correction = true;
+    } else if (!strcmp(arg[i], "--nocoll")) { cfg.run.collisions = 0;
+    } else if (!strcmp(arg[i], "--verbose")) { cfg.run.verbose = 1;
     } else if (!strcmp(arg[i], "--help") || !strcmp(arg[i], "-h")) { printf("%s", USAGE); return 0;
     } else { fprintf(stderr, "unknown/incomplete arg: %s\n%s", arg[i], USAGE); return 1; }
   }
@@ -254,8 +346,10 @@ int main_impl(int narg, char **arg)
   if (cfg.seeds.empty()) cfg.seeds = {12345, 67890, 13579};
 
   BezierShape bezier_shape(cfg.chord, cfg.nseg);
+  PowerLawShape powerlaw_shape(cfg.pl_L, cfg.pl_Rmax, cfg.pl_nx, cfg.pl_ntheta);
   Shape *shape = 0;
   if (cfg.shape_name == "bezier") shape = &bezier_shape;
+  else if (cfg.shape_name == "powerlaw") shape = &powerlaw_shape;
   else { fprintf(stderr, "unknown --shape '%s'\n", cfg.shape_name.c_str()); return 1; }
 
   if ((int) cfg.alpha.size() != shape->ndesign()) {
@@ -271,16 +365,16 @@ int main_impl(int narg, char **arg)
   else if (cfg.objective_name == "heatflux") obj = &hf_obj;
   else { fprintf(stderr, "unknown --objective '%s'\n", cfg.objective_name.c_str()); return 1; }
 
-  if (cfg.objective_name == "heatflux" && cfg.c.wall_accom <= 0.0) {
+  if (cfg.objective_name == "heatflux" && cfg.run.wall_accom <= 0.0) {
     fprintf(stderr,
             "WARNING: --objective heatflux with wall_accom=%.3g (default 0)"
             " -- total heat flux is nearly degenerate without wall thermal"
             " accommodation. Pass --wall-accom 1.0 (or similar) for a"
-            " usable gradient. Proceeding anyway.\n", cfg.c.wall_accom);
+            " usable gradient. Proceeding anyway.\n", cfg.run.wall_accom);
   }
 
   int n = shape->ndesign();
-  const bool show_bar = (!cfg.c.verbose) && isatty(fileno(stderr));
+  const bool show_bar = (!cfg.run.verbose) && isatty(fileno(stderr));
 
   std::vector<double> xl(n), xu(n);
   shape->bounds(xl.data(), xu.data());
@@ -294,13 +388,13 @@ int main_impl(int narg, char **arg)
     }
   }
 
-  // Objective scaling: the objective is ~1e-18 to ~1e-21, so without
-  // scaling IPOPT's log-barrier term swamps it and the iterate drifts to
-  // the center of the box instead of minimizing the objective. Scale by
+  // Objective scaling: the objective can be as small as ~1e-21 (2D
+  // drag) or as large as ~1e5 (3D heatflux), so without scaling IPOPT's
+  // log-barrier term either swamps it or is swamped by it. Scale by
   // 1/|value(start)| so the scaled objective is O(1). One evaluation at
   // the start point.
   double f0 = evaluate_avg(*shape, *obj, cfg.alpha.data(), cfg.seeds.data(),
-                           (int) cfg.seeds.size(), cfg.c);
+                           (int) cfg.seeds.size(), cfg.run);
   double obj_scale = 1.0 / std::max(fabs(f0), 1e-300);
 
   // output folder + config echo. Prefix reflects the actual gradient
@@ -323,12 +417,12 @@ int main_impl(int narg, char **arg)
     cf << "objective    = " << cfg.objective_name << "\n";
     cf << "shape        = " << cfg.shape_name << "\n";
 #ifdef SPARTA_AD
-    if (cfg.c.score_correction)
+    if (cfg.run.score_correction)
       cf << "gradient     = AD (forward-mode, score-corrected -- see "
-            "docs/ad_phase_c_investigation/FINDINGS.md, FINDING 2)\n";
+            "docs/AD_GRADIENTS.md)\n";
     else
       cf << "gradient     = AD (forward-mode, UNCORRECTED -- see "
-            "docs/ad_phase_c_investigation/FINDINGS.md)\n";
+            "docs/AD_GRADIENTS.md)\n";
 #else
     cf << "gradient     = finite-difference (CRN)\n";
 #endif
@@ -348,16 +442,22 @@ int main_impl(int narg, char **arg)
     cf << "acceptable_tol  = " << cfg.acc_tol << "\n";
     cf << "acceptable_iter = " << cfg.acc_iter << "\n";
     cf << "h (FD step)  = " << cfg.h << "\n";
-    cf << "chord        = " << cfg.chord << "\n";
-    cf << "nseg         = " << cfg.nseg << "\n";
-    cf << "nsettle      = " << cfg.c.nsettle << "\n";
-    cf << "navg         = " << cfg.c.navg << "\n";
-    cf << "vstream      = " << cfg.c.vstream << "\n";
-    cf << "wall_temp    = " << cfg.c.wall_temp << "\n";
-    cf << "wall_accom   = " << cfg.c.wall_accom << "\n";
-    cf << "specular     = " << cfg.c.specular << "\n";
-    cf << "collisions   = " << cfg.c.collisions << "\n";
-    cf << "score_correction = " << (cfg.c.score_correction ? 1 : 0) << "\n";
+    if (cfg.shape_name == "bezier") {
+      cf << "chord        = " << cfg.chord << "\n";
+      cf << "nseg         = " << cfg.nseg << "\n";
+    } else if (cfg.shape_name == "powerlaw") {
+      cf << "pl_L         = " << cfg.pl_L << "\n";
+      cf << "pl_Rmax      = " << cfg.pl_Rmax << "\n";
+      cf << "pl_nx, ntheta= " << cfg.pl_nx << ", " << cfg.pl_ntheta << "\n";
+    }
+    cf << "nsettle      = " << cfg.run.nsettle << "\n";
+    cf << "navg         = " << cfg.run.navg << "\n";
+    cf << "vstream      = " << cfg.run.vstream << "\n";
+    cf << "wall_temp    = " << cfg.run.wall_temp << "\n";
+    cf << "wall_accom   = " << cfg.run.wall_accom << "\n";
+    cf << "specular     = " << cfg.run.specular << "\n";
+    cf << "collisions   = " << cfg.run.collisions << "\n";
+    cf << "score_correction = " << (cfg.run.score_correction ? 1 : 0) << "\n";
     if (cfg.min_area_set) cf << "min_area     = " << cfg.min_area << "\n";
     else cf << "min_area     = (none)\n";
   }
@@ -381,7 +481,7 @@ int main_impl(int narg, char **arg)
   SmartPtr<ShapeTNLP> nlp = new ShapeTNLP(*shape, *obj, cfg.alpha.data(),
                                           xl.data(), xu.data(),
                                           cfg.seeds.data(), (int) cfg.seeds.size(),
-                                          cfg.c, cfg.h, cfg.max_iter, show_bar,
+                                          cfg.run, cfg.h, cfg.max_iter, show_bar,
                                           obj_scale, constraints);
 
   SmartPtr<IpoptApplication> app = IpoptApplicationFactory();
@@ -393,7 +493,7 @@ int main_impl(int narg, char **arg)
   app->Options()->SetIntegerValue("acceptable_iter", cfg.acc_iter);
   app->Options()->SetIntegerValue("max_iter", cfg.max_iter);
   app->Options()->SetStringValue("sb", "yes");                  // no banner
-  app->Options()->SetIntegerValue("print_level", cfg.c.verbose ? 5 : 0);
+  app->Options()->SetIntegerValue("print_level", cfg.run.verbose ? 5 : 0);
   app->Options()->SetStringValue("output_file", dir + "/ipopt.log");
   app->Options()->SetIntegerValue("file_print_level", 5);
 
@@ -420,8 +520,11 @@ int main_impl(int narg, char **arg)
     }
   }
 
-  bool have_area = (cfg.shape_name == "bezier" && n == 4);
-  double area = have_area ? body_area(nlp->final_alpha.data(), cfg.chord, cfg.nseg) : 0.0;
+  write_mesh_txt(dir + "/shape_initial.txt", *shape, nlp->init_alpha.data());
+  write_mesh_txt(dir + "/shape_final.txt", *shape, nlp->final_alpha.data());
+
+  double size_measure = min_size_constraint.eval(*shape, nlp->final_alpha.data());
+  const char *size_label = (shape->dim() == 2) ? "body area" : "body volume";
 
   // result.txt
   {
@@ -431,7 +534,7 @@ int main_impl(int narg, char **arg)
     rf << "shape         : " << cfg.shape_name << "\n";
 #ifdef SPARTA_AD
     rf << "gradient      : AD (forward-mode, "
-       << (cfg.c.score_correction ? "score-corrected" : "uncorrected") << ")\n";
+       << (cfg.run.score_correction ? "score-corrected" : "uncorrected") << ")\n";
 #else
     rf << "gradient      : finite-difference\n";
 #endif
@@ -445,18 +548,17 @@ int main_impl(int narg, char **arg)
     rf << "value start   : " << nlp->init_value << "\n";
     rf << "value final   : " << nlp->final_value << "\n";
     rf << "value reduction: " << (nlp->init_value - nlp->final_value) << "\n";
-    if (have_area) {
-      rf << "body area      : " << area << "\n";
-      if (cfg.min_area_set) {
-        rf << "min_area bound : " << cfg.min_area
-           << (area + 1e-9 >= cfg.min_area ? "  (satisfied)" : "  (VIOLATED)")
-           << "\n";
-      }
+    rf << size_label << "     : " << size_measure << "\n";
+    if (cfg.min_area_set) {
+      rf << "min_size bound : " << cfg.min_area
+         << (size_measure + 1e-9 >= cfg.min_area ? "  (satisfied)" : "  (VIOLATED)")
+         << "\n";
     }
   }
 
-  // shapes.svg -- Bezier-specific (see svg_shape.h)
-  if (cfg.shape_name == "bezier" && n == 4) {
+  // shapes.svg -- Bezier-specific renderer (see svg_shape.h), so only
+  // meaningful for a 2D shape.
+  if (shape->dim() == 2) {
     int svg = write_shapes_svg(dir + "/shapes.svg",
                                nlp->init_alpha.data(), nlp->init_value,
                                nlp->final_alpha.data(), nlp->final_value,
