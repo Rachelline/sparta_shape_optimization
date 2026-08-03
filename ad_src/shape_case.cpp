@@ -151,6 +151,13 @@ double evaluate(const Parametrization &shape, const Objective &obj,
   // the read_surf command issued right below -- must be set before that
   // command runs, not after.
   setenv("SPARTA_AD_SEED_JACFILE", jacpath, 1);
+
+  // Consumed by src/compute_surf.cpp's ComputeSurf::init() (read once per
+  // `compute surf` command). Explicitly set/unset (not just "set when
+  // true") so a process that runs evaluate() with different RunConfigs
+  // never sees a stale value from an earlier call.
+  if (c.score_correction) setenv("SPARTA_AD_SCORE_CORRECTION", "1", 1);
+  else unsetenv("SPARTA_AD_SCORE_CORRECTION");
 #endif
 
   std::snprintf(line, sizeof(line), "read_surf %s", surfpath);

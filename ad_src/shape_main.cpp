@@ -40,7 +40,9 @@ void usage()
     "                                   HeatFluxObjective needs A > 0, e.g.\n"
     "                                   --wall-accom 1.0, or its signal is\n"
     "                                   nearly degenerate -- see shape_case.h)\n"
-    "  --specular  --nocoll  --verbose\n");
+    "  --specular  --nocoll  --verbose\n"
+    "  --score-correction   AD build only: enable the flux-measure\n"
+    "                       score-function correction (FINDINGS.md, FINDING 2)\n");
 }
 
 std::vector<double> parse_doubles(const char *s)
@@ -88,6 +90,7 @@ int main(int argc, char **argv)
     else if (!strcmp(argv[i], "--wall-temp") && i + 1 < argc) c.wall_temp = atof(argv[++i]);
     else if (!strcmp(argv[i], "--wall-accom") && i + 1 < argc) c.wall_accom = atof(argv[++i]);
     else if (!strcmp(argv[i], "--specular")) c.specular = 1;
+    else if (!strcmp(argv[i], "--score-correction")) c.score_correction = true;
     else if (!strcmp(argv[i], "--nocoll")) c.collisions = 0;
     else if (!strcmp(argv[i], "--verbose")) { c.verbose = 1; c.progress = 1; }
     else { usage(); return 1; }

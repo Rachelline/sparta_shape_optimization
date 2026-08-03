@@ -88,6 +88,10 @@ static const char *USAGE =
   "  --wall-temp T  --wall-accom A   (diffuse wall; see note above for\n"
   "                                   --objective heatflux)\n"
   "  --specular  --nocoll  --verbose\n"
+  "  --score-correction          AD build only: enable the flux-measure\n"
+  "                               score-function correction in\n"
+  "                               compute_surf.cpp (FINDINGS.md, FINDING 2).\n"
+  "                               No effect on stock builds. Off by default.\n"
   "\n"
   "  Minimizes the chosen objective with IPOPT, subject to the shape's\n"
   "  own box bounds (Parametrization::bounds()). Run from a dir with\n"
@@ -184,6 +188,7 @@ static bool parse_input_file(const char *path, Config &cfg)
     } else if (key == "specular") { cfg.c.specular = atoi(val.c_str());
     } else if (key == "collisions") { cfg.c.collisions = atoi(val.c_str());
     } else if (key == "verbose") { cfg.c.verbose = atoi(val.c_str());
+    } else if (key == "score_correction") { cfg.c.score_correction = atoi(val.c_str()) != 0;
     }
     // unknown keys ignored
   }
@@ -301,6 +306,7 @@ int main(int narg, char **arg)
     } else if (!strcmp(arg[i], "--wall-temp") && i + 1 < narg) { cfg.c.wall_temp = atof(arg[++i]);
     } else if (!strcmp(arg[i], "--wall-accom") && i + 1 < narg) { cfg.c.wall_accom = atof(arg[++i]);
     } else if (!strcmp(arg[i], "--specular")) { cfg.c.specular = 1;
+    } else if (!strcmp(arg[i], "--score-correction")) { cfg.c.score_correction = true;
     } else if (!strcmp(arg[i], "--nocoll")) { cfg.c.collisions = 0;
     } else if (!strcmp(arg[i], "--verbose")) { cfg.c.verbose = 1;
     } else if (!strcmp(arg[i], "--help") || !strcmp(arg[i], "-h")) { printf("%s", USAGE); return 0;
@@ -375,8 +381,12 @@ int main(int narg, char **arg)
     cf << "objective    = " << cfg.objective_name << "\n";
     cf << "shape        = " << cfg.shape_name << "\n";
 #ifdef SPARTA_AD
-    cf << "gradient     = AD (forward-mode, UNCORRECTED -- see "
-          "docs/ad_phase_c_investigation/FINDINGS.md)\n";
+    if (cfg.c.score_correction)
+      cf << "gradient     = AD (forward-mode, score-corrected -- see "
+            "docs/ad_phase_c_investigation/FINDINGS.md, FINDING 2)\n";
+    else
+      cf << "gradient     = AD (forward-mode, UNCORRECTED -- see "
+            "docs/ad_phase_c_investigation/FINDINGS.md)\n";
 #else
     cf << "gradient     = finite-difference (CRN)\n";
 #endif
@@ -405,6 +415,7 @@ int main(int narg, char **arg)
     cf << "wall_accom   = " << cfg.c.wall_accom << "\n";
     cf << "specular     = " << cfg.c.specular << "\n";
     cf << "collisions   = " << cfg.c.collisions << "\n";
+    cf << "score_correction = " << (cfg.c.score_correction ? 1 : 0) << "\n";
     if (cfg.min_area_set) cf << "min_area     = " << cfg.min_area << "\n";
     else cf << "min_area     = (none)\n";
   }
@@ -477,7 +488,8 @@ int main(int narg, char **arg)
     rf << "objective     : " << cfg.objective_name << "\n";
     rf << "shape         : " << cfg.shape_name << "\n";
 #ifdef SPARTA_AD
-    rf << "gradient      : AD (forward-mode, uncorrected)\n";
+    rf << "gradient      : AD (forward-mode, "
+       << (cfg.c.score_correction ? "score-corrected" : "uncorrected") << ")\n";
 #else
     rf << "gradient      : finite-difference\n";
 #endif

@@ -60,6 +60,16 @@ struct RunConfig {
                             // accommodation was used for this milestone's
                             // own HeatFlux verification).
   int collisions = 1;   // 0 = free-molecular (no `collide vss`)
+
+  bool score_correction = false;  // AD build only: sets
+                                   // SPARTA_AD_SEED_JACFILE-sibling env var
+                                   // SPARTA_AD_SCORE_CORRECTION before each
+                                   // SPARTA invocation, enabling the
+                                   // flux-measure score-function correction
+                                   // in compute_surf.cpp (FINDINGS.md,
+                                   // FINDING 2). No effect on stock builds
+                                   // or on tallied VALUES; changes AD
+                                   // gradients only. Off by default.
 };
 
 // Single realization: builds the shape, writes a tmp surf file, runs

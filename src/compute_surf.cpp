@@ -178,6 +178,10 @@ void ComputeSurf::init()
   if (grid->cellweightflag) weightflag = 1;
   else weightflag = 0;
 
+#ifdef SPARTA_AD
+  score_correction = (getenv("SPARTA_AD_SCORE_CORRECTION") != NULL);
+#endif
+
   // initialize tally array in case accessed before a tally timestep
 
   clear();
@@ -364,6 +368,23 @@ void ComputeSurf::surf_tally(sfloat /*dtremain*/, int isurf, int icell, int reac
   }
 
   sfloat mvv2e = update->mvv2e;
+
+#ifdef SPARTA_AD
+  // Score-function correction for the flux-measure derivative
+  // (docs/ad_phase_c_investigation/FINDINGS.md, FINDING 2): hits are drawn
+  // from a flux-weighted measure ~ |u|, u = v.n, which depends on the
+  // design parameters through norm -- forward AD only differentiates the
+  // per-hit tally, missing this sampling-measure term. u/spval(u) is
+  // numerically exactly 1.0 (no value change) but injects dlog|u|/dalpha
+  // into fluxscale's derivative slot, so the ordinary product rule on
+  // every fluxscale-weighted tally below yields the corrected (pathwise +
+  // score-function) gradient. Toggled by SPARTA_AD_SCORE_CORRECTION (see
+  // init()); off by default.
+  if (score_correction && iorig) {
+    sfloat u = MathExtra::dot3(vorig, norm);
+    fluxscale *= u / spval(u);
+  }
+#endif
 
   vec = array_surf_tally[itally];
   int k = igroup*nvalue;
