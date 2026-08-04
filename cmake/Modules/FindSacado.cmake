@@ -6,10 +6,11 @@
 # so Sacado is located the same way as every other TPL in this repo.
 #
 # Only the Sacado headers + libsacado are referenced. Per the one-Kokkos rule
-# (see docs/PLAN.md and cmake/common/process/sparta_build_options.cmake), the
-# AD+Kokkos build must get Kokkos from SPARTA's single Kokkos, NOT from Sacado's
-# install -- so this finder intentionally does NOT expose Sacado's bundled
-# include/kokkos directory.
+# (see BUILD_CMAKE.md's "Automatic differentiation (AD)" section and
+# cmake/common/process/sparta_build_options.cmake), the AD+Kokkos build must
+# get Kokkos from SPARTA's single Kokkos, NOT from Sacado's install -- so this
+# finder intentionally does NOT expose Sacado's bundled include/kokkos
+# directory.
 #
 # Point at a minimal Trilinos install (Sacado [+ Kokkos]) via -DSACADO_ROOT=...
 # or the SACADO_ROOT environment variable.

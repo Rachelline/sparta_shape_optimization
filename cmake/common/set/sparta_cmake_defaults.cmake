@@ -108,7 +108,7 @@ if(SPARTA_ENABLE_TESTING)
   # skip list here.
   #
   # Root cause (traced live via bit-exact in-binary shadow comparison on
-  # in.bfield, 2026-07-22 -- see docs/PLAN.md for the full trace): Sacado's
+  # in.bfield, 2026-07-22 -- see KNOWN_GAPS.md for a summary): Sacado's
   # Fad expression-template evaluation of even the simplest arithmetic
   # (e.g. update.cpp's ballistic move "xnew[d] = x[d] + dtremain*v[d]") is
   # NOT guaranteed bit-identical to the same formula evaluated in plain

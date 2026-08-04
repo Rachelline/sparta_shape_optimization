@@ -50,7 +50,8 @@ sparta_option(BUILD_PNG "Enable or disable PNG TPL. Default: OFF." OFF
 
 # AD: build with forward-mode automatic differentiation (sfloat = Sacado SFad).
 # Requires a minimal Trilinos/Sacado install; point at it with -DSACADO_ROOT=...
-# See docs/PLAN.md and cmake/common/process/sparta_build_options.cmake.
+# See BUILD_CMAKE.md's "Automatic differentiation (AD)" section and
+# cmake/common/process/sparta_build_options.cmake.
 sparta_option(
   SPARTA_ENABLE_AD
   "Enable forward-mode AD (sfloat=Sacado::Fad::SFad). Requires SACADO_ROOT. Default: OFF."

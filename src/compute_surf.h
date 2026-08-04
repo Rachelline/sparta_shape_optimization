@@ -80,12 +80,11 @@ class ComputeSurf : public Compute {
 #ifdef SPARTA_AD
   int score_correction;    // 1 if SPARTA_AD_SCORE_CORRECTION env var is set:
                            // inject the flux-measure score-function term
-                           // (docs/ad_phase_c_investigation/FINDINGS.md,
-                           // FINDING 2) into fluxscale-weighted tallies via
-                           // u/spval(u). No effect on tallied VALUES (the
-                           // factor is exactly 1.0); only derivatives change.
-                           // Off by default -- stock build never sees this
-                           // member at all.
+                           // (docs/AD_GRADIENTS.md) into fluxscale-weighted
+                           // tallies via u/spval(u). No effect on tallied
+                           // VALUES (the factor is exactly 1.0); only
+                           // derivatives change. Off by default -- stock
+                           // build never sees this member at all.
 #endif
 
   virtual void init_normflux();
