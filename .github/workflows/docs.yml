@@ -1,0 +1,55 @@
+name: Deploy docs
+
+on:
+  push:
+    branches: [ master ]
+    paths:
+      - 'mkdocs.yml'
+      - 'docs_site/**'
+      - 'ad_src/README.md'
+      - 'docs/AD_GRADIENTS.md'
+      - 'tools/ad_verify/README.md'
+      - 'KNOWN_GAPS.md'
+      - 'BUILD_CMAKE.md'
+      - '.github/workflows/docs.yml'
+      - '.github/docs-requirements.txt'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+
+      - name: Install MkDocs
+        run: pip install -r .github/docs-requirements.txt
+
+      - name: Build site
+        run: mkdocs build --strict
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: site
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-22.04
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

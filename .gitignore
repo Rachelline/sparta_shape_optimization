@@ -1,5 +1,6 @@
 *~
 /tmp/
+/site/
 *.o
 *.so
 *.cu_o
