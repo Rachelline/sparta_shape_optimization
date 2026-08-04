@@ -67,6 +67,23 @@ void write_jac_tmp(const char *path, const double *jac, int npt, int dim,
 
 }  // namespace
 
+void AdCorrections::apply_to_env() const
+{
+  if (flux_measure) setenv("SPARTA_AD_SCORE_CORRECTION", "1", 1);
+  else unsetenv("SPARTA_AD_SCORE_CORRECTION");
+}
+
+void AdCorrections::warn_if_noop() const
+{
+#ifndef SPARTA_AD
+  if (flux_measure)
+    std::fprintf(stderr,
+                "WARNING: --score-correction has no effect in this "
+                "(stock/FD) build -- gradients come from grad_fd(), not "
+                "the AD path this flag corrects. Ignored.\n");
+#endif
+}
+
 double evaluate(const Shape &shape, const Objective &obj,
                 const double *alpha, int seed, const RunConfig &c,
                 double *grad)
@@ -142,14 +159,14 @@ double evaluate(const Shape &shape, const Objective &obj,
   // the read_surf command issued right below -- must be set before that
   // command runs, not after.
   setenv("SPARTA_AD_SEED_JACFILE", jacpath, 1);
+#endif
 
   // Consumed by src/compute_surf.cpp's ComputeSurf::init() (read once per
-  // `compute surf` command). Explicitly set/unset (not just "set when
-  // true") so a process that runs evaluate() with different RunConfigs
-  // never sees a stale value from an earlier call.
-  if (c.score_correction) setenv("SPARTA_AD_SCORE_CORRECTION", "1", 1);
-  else unsetenv("SPARTA_AD_SCORE_CORRECTION");
-#endif
+  // `compute surf` command). apply_to_env() is safe to call unconditionally
+  // -- see AdCorrections::apply_to_env()'s own comment -- and always sets
+  // *or* unsets, so a process that runs evaluate() with different
+  // RunConfigs never sees a stale value from an earlier call.
+  c.corrections.apply_to_env();
 
   std::snprintf(line, sizeof(line), "read_surf %s", surfpath);
   cmd(spa, line);

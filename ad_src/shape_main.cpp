@@ -41,8 +41,11 @@ void usage()
     "                                   --wall-accom 1.0, or its signal is\n"
     "                                   nearly degenerate -- see shape_case.h)\n"
     "  --specular  --nocoll  --verbose\n"
-    "  --score-correction   AD build only: enable the flux-measure\n"
-    "                       score-function correction (FINDINGS.md, FINDING 2)\n");
+    "  --score-correction / --no-score-correction   (default: off)\n"
+    "                       AD build only: enable/disable the flux-measure\n"
+    "                       score-function correction -- see docs/AD_GRADIENTS.md.\n"
+    "                       No effect on stock builds (warns if passed there).\n"
+    "                       Raw escape hatch: SPARTA_AD_SCORE_CORRECTION=1 env var.\n");
 }
 
 }  // namespace
@@ -72,7 +75,8 @@ int main_impl(int argc, char **argv)
     else if (!strcmp(argv[i], "--wall-temp") && i + 1 < argc) c.wall_temp = atof(argv[++i]);
     else if (!strcmp(argv[i], "--wall-accom") && i + 1 < argc) c.wall_accom = atof(argv[++i]);
     else if (!strcmp(argv[i], "--specular")) c.specular = 1;
-    else if (!strcmp(argv[i], "--score-correction")) c.score_correction = true;
+    else if (!strcmp(argv[i], "--score-correction")) c.corrections.flux_measure = true;
+    else if (!strcmp(argv[i], "--no-score-correction")) c.corrections.flux_measure = false;
     else if (!strcmp(argv[i], "--nocoll")) c.collisions = 0;
     else if (!strcmp(argv[i], "--verbose")) c.verbose = 1;
     else { usage(); return 1; }
@@ -80,6 +84,7 @@ int main_impl(int argc, char **argv)
 
   if (alpha_v.empty()) { usage(); return 1; }
   if (seeds_v.empty()) seeds_v.push_back(12345);
+  c.corrections.warn_if_noop();
 
   BezierShape bezier_shape(chord, nseg);
   Shape *shape = 0;
@@ -111,6 +116,7 @@ int main_impl(int argc, char **argv)
   std::printf("objective=%s shape=%s alpha=", objective_name, shape_name);
   for (int j = 0; j < ndesign; j++) std::printf("%s%.6g", j ? "," : "", alpha_v[j]);
   std::printf("\n");
+  std::printf("score_correction=%s\n", c.corrections.flux_measure ? "on" : "off");
 
   std::vector<double> vals(nseeds);
   for (int k = 0; k < nseeds; k++) {
@@ -136,13 +142,13 @@ int main_impl(int argc, char **argv)
   std::vector<double> grad(ndesign);
 #ifdef SPARTA_AD
   // One SPARTA run yields value AND gradient together (see shape_case.cpp /
-  // read_surf.cpp's SPARTA_AD_SEED_JACFILE hook). Used exactly as the
-  // solver returns it -- no flux-measure-derivative correction, per
-  // explicit instruction; see docs/ad_phase_c_investigation/FINDINGS.md
-  // for the known ~50%/~40% low bias this carries.
+  // read_surf.cpp's SPARTA_AD_SEED_JACFILE hook). See docs/AD_GRADIENTS.md
+  // for the known low bias this gradient carries and what
+  // --score-correction does and doesn't fix.
   double base = evaluate_avg(*shape, *obj, alpha_v.data(), seeds_v.data(),
                              nseeds, c, grad.data());
-  std::printf("grad_ad (uncorrected, see FINDINGS.md): [");
+  std::printf("grad_ad (%s, see docs/AD_GRADIENTS.md): [",
+             c.corrections.flux_measure ? "score-corrected" : "uncorrected");
 #else
   double base = grad_fd(*shape, *obj, alpha_v.data(), seeds_v.data(), nseeds,
                         c, h, grad.data());

@@ -105,10 +105,11 @@ static const char *USAGE =
   "  --wall-temp T  --wall-accom A   (diffuse wall; see note above for\n"
   "                                   --objective heatflux)\n"
   "  --specular  --nocoll  --verbose\n"
-  "  --score-correction          AD build only: enable the flux-measure\n"
-  "                               score-function correction in\n"
-  "                               compute_surf.cpp (see docs/AD_GRADIENTS.md).\n"
-  "                               No effect on stock builds. Off by default.\n"
+  "  --score-correction / --no-score-correction   (default: off)\n"
+  "                               AD build only: enable/disable the flux-measure\n"
+  "                               score-function correction -- see docs/AD_GRADIENTS.md.\n"
+  "                               No effect on stock builds (warns if passed there).\n"
+  "                               Raw escape hatch: SPARTA_AD_SCORE_CORRECTION=1 env var.\n"
   "\n"
   "  Minimizes the chosen objective with IPOPT, subject to the shape's\n"
   "  own box bounds (Shape::bounds()). Run from a dir with\n"
@@ -238,7 +239,7 @@ static bool parse_input_file(const char *path, Config &cfg)
     } else if (key == "specular") { cfg.run.specular = atoi(val.c_str());
     } else if (key == "collisions") { cfg.run.collisions = atoi(val.c_str());
     } else if (key == "verbose") { cfg.run.verbose = atoi(val.c_str());
-    } else if (key == "score_correction") { cfg.run.score_correction = atoi(val.c_str()) != 0;
+    } else if (key == "score_correction") { cfg.run.corrections.flux_measure = atoi(val.c_str()) != 0;
     }
     // unknown keys ignored
   }
@@ -335,7 +336,8 @@ int main_impl(int narg, char **arg)
     } else if (!strcmp(arg[i], "--wall-temp") && i + 1 < narg) { cfg.run.wall_temp = atof(arg[++i]);
     } else if (!strcmp(arg[i], "--wall-accom") && i + 1 < narg) { cfg.run.wall_accom = atof(arg[++i]);
     } else if (!strcmp(arg[i], "--specular")) { cfg.run.specular = 1;
-    } else if (!strcmp(arg[i], "--score-correction")) { cfg.run.score_correction = true;
+    } else if (!strcmp(arg[i], "--score-correction")) { cfg.run.corrections.flux_measure = true;
+    } else if (!strcmp(arg[i], "--no-score-correction")) { cfg.run.corrections.flux_measure = false;
     } else if (!strcmp(arg[i], "--nocoll")) { cfg.run.collisions = 0;
     } else if (!strcmp(arg[i], "--verbose")) { cfg.run.verbose = 1;
     } else if (!strcmp(arg[i], "--help") || !strcmp(arg[i], "-h")) { printf("%s", USAGE); return 0;
@@ -344,6 +346,7 @@ int main_impl(int narg, char **arg)
 
   if (!cfg.alpha_set) { fprintf(stderr, "ERROR: --alpha required\n%s", USAGE); return 1; }
   if (cfg.seeds.empty()) cfg.seeds = {12345, 67890, 13579};
+  cfg.run.corrections.warn_if_noop();
 
   BezierShape bezier_shape(cfg.chord, cfg.nseg);
   PowerLawShape powerlaw_shape(cfg.pl_L, cfg.pl_Rmax, cfg.pl_nx, cfg.pl_ntheta);
@@ -417,7 +420,7 @@ int main_impl(int narg, char **arg)
     cf << "objective    = " << cfg.objective_name << "\n";
     cf << "shape        = " << cfg.shape_name << "\n";
 #ifdef SPARTA_AD
-    if (cfg.run.score_correction)
+    if (cfg.run.corrections.flux_measure)
       cf << "gradient     = AD (forward-mode, score-corrected -- see "
             "docs/AD_GRADIENTS.md)\n";
     else
@@ -457,7 +460,7 @@ int main_impl(int narg, char **arg)
     cf << "wall_accom   = " << cfg.run.wall_accom << "\n";
     cf << "specular     = " << cfg.run.specular << "\n";
     cf << "collisions   = " << cfg.run.collisions << "\n";
-    cf << "score_correction = " << (cfg.run.score_correction ? 1 : 0) << "\n";
+    cf << "score_correction = " << (cfg.run.corrections.flux_measure ? 1 : 0) << "\n";
     if (cfg.min_area_set) cf << "min_area     = " << cfg.min_area << "\n";
     else cf << "min_area     = (none)\n";
   }
@@ -472,6 +475,7 @@ int main_impl(int narg, char **arg)
   printf("  start alpha = ");
   for (int j = 0; j < n; j++) printf("%.5g ", cfg.alpha[j]);
   printf("\n  output dir  = %s\n", dir.c_str());
+  printf("  score_correction = %s\n", cfg.run.corrections.flux_measure ? "on" : "off");
   fflush(stdout);
 
   MinSizeConstraint min_size_constraint(cfg.min_area);
@@ -534,7 +538,7 @@ int main_impl(int narg, char **arg)
     rf << "shape         : " << cfg.shape_name << "\n";
 #ifdef SPARTA_AD
     rf << "gradient      : AD (forward-mode, "
-       << (cfg.run.score_correction ? "score-corrected" : "uncorrected") << ")\n";
+       << (cfg.run.corrections.flux_measure ? "score-corrected" : "uncorrected") << ")\n";
 #else
     rf << "gradient      : finite-difference\n";
 #endif
