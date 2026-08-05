@@ -1,5 +1,6 @@
 site_name: SPARTA Shape Optimization
 site_description: AD-linked DSMC shape-optimization framework built on SPARTA
+site_url: https://rachelline.github.io/sparta_shape_optimization/
 repo_url: https://github.com/Rachelline/sparta_shape_optimization
 edit_uri: edit/master/
 
