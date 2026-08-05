@@ -1,3 +1,4 @@
+/* AD-CONVERTED: double->sfloat by tools/ad_convert.py (see sfloat.h) */
 /* ----------------------------------------------------------------------
    SPARTA - Stochastic PArallel Rarefied-gas Time-accurate Analyzer
    http://sparta.github.io
@@ -240,11 +241,11 @@ void SurfCollide::dynamic()
 
 /* ---------------------------------------------------------------------- */
 
-double SurfCollide::compute_vector(int i)
+sfloat SurfCollide::compute_vector(int i)
 {
   one[0] = nsingle;
   one[1] = ntotal;
-  MPI_Allreduce(one,all,2,MPI_DOUBLE,MPI_SUM,world);
+  MPI_Allreduce(one,all,2,MPI_SFLOAT,MPI_SUM,world);
 
   return all[i];
 }

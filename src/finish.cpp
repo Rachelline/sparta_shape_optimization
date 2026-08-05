@@ -1,3 +1,4 @@
+/* AD-CONVERTED: double->sfloat by tools/ad_convert.py (see sfloat.h) */
 /* ----------------------------------------------------------------------
    SPARTA - Stochastic PArallel Rarefied-gas Time-accurate Analyzer
    http://sparta.github.io
@@ -38,7 +39,7 @@ using namespace SPARTA_NS;
 
 static void mpi_timings(const char *label, Timer *t, int tt,
                         MPI_Comm world, const int nprocs,
-                        const int me, double time_loop, FILE *scr, FILE *log);
+                        const int me, sfloat time_loop, FILE *scr, FILE *log);
 
 /* ---------------------------------------------------------------------- */
 
@@ -46,13 +47,13 @@ Finish::Finish(SPARTA *sparta) : Pointers(sparta) {}
 
 /* ---------------------------------------------------------------------- */
 
-void Finish::end(int flag, double time_multiple_runs)
+void Finish::end(int flag, sfloat time_multiple_runs)
 {
   int i;
   int histo[10];
   int loopflag,statsflag,timeflag,histoflag;
-  double time,tmp,ave,max,min;
-  double time_loop,time_other;
+  sfloat time,tmp,ave,max,min;
+  sfloat time_loop,time_other;
 
   int me,nprocs;
   MPI_Comm_rank(world,&me);
@@ -76,13 +77,13 @@ void Finish::end(int flag, double time_multiple_runs)
        timer->array[TIME_MODIFY] + timer->array[TIME_OUTPUT]);
 
     time_loop = timer->array[TIME_LOOP];
-    MPI_Allreduce(&time_loop,&tmp,1,MPI_DOUBLE,MPI_SUM,world);
+    MPI_Allreduce(&time_loop,&tmp,1,MPI_SFLOAT,MPI_SUM,world);
     time_loop = tmp/nprocs;
 
     if (time_multiple_runs == 0.0) time_multiple_runs = time_loop;
     else {
       tmp = time_multiple_runs;
-      MPI_Allreduce(&tmp,&time_multiple_runs,1,MPI_DOUBLE,MPI_SUM,world);
+      MPI_Allreduce(&tmp,&time_multiple_runs,1,MPI_SFLOAT,MPI_SUM,world);
       time_multiple_runs /= nprocs;
     }
   }
@@ -98,20 +99,20 @@ void Finish::end(int flag, double time_multiple_runs)
     if (screen) fprintf(screen,
                         "Loop time of %g on %d procs for %d steps with "
                         BIGINT_FORMAT " particles\n",
-                        time_loop,nprocs,update->nsteps,particle->nglobal);
+                        spval(time_loop),nprocs,update->nsteps,particle->nglobal);
     if (logfile) fprintf(logfile,
                          "Loop time of %g on %d procs for %d steps with "
                          BIGINT_FORMAT " particles\n",
-                         time_loop,nprocs,update->nsteps,particle->nglobal);
+                         spval(time_loop),nprocs,update->nsteps,particle->nglobal);
   }
 
   // performance metrics
 
   if (me == 0) {
     if (timeflag && (update->nsteps > 0) && (update->dt != 0.0)) {
-      double t_step = ((double) time_loop) / ((double) update->nsteps);
-      double step_t = 1.0 / t_step;
-      double particlestep_s = (double)particle->nglobal * step_t;
+      sfloat t_step = ((sfloat) time_loop) / ((sfloat) update->nsteps);
+      sfloat step_t = 1.0 / t_step;
+      sfloat particlestep_s = (sfloat)particle->nglobal * step_t;
       std::string particlestep_u = "particle-step/s";
       if (particlestep_s > 1000000000.0) {
         particlestep_u = "Gparticle-step/s";
@@ -126,10 +127,10 @@ void Finish::end(int flag, double time_multiple_runs)
 
       if (screen) fprintf(screen,
                           "Performance: %.3f timesteps/s, %.3f %s\n",
-                          step_t, particlestep_s, particlestep_u.c_str());
+                          spval(step_t), spval(particlestep_s), particlestep_u.c_str());
       if (logfile) fprintf(logfile,
                            "Performance: %.3f timesteps/s, %.3f %s\n",
-                           step_t, particlestep_s, particlestep_u.c_str());
+                           spval(step_t), spval(particlestep_s), particlestep_u.c_str());
     }
   }
 
@@ -158,15 +159,15 @@ void Finish::end(int flag, double time_multiple_runs)
                 me,time_loop,screen,logfile);
 
     time = time_other;
-    MPI_Allreduce(&time,&tmp,1,MPI_DOUBLE,MPI_SUM,world);
+    MPI_Allreduce(&time,&tmp,1,MPI_SFLOAT,MPI_SUM,world);
     time = tmp/nprocs;
 
     const char *fmt;
     fmt = "Other   |            |%- 12.4g|            |       |%6.2f\n";
 
     if (me == 0) {
-      if (screen) fprintf(screen,fmt,time,time/time_loop*100.0);
-      if (logfile) fprintf(logfile,fmt,time,time/time_loop*100.0);
+      if (screen) fprintf(screen,fmt,spval(time),time/time_loop*100.0);
+      if (logfile) fprintf(logfile,fmt,spval(time),time/time_loop*100.0);
     }
   }
 
@@ -208,7 +209,7 @@ void Finish::end(int flag, double time_multiple_runs)
     MPI_Allreduce(&update->nstuck,&stuck_total,1,MPI_INT,MPI_SUM,world);
     MPI_Allreduce(&update->naxibad,&axibad_total,1,MPI_INT,MPI_SUM,world);
 
-    double pms,pmsp,ctps,cis,pfc,pfcwb,pfeb,schps,sclps,srps,caps,cps,rps;
+    sfloat pms,pmsp,ctps,cis,pfc,pfcwb,pfeb,schps,sclps,srps,caps,cps,rps;
     pms = pmsp = ctps = cis = pfc = pfcwb = pfeb =
       schps = sclps = srps = caps = cps = rps = 0.0;
 
@@ -261,19 +262,19 @@ void Finish::end(int flag, double time_multiple_runs)
         fprintf(screen,"Axisymm bad moves = %d\n",axibad_total);
 
         fprintf(screen,"\n");
-        fprintf(screen,"Particle-moves/CPUsec/proc: %g\n",pmsp);
-        fprintf(screen,"Particle-moves/step: %g\n",pms);
-        fprintf(screen,"Cell-touches/particle/step: %g\n",ctps);
-        fprintf(screen,"Particle comm iterations/step: %g\n",cis);
-        fprintf(screen,"Particle fraction communicated: %g\n",pfc);
-        fprintf(screen,"Particle fraction colliding with boundary: %g\n",pfcwb);
-        fprintf(screen,"Particle fraction exiting boundary: %g\n",pfeb);
-        fprintf(screen,"Surface-checks/particle/step: %g\n",schps);
-        fprintf(screen,"Surface-collisions/particle/step: %g\n",sclps);
-        fprintf(screen,"Surface-reactions/particle/step: %g\n",srps);
-        fprintf(screen,"Collision-attempts/particle/step: %g\n",caps);
-        fprintf(screen,"Collisions/particle/step: %g\n",cps);
-        fprintf(screen,"Gas-reactions/particle/step: %g\n",rps);
+        fprintf(screen,"Particle-moves/CPUsec/proc: %g\n",spval(pmsp));
+        fprintf(screen,"Particle-moves/step: %g\n",spval(pms));
+        fprintf(screen,"Cell-touches/particle/step: %g\n",spval(ctps));
+        fprintf(screen,"Particle comm iterations/step: %g\n",spval(cis));
+        fprintf(screen,"Particle fraction communicated: %g\n",spval(pfc));
+        fprintf(screen,"Particle fraction colliding with boundary: %g\n",spval(pfcwb));
+        fprintf(screen,"Particle fraction exiting boundary: %g\n",spval(pfeb));
+        fprintf(screen,"Surface-checks/particle/step: %g\n",spval(schps));
+        fprintf(screen,"Surface-collisions/particle/step: %g\n",spval(sclps));
+        fprintf(screen,"Surface-reactions/particle/step: %g\n",spval(srps));
+        fprintf(screen,"Collision-attempts/particle/step: %g\n",spval(caps));
+        fprintf(screen,"Collisions/particle/step: %g\n",spval(cps));
+        fprintf(screen,"Gas-reactions/particle/step: %g\n",spval(rps));
       }
       if (logfile) {
         fprintf(logfile,"\n");
@@ -303,20 +304,20 @@ void Finish::end(int flag, double time_multiple_runs)
         fprintf(logfile,"Axisymm bad moves = %d\n",axibad_total);
 
         fprintf(logfile,"\n");
-        fprintf(logfile,"Particle-moves/CPUsec/proc: %g\n",pmsp);
-        fprintf(logfile,"Particle-moves/step: %g\n",pms);
-        fprintf(logfile,"Cell-touches/particle/step: %g\n",ctps);
-        fprintf(logfile,"Particle comm iterations/step: %g\n",cis);
-        fprintf(logfile,"Particle fraction communicated: %g\n",pfc);
+        fprintf(logfile,"Particle-moves/CPUsec/proc: %g\n",spval(pmsp));
+        fprintf(logfile,"Particle-moves/step: %g\n",spval(pms));
+        fprintf(logfile,"Cell-touches/particle/step: %g\n",spval(ctps));
+        fprintf(logfile,"Particle comm iterations/step: %g\n",spval(cis));
+        fprintf(logfile,"Particle fraction communicated: %g\n",spval(pfc));
         fprintf(logfile,"Particle fraction colliding with boundary: %g\n",
-                pfcwb);
-        fprintf(logfile,"Particle fraction exiting boundary: %g\n",pfeb);
-        fprintf(logfile,"Surface-checks/particle/step: %g\n",schps);
-        fprintf(logfile,"Surface-collisions/particle/step: %g\n",sclps);
-        fprintf(logfile,"Surf-reactions/particle/step: %g\n",srps);
-        fprintf(logfile,"Collision-attempts/particle/step: %g\n",caps);
-        fprintf(logfile,"Collisions/particle/step: %g\n",cps);
-        fprintf(logfile,"Reactions/particle/step: %g\n",rps);
+                spval(pfcwb));
+        fprintf(logfile,"Particle fraction exiting boundary: %g\n",spval(pfeb));
+        fprintf(logfile,"Surface-checks/particle/step: %g\n",spval(schps));
+        fprintf(logfile,"Surface-collisions/particle/step: %g\n",spval(sclps));
+        fprintf(logfile,"Surf-reactions/particle/step: %g\n",spval(srps));
+        fprintf(logfile,"Collision-attempts/particle/step: %g\n",spval(caps));
+        fprintf(logfile,"Collisions/particle/step: %g\n",spval(cps));
+        fprintf(logfile,"Reactions/particle/step: %g\n",spval(rps));
       }
     }
   }
@@ -329,7 +330,7 @@ void Finish::end(int flag, double time_multiple_runs)
       if (logfile) fprintf(logfile,"\nGas reaction tallies:\n");
     }
 
-    double tally;
+    sfloat tally;
     char *rID;
     int nlist = react->nlist;
     if (me == 0) {
@@ -343,8 +344,8 @@ void Finish::end(int flag, double time_multiple_runs)
       if (tally == 0.0) continue;
       rID = react->reactionID(m);
       if (me == 0) {
-        if (screen) fprintf(screen,"  reaction %s: %g\n",rID,tally);
-        if (logfile) fprintf(logfile,"  reaction %s: %g\n",rID,tally);
+        if (screen) fprintf(screen,"  reaction %s: %g\n",rID,spval(tally));
+        if (logfile) fprintf(logfile,"  reaction %s: %g\n",rID,spval(tally));
       }
     }
   }
@@ -357,7 +358,7 @@ void Finish::end(int flag, double time_multiple_runs)
       if (logfile) fprintf(logfile,"\nSurface reaction tallies:\n");
     }
 
-    double tally;
+    sfloat tally;
     char *rID;
     for (int i = 0; i < surf->nsr; i++) {
       SurfReact *sr = surf->sr[i];
@@ -370,16 +371,16 @@ void Finish::end(int flag, double time_multiple_runs)
       }
       tally = sr->compute_vector(1);
       if (me == 0) {
-        if (screen) fprintf(screen,"    reaction all: %g\n",tally);
-        if (logfile) fprintf(logfile,"    reaction all: %g\n",tally);
+        if (screen) fprintf(screen,"    reaction all: %g\n",spval(tally));
+        if (logfile) fprintf(logfile,"    reaction all: %g\n",spval(tally));
       }
       for (int m = 0; m < nlist; m++) {
         tally = sr->compute_vector(2+nlist+m);
         if (tally == 0.0) continue;
         rID = sr->reactionID(m);
         if (me == 0) {
-          if (screen) fprintf(screen,"    reaction %s: %g\n",rID,tally);
-          if (logfile) fprintf(logfile,"    reaction %s: %g\n",rID,tally);
+          if (screen) fprintf(screen,"    reaction %s: %g\n",rID,spval(tally));
+          if (logfile) fprintf(logfile,"    reaction %s: %g\n",rID,spval(tally));
         }
       }
     }
@@ -397,13 +398,13 @@ void Finish::end(int flag, double time_multiple_runs)
     stats(1,&tmp,&ave,&max,&min,10,histo);
     if (me == 0) {
       if (screen) {
-        fprintf(screen,"Particles: %g ave %g max %g min\n",ave,max,min);
+        fprintf(screen,"Particles: %g ave %g max %g min\n",spval(ave),spval(max),spval(min));
         fprintf(screen,"Histogram:");
         for (i = 0; i < 10; i++) fprintf(screen," %d",histo[i]);
         fprintf(screen,"\n");
       }
       if (logfile) {
-        fprintf(logfile,"Particles: %g ave %g max %g min\n",ave,max,min);
+        fprintf(logfile,"Particles: %g ave %g max %g min\n",spval(ave),spval(max),spval(min));
         fprintf(logfile,"Histogram:");
         for (i = 0; i < 10; i++) fprintf(logfile," %d",histo[i]);
         fprintf(logfile,"\n");
@@ -414,13 +415,13 @@ void Finish::end(int flag, double time_multiple_runs)
     stats(1,&tmp,&ave,&max,&min,10,histo);
     if (me == 0) {
       if (screen) {
-        fprintf(screen,"Cells:     %g ave %g max %g min\n",ave,max,min);
+        fprintf(screen,"Cells:     %g ave %g max %g min\n",spval(ave),spval(max),spval(min));
         fprintf(screen,"Histogram:");
         for (i = 0; i < 10; i++) fprintf(screen," %d",histo[i]);
         fprintf(screen,"\n");
       }
       if (logfile) {
-        fprintf(logfile,"Cells:      %g ave %g max %g min\n",ave,max,min);
+        fprintf(logfile,"Cells:      %g ave %g max %g min\n",spval(ave),spval(max),spval(min));
         fprintf(logfile,"Histogram:");
         for (i = 0; i < 10; i++) fprintf(logfile," %d",histo[i]);
         fprintf(logfile,"\n");
@@ -431,13 +432,13 @@ void Finish::end(int flag, double time_multiple_runs)
     stats(1,&tmp,&ave,&max,&min,10,histo);
     if (me == 0) {
       if (screen) {
-        fprintf(screen,"GhostCell: %g ave %g max %g min\n",ave,max,min);
+        fprintf(screen,"GhostCell: %g ave %g max %g min\n",spval(ave),spval(max),spval(min));
         fprintf(screen,"Histogram:");
         for (i = 0; i < 10; i++) fprintf(screen," %d",histo[i]);
         fprintf(screen,"\n");
       }
       if (logfile) {
-        fprintf(logfile,"GhostCell: %g ave %g max %g min\n",ave,max,min);
+        fprintf(logfile,"GhostCell: %g ave %g max %g min\n",spval(ave),spval(max),spval(min));
         fprintf(logfile,"Histogram:");
         for (i = 0; i < 10; i++) fprintf(logfile," %d",histo[i]);
         fprintf(logfile,"\n");
@@ -448,13 +449,13 @@ void Finish::end(int flag, double time_multiple_runs)
     stats(1,&tmp,&ave,&max,&min,10,histo);
     if (me == 0) {
       if (screen) {
-        fprintf(screen,"EmptyCell: %g ave %g max %g min\n",ave,max,min);
+        fprintf(screen,"EmptyCell: %g ave %g max %g min\n",spval(ave),spval(max),spval(min));
         fprintf(screen,"Histogram:");
         for (i = 0; i < 10; i++) fprintf(screen," %d",histo[i]);
         fprintf(screen,"\n");
       }
       if (logfile) {
-        fprintf(logfile,"EmptyCell: %g ave %g max %g min\n",ave,max,min);
+        fprintf(logfile,"EmptyCell: %g ave %g max %g min\n",spval(ave),spval(max),spval(min));
         fprintf(logfile,"Histogram:");
         for (i = 0; i < 10; i++) fprintf(logfile," %d",histo[i]);
         fprintf(logfile,"\n");
@@ -466,13 +467,13 @@ void Finish::end(int flag, double time_multiple_runs)
       stats(1,&tmp,&ave,&max,&min,10,histo);
       if (me == 0) {
         if (screen) {
-          fprintf(screen,"Surfs:     %g ave %g max %g min\n",ave,max,min);
+          fprintf(screen,"Surfs:     %g ave %g max %g min\n",spval(ave),spval(max),spval(min));
           fprintf(screen,"Histogram:");
           for (i = 0; i < 10; i++) fprintf(screen," %d",histo[i]);
           fprintf(screen,"\n");
         }
         if (logfile) {
-          fprintf(logfile,"Surfs:    %g ave %g max %g min\n",ave,max,min);
+          fprintf(logfile,"Surfs:    %g ave %g max %g min\n",spval(ave),spval(max),spval(min));
           fprintf(logfile,"Histogram:");
           for (i = 0; i < 10; i++) fprintf(logfile," %d",histo[i]);
           fprintf(logfile,"\n");
@@ -483,13 +484,13 @@ void Finish::end(int flag, double time_multiple_runs)
       stats(1,&tmp,&ave,&max,&min,10,histo);
       if (me == 0) {
         if (screen) {
-          fprintf(screen,"GhostSurf: %g ave %g max %g min\n",ave,max,min);
+          fprintf(screen,"GhostSurf: %g ave %g max %g min\n",spval(ave),spval(max),spval(min));
           fprintf(screen,"Histogram:");
           for (i = 0; i < 10; i++) fprintf(screen," %d",histo[i]);
           fprintf(screen,"\n");
         }
         if (logfile) {
-          fprintf(logfile,"GhostSurf: %g ave %g max %g min\n",ave,max,min);
+          fprintf(logfile,"GhostSurf: %g ave %g max %g min\n",spval(ave),spval(max),spval(min));
           fprintf(logfile,"Histogram:");
           for (i = 0; i < 10; i++) fprintf(logfile," %d",histo[i]);
           fprintf(logfile,"\n");
@@ -503,16 +504,16 @@ void Finish::end(int flag, double time_multiple_runs)
 
 /* ---------------------------------------------------------------------- */
 
-void Finish::stats(int n, double *data,
-                   double *pave, double *pmax, double *pmin,
+void Finish::stats(int n, sfloat *data,
+                   sfloat *pave, sfloat *pmax, sfloat *pmin,
                    int nhisto, int *histo)
 {
   int i,m;
   int *histotmp;
 
-  double min = 1.0e20;
-  double max = -1.0e20;
-  double ave = 0.0;
+  sfloat min = 1.0e20;
+  sfloat max = -1.0e20;
+  sfloat ave = 0.0;
   for (i = 0; i < n; i++) {
     ave += data[i];
     if (data[i] < min) min = data[i];
@@ -521,20 +522,20 @@ void Finish::stats(int n, double *data,
 
   int ntotal;
   MPI_Allreduce(&n,&ntotal,1,MPI_INT,MPI_SUM,world);
-  double tmp;
-  MPI_Allreduce(&ave,&tmp,1,MPI_DOUBLE,MPI_SUM,world);
+  sfloat tmp;
+  MPI_Allreduce(&ave,&tmp,1,MPI_SFLOAT,MPI_SUM,world);
   ave = tmp/ntotal;
-  MPI_Allreduce(&min,&tmp,1,MPI_DOUBLE,MPI_MIN,world);
+  MPI_Allreduce(&min,&tmp,1,MPI_SFLOAT,MPI_MIN,world);
   min = tmp;
-  MPI_Allreduce(&max,&tmp,1,MPI_DOUBLE,MPI_MAX,world);
+  MPI_Allreduce(&max,&tmp,1,MPI_SFLOAT,MPI_MAX,world);
   max = tmp;
 
   for (i = 0; i < nhisto; i++) histo[i] = 0;
 
-  double del = max - min;
+  sfloat del = max - min;
   for (i = 0; i < n; i++) {
     if (del == 0.0) m = 0;
-    else m = static_cast<int> ((data[i]-min)/del * nhisto);
+    else m = static_cast<int> (spval((data[i]-min)/del * nhisto));
     if (m > nhisto-1) m = nhisto-1;
     histo[m]++;
   }
@@ -553,17 +554,17 @@ void Finish::stats(int n, double *data,
 
 void mpi_timings(const char *label, Timer *t, int tt,
                         MPI_Comm world, const int nprocs,
-                        const int me, double time_loop, FILE *scr, FILE *log)
+                        const int me, sfloat time_loop, FILE *scr, FILE *log)
 {
-  double tmp, time_max, time_min, time_sq;
-  double time = t->array[tt];
+  sfloat tmp, time_max, time_min, time_sq;
+  sfloat time = t->array[tt];
 
-  MPI_Allreduce(&time,&time_min,1,MPI_DOUBLE,MPI_MIN,world);
-  MPI_Allreduce(&time,&time_max,1,MPI_DOUBLE,MPI_MAX,world);
+  MPI_Allreduce(&time,&time_min,1,MPI_SFLOAT,MPI_MIN,world);
+  MPI_Allreduce(&time,&time_max,1,MPI_SFLOAT,MPI_MAX,world);
   time_sq = time*time;
-  MPI_Allreduce(&time,&tmp,1,MPI_DOUBLE,MPI_SUM,world);
+  MPI_Allreduce(&time,&tmp,1,MPI_SFLOAT,MPI_SUM,world);
   time = tmp/nprocs;
-  MPI_Allreduce(&time_sq,&tmp,1,MPI_DOUBLE,MPI_SUM,world);
+  MPI_Allreduce(&time_sq,&tmp,1,MPI_SFLOAT,MPI_SUM,world);
   time_sq = tmp/nprocs;
 
   // % variance from the average as measure of load imbalance
@@ -577,8 +578,8 @@ void mpi_timings(const char *label, Timer *t, int tt,
     tmp = time/time_loop*100.0;
     const char fmt[] = "%-8s|%- 12.5g|%- 12.5g|%- 12.5g|%6.1f |%6.2f\n";
     if (scr)
-      fprintf(scr,fmt,label,time_min,time,time_max,time_sq,tmp);
+      fprintf(scr,fmt,label,spval(time_min),spval(time),spval(time_max),spval(time_sq),spval(tmp));
     if (log)
-      fprintf(log,fmt,label,time_min,time,time_max,time_sq,tmp);
+      fprintf(log,fmt,label,spval(time_min),spval(time),spval(time_max),spval(time_sq),spval(tmp));
   }
 }

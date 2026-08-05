@@ -1,3 +1,4 @@
+/* AD-CONVERTED: double->sfloat by tools/ad_convert.py (see sfloat.h) */
 /* ----------------------------------------------------------------------
    SPARTA - Stochastic PArallel Rarefied-gas Time-accurate Analyzer
    http://sparta.github.io
@@ -126,7 +127,7 @@ void ComputeReactBoundary::compute_array()
   // sum tallies across processors
 
   MPI_Allreduce(&myarray[0][0],&array[0][0],nrow*ntotal,
-                MPI_DOUBLE,MPI_SUM,world);
+                MPI_SFLOAT,MPI_SUM,world);
 }
 
 /* ---------------------------------------------------------------------- */
@@ -153,7 +154,7 @@ void ComputeReactBoundary::clear()
    jp != NULL means two particles after collision
 ------------------------------------------------------------------------- */
 
-void ComputeReactBoundary::boundary_tally(double dtremain,
+void ComputeReactBoundary::boundary_tally(sfloat dtremain,
                                           int iface, int istyle, int reaction,
                                           Particle::OnePart *iorig,
                                           Particle::OnePart *ip,
@@ -172,7 +173,7 @@ void ComputeReactBoundary::boundary_tally(double dtremain,
   // for rpflag, tally each column if r2c is 1 for this reaction
   // for rpflag = 0, tally the reaction directly
 
-  double *vec = myarray[iface];
+  sfloat *vec = myarray[iface];
 
   if (rpflag) {
     int *r2c = reaction2col[reaction];

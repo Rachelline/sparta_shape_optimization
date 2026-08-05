@@ -1,3 +1,4 @@
+/* AD-CONVERTED: double->sfloat by tools/ad_convert.py (see sfloat.h) */
 /* ----------------------------------------------------------------------
    SPARTA - Stochastic PArallel Rarefied-gas Time-accurate Analyzer
    http://sparta.github.io
@@ -56,7 +57,7 @@ class ReadRestart : protected Pointers {
   Surf::Tri *tris;
   int ncustom_surf;
   int nvalues_custom_surf;
-  double **cvalues;
+  sfloat **cvalues;
 
   // local methods
 
@@ -80,9 +81,9 @@ class ReadRestart : protected Pointers {
   void read_surfs_multi_file_less_procs(char *);
   void read_surfs_multi_file_more_procs(char *);
   void unpack_surfs(int, char *);
-  void add_line(surfint, int, int, int, double *, double *);
-  void add_tri(surfint, int, int, int, double *, double *, double *);
-  void add_custom(surfint, double *);
+  void add_line(surfint, int, int, int, sfloat *, sfloat *);
+  void add_tri(surfint, int, int, int, sfloat *, sfloat *, sfloat *);
+  void add_custom(surfint, sfloat *);
 
   void create_child_cells(int);
   void assign_particles(int);
@@ -93,20 +94,20 @@ class ReadRestart : protected Pointers {
 
   int read_int();
   bigint read_bigint();
-  double read_double();
+  sfloat read_double();
   char *read_string();
   void read_int_vec(int, int *);
-  void read_double_vec(int, double *);
+  void read_double_vec(int, sfloat *);
   void read_char_vec(bigint, char *);
 
-  // union data struct for packing 32-bit and 64-bit ints into double bufs
-  // this avoids aliasing issues by having 2 pointers (double,int)
+  // union data struct for packing 32-bit and 64-bit ints into sfloat bufs
+  // this avoids aliasing issues by having 2 pointers (sfloat,int)
   //   to same buf memory
   // constructor for 32-bit int prevents compiler
-  //   from possibly calling the double constructor when passed an int
-  // copy to a double *buf:
+  //   from possibly calling the sfloat constructor when passed an int
+  // copy to a sfloat *buf:
   //   buf[m++] = ubuf(foo).d, where foo is a 32-bit or 64-bit int
-  // copy from a double *buf:
+  // copy from a sfloat *buf:
   //   foo = (int) ubuf(buf[m++]).i;, where (int) or (tagint) match foo
   //   the cast prevents compiler warnings about possible truncation
 

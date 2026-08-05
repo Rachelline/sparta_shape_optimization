@@ -1,3 +1,4 @@
+/* AD-CONVERTED: double->sfloat by tools/ad_convert.py (see sfloat.h) */
 /* ----------------------------------------------------------------------
    SPARTA - Stochastic PArallel Rarefied-gas Time-accurate Analyzer
    http://sparta.github.io
@@ -36,17 +37,17 @@ class SurfReact : protected Pointers {
   SurfReact(class SPARTA *sparta) : Pointers(sparta) {} // needed for Kokkos
   virtual ~SurfReact();
   virtual void init();
-  virtual int react(Particle::OnePart *&, int, double *,
+  virtual int react(Particle::OnePart *&, int, sfloat *,
                     Particle::OnePart *&, int &) = 0;
   virtual char *reactionID(int) = 0;
-  virtual double reaction_coeff(int) = 0;
+  virtual sfloat reaction_coeff(int) = 0;
   virtual int match_reactant(char *, int) = 0;
   virtual int match_product(char *, int) = 0;
 
   virtual void tally_reset();
   virtual void tally_update();
   virtual void grid_changed() {}
-  double compute_vector(int i);
+  sfloat compute_vector(int i);
 
  protected:
   FILE *fp;
@@ -59,7 +60,7 @@ class SurfReact : protected Pointers {
   // 3 flags used in compute_vector() to minimize AllReduce calls
 
   int nsingle,ntotal;
-  double one[2],all[2];
+  sfloat one[2],all[2];
   int *tally_single,*tally_total;
   int *tally_single_all,*tally_total_all;
   int tally_two_flag,tally_single_flag,tally_total_flag;

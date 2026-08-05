@@ -1,3 +1,4 @@
+/* AD-CONVERTED: double->sfloat by tools/ad_convert.py (see sfloat.h) */
 /* ----------------------------------------------------------------------
    SPARTA - Stochastic PArallel Rarefied-gas Time-accurate Analyzer
    http://sparta.github.io
@@ -31,13 +32,13 @@ class ReactTCEQK : public ReactBird {
   ReactTCEQK(class SPARTA *, int, char **);
   void init();
   int attempt(Particle::OnePart *, Particle::OnePart *,
-              double, double, double, double &, int &);
+              sfloat, sfloat, sfloat, sfloat &, int &);
 
  private:
   int attempt_tce(Particle::OnePart *, Particle::OnePart *, OneReaction *,
-                  double, double, double, double &, int &);
+                  sfloat, sfloat, sfloat, sfloat &, int &);
   int attempt_qk(Particle::OnePart *, Particle::OnePart *, OneReaction *,
-                 double, double, double, double &, int &);
+                 sfloat, sfloat, sfloat, sfloat &, int &);
 };
 
 }

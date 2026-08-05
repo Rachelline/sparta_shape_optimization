@@ -1,3 +1,4 @@
+/* AD-CONVERTED: double->sfloat by tools/ad_convert.py (see sfloat.h) */
 /* ----------------------------------------------------------------------
    SPARTA - Stochastic PArallel Rarefied-gas Time-accurate Analyzer
    http://sparta.github.io
@@ -56,7 +57,7 @@ void ReadParticles::command(int narg, char **arg)
   line = new char[MAXLINE];
 
   MPI_Barrier(world);
-  double time1 = MPI_Wtime();
+  sfloat time1 = MPI_Wtime();
 
   // open file on proc 0
 
@@ -94,7 +95,7 @@ void ReadParticles::command(int narg, char **arg)
   // for now, assume fields are ID,ispecies,x,y,z,vx,vy,vz
 
   int nfield = 8;
-  double **fields;
+  sfloat **fields;
   memory->create(fields,CHUNK,nfield,"read_particles:fields");
 
   int nlocal_previous = particle->nlocal;
@@ -105,7 +106,7 @@ void ReadParticles::command(int narg, char **arg)
   while (nread < np) {
     nchunk = MIN(np-nread,CHUNK);
     if (me == 0) read_particles(nchunk,nfield,fields);
-    MPI_Bcast(&fields[0][0],nchunk*nfield,MPI_DOUBLE,0,world);
+    MPI_Bcast(&fields[0][0],nchunk*nfield,MPI_SFLOAT,0,world);
     process_particles(nchunk,nfield,fields);
     nread += nchunk;
   }
@@ -113,7 +114,7 @@ void ReadParticles::command(int narg, char **arg)
   memory->destroy(fields);
 
   MPI_Barrier(world);
-  double time2 = MPI_Wtime();
+  sfloat time2 = MPI_Wtime();
 
   // check that no read-in particle species is invalid
 
@@ -179,14 +180,14 @@ void ReadParticles::command(int narg, char **arg)
    for now, assume fields are id,x,y,z,vx,vy,vz
 ------------------------------------------------------------------------- */
 
-void ReadParticles::process_particles(int n, int, double **fields)
+void ReadParticles::process_particles(int n, int, sfloat **fields)
 {
   int id,ispecies,icell;
-  double x[3],v[3];
+  sfloat x[3],v[3];
 
   Grid::ChildCell *cells = grid->cells;
-  double *boxlo = domain->boxlo;
-  double *boxhi = domain->boxhi;
+  sfloat *boxlo = domain->boxlo;
+  sfloat *boxhi = domain->boxhi;
 
   for (int i = 0; i < n; i++) {
     x[0] = fields[i][2];
@@ -206,8 +207,8 @@ void ReadParticles::process_particles(int n, int, double **fields)
     icell = grid->id_find_child(0,0,boxlo,boxhi,x);
     if (icell < 0 || cells[icell].proc != me) continue;
 
-    id = static_cast<int> (fields[i][0]);
-    ispecies = static_cast<int> (fields[i][1]) - 1;
+    id = static_cast<int> (spval(fields[i][0]));
+    ispecies = static_cast<int> (spval(fields[i][1])) - 1;
     v[0] = fields[i][5];
     v[1] = fields[i][6];
     v[2] = fields[i][7];
@@ -285,7 +286,7 @@ bigint ReadParticles::read_header()
    only called by proc 0
 ------------------------------------------------------------------------- */
 
-void ReadParticles::read_particles(int n, int nfield, double **fields)
+void ReadParticles::read_particles(int n, int nfield, sfloat **fields)
 {
   int i,m,nwords;
   char *eof,*word;

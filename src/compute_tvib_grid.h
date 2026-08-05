@@ -1,3 +1,4 @@
+/* AD-CONVERTED: double->sfloat by tools/ad_convert.py (see sfloat.h) */
 /* ----------------------------------------------------------------------
    SPARTA - Stochastic PArallel Rarefied-gas Time-accurate Analyzer
    http://sparta.github.io
@@ -31,8 +32,8 @@ class ComputeTvibGrid : public Compute {
   virtual ~ComputeTvibGrid();
   virtual void init();
   virtual void compute_per_grid();
-  virtual int query_tally_grid(int, double **&, int *&);
-  virtual void post_process_grid(int, int, double **, int *, double *, int);
+  virtual int query_tally_grid(int, sfloat **&, int *&);
+  virtual void post_process_grid(int, int, sfloat **, int *, sfloat *, int);
   virtual void reallocate();
   bigint memory_usage();
 
@@ -43,7 +44,7 @@ class ComputeTvibGrid : public Compute {
 
   int ntally;                // total # of columns in tally array
   int nglocal;               // # of owned grid cells
-  double **tally;            // array of tally quantities, ncells by ntally
+  sfloat **tally;            // array of tally quantities, ncells by ntally
 
   int *nmap;               // nmap[i] = # of tally values for Ith output column
                            // size = # of outputs (Ngroup or Ngroup*Nmode)
@@ -55,7 +56,7 @@ class ComputeTvibGrid : public Compute {
 
   // modeflag = 0, tallying per grid cell and per species
 
-  double *tspecies;          // per-species vibrational temps
+  sfloat *tspecies;          // per-species vibrational temps
                              // size = Nspecies
 
   int *s2t;                  // s2t[i] = first tally column for species I
@@ -65,7 +66,7 @@ class ComputeTvibGrid : public Compute {
 
   int index_vibmode;         // index into extra particle values for vibmodes
 
-  double **tspecies_mode;    // per-species per-mode vibrational temps
+  sfloat **tspecies_mode;    // per-species per-mode vibrational temps
                              // size = Nspecies by Nmode
   int **s2t_mode;            // s2tmode[i][j] =
                              //   first tally column for species I, mode J

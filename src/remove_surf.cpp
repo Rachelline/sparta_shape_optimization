@@ -1,3 +1,4 @@
+/* AD-CONVERTED: double->sfloat by tools/ad_convert.py (see sfloat.h) */
 /* ----------------------------------------------------------------------
    SPARTA - Stochastic PArallel Rarefied-gas Time-accurate Analyzer
    http://sparta.github.io
@@ -50,14 +51,14 @@ void RemoveSurf::command(int narg, char **arg)
     if (screen) fprintf(screen,"Removing surfs ...\n");
 
   MPI_Barrier(world);
-  double time1 = MPI_Wtime();
+  sfloat time1 = MPI_Wtime();
 
   // sort particles
 
   if (particle->exist) particle->sort();
 
   MPI_Barrier(world);
-  double time2 = MPI_Wtime();
+  sfloat time2 = MPI_Wtime();
 
   // remove all surfs in group
 
@@ -104,7 +105,7 @@ void RemoveSurf::command(int narg, char **arg)
   else surf->check_watertight_3d();
 
   MPI_Barrier(world);
-  double time3 = MPI_Wtime();
+  sfloat time3 = MPI_Wtime();
 
   // reset grid due to changing surfs
   // assign surfs to grid cells
@@ -137,7 +138,7 @@ void RemoveSurf::command(int narg, char **arg)
   }
 
   MPI_Barrier(world);
-  double time4 = MPI_Wtime();
+  sfloat time4 = MPI_Wtime();
 
   // re-setup owned and ghost cell info
 
@@ -150,19 +151,19 @@ void RemoveSurf::command(int narg, char **arg)
   grid->type_check();
 
   MPI_Barrier(world);
-  double time5 = MPI_Wtime();
+  sfloat time5 = MPI_Wtime();
 
-  double time_total = time3-time1;
+  sfloat time_total = time3-time1;
 
   if (comm->me == 0) {
     if (screen) {
-      fprintf(screen,"  CPU time = %g secs\n",time_total);
+      fprintf(screen,"  CPU time = %g secs\n",spval(time_total));
       fprintf(screen,"  sort/remove/surf2grid/ghost percent = %g %g %g %g\n",
               100.0*(time2-time1)/time_total,100.0*(time3-time2)/time_total,
               100.0*(time4-time3)/time_total,100.0*(time5-time4)/time_total);
     }
     if (logfile) {
-      fprintf(logfile,"  CPU time = %g secs\n",time_total);
+      fprintf(logfile,"  CPU time = %g secs\n",spval(time_total));
       fprintf(logfile,"  sort/remove/surf2grid/ghost percent = %g %g %g %g\n",
               100.0*(time2-time1)/time_total,100.0*(time3-time2)/time_total,
               100.0*(time4-time3)/time_total,100.0*(time5-time4)/time_total);
@@ -227,7 +228,7 @@ bigint RemoveSurf::remove(int groupbit)
 
   if (ncustom) {
     nvalues_custom = surf->extract_custom(cvalues);
-    ncbytes = (1+nvalues_custom) * sizeof(double);
+    ncbytes = (1+nvalues_custom) * sizeof(sfloat);
   }
 
   // remove surfs in group, both from lines/tris and cvalues

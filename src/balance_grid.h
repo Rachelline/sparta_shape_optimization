@@ -1,3 +1,4 @@
+/* AD-CONVERTED: double->sfloat by tools/ad_convert.py (see sfloat.h) */
 /* ----------------------------------------------------------------------
    SPARTA - Stochastic PArallel Rarefied-gas Time-accurate Analyzer
    http://sparta.github.io
@@ -31,10 +32,10 @@ class BalanceGrid : protected Pointers {
   void command(int, char **, int outflag=1);
 
  private:
-  double last;
+  sfloat last;
 
   void procs2grid(int, int, int, int &, int &, int &);
-  void timer_cell_weights(double *&);
+  void timer_cell_weights(sfloat *&);
 };
 
 }

@@ -1,3 +1,4 @@
+/* AD-CONVERTED: double->sfloat by tools/ad_convert.py (see sfloat.h) */
 /* ----------------------------------------------------------------------
    SPARTA - Stochastic PArallel Rarefied-gas Time-accurate Analyzer
    http://sparta.github.io
@@ -102,14 +103,14 @@ void SurfReact::tally_update()
 
 /* ---------------------------------------------------------------------- */
 
-double SurfReact::compute_vector(int i)
+sfloat SurfReact::compute_vector(int i)
 {
   if (i < 2) {
     if (!tally_two_flag) {
       tally_two_flag = 1;
       one[0] = nsingle;
       one[1] = ntotal;
-      MPI_Allreduce(one,all,2,MPI_DOUBLE,MPI_SUM,world);
+      MPI_Allreduce(one,all,2,MPI_SFLOAT,MPI_SUM,world);
     }
     return all[i];
   }

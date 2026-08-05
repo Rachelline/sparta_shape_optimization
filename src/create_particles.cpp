@@ -1,3 +1,4 @@
+/* AD-CONVERTED: double->sfloat by tools/ad_convert.py (see sfloat.h) */
 /* ----------------------------------------------------------------------
    SPARTA - Stochastic PArallel Rarefied-gas Time-accurate Analyzer
    http://sparta.github.io
@@ -415,7 +416,7 @@ void CreateParticles::command(int narg, char **arg)
     if (screen) fprintf(screen,"Creating particles ...\n");
 
   MPI_Barrier(world);
-  double time1 = MPI_Wtime();
+  sfloat time1 = MPI_Wtime();
 
   bigint nprevious = particle->nglobal;
 
@@ -429,7 +430,7 @@ void CreateParticles::command(int narg, char **arg)
   }
 
   MPI_Barrier(world);
-  double time2 = MPI_Wtime();
+  sfloat time2 = MPI_Wtime();
 
   // issue warning if created particle count is unexpected
   // only if no region and no variable density specified
@@ -470,14 +471,14 @@ void CreateParticles::create_single()
 {
   np = 1;
 
-  double x[3],v[3],vstream[3];
-  double *lo,*hi;
+  sfloat x[3],v[3],vstream[3];
+  sfloat *lo,*hi;
 
   x[0] = xp;  x[1] = yp;  x[2] = zp;
   v[0] = vx;  v[1] = vy;  v[2] = vz;
-  double temp_thermal = particle->mixture[imix]->temp_thermal;
-  double temp_rot = particle->mixture[imix]->temp_rot;
-  double temp_vib = particle->mixture[imix]->temp_vib;
+  sfloat temp_thermal = particle->mixture[imix]->temp_thermal;
+  sfloat temp_rot = particle->mixture[imix]->temp_rot;
+  sfloat temp_vib = particle->mixture[imix]->temp_vib;
   vstream[0] = vstream[1] = vstream[2] = 0.0;
 
   if (domain->dimension == 2 && x[2] != 0.0)
@@ -519,8 +520,8 @@ void CreateParticles::create_single()
 
   if (iwhich >= 0) {
     int id = MAXSMALLINT*random->uniform();
-    double erot = particle->erot(mspecies,temp_rot,random);
-    double evib = particle->evib(mspecies,temp_vib,random);
+    sfloat erot = particle->erot(mspecies,temp_rot,random);
+    sfloat evib = particle->evib(mspecies,temp_vib,random);
     particle->add_particle(id,mspecies,iwhich,x,v,erot,evib);
     if (nfix_update_custom)
       modify->update_custom(particle->nlocal-1,temp_thermal,
@@ -544,8 +545,8 @@ void CreateParticles::create_local()
 
   int me = comm->me;
   RanKnuth *random = new RanKnuth(update->ranmaster->uniform());
-  double seed = update->ranmaster->uniform();
-  random->reset(seed,me,100);
+  sfloat seed = update->ranmaster->uniform();
+  random->reset(spval(seed),me,100);
 
   Grid::ChildCell *cells = grid->cells;
   Grid::ChildInfo *cinfo = grid->cinfo;
@@ -565,8 +566,8 @@ void CreateParticles::create_local()
   //   insertvol = flowvol if cutflag = 1
   //   insertvol < flowvol possible if cutflag = 0 (no cut cells)
 
-  double flowvolme = 0.0;
-  double insertvolme = 0.0;
+  sfloat flowvolme = 0.0;
+  sfloat insertvolme = 0.0;
 
   for (int icell = 0; icell < nglocal; icell++) {
     if (cinfo[icell].type == INSIDE) continue;
@@ -584,20 +585,20 @@ void CreateParticles::create_local()
   // based on total flowvol and mixture density
 
   if (np == 0) {
-    double flowvol;
-    MPI_Allreduce(&flowvolme,&flowvol,1,MPI_DOUBLE,MPI_SUM,world);
-    np = particle->mixture[imix]->nrho * flowvol / update->fnum;
+    sfloat flowvol;
+    MPI_Allreduce(&flowvolme,&flowvol,1,MPI_SFLOAT,MPI_SUM,world);
+    np = static_cast<bigint>(spval(particle->mixture[imix]->nrho * flowvol / update->fnum));
   }
 
   // gather cummulative insertion volumes across all procs
 
-  double volupto;
-  MPI_Scan(&insertvolme,&volupto,1,MPI_DOUBLE,MPI_SUM,world);
+  sfloat volupto;
+  MPI_Scan(&insertvolme,&volupto,1,MPI_SFLOAT,MPI_SUM,world);
 
-  double *vols;
+  sfloat *vols;
   int nprocs = comm->nprocs;
   memory->create(vols,nprocs,"create_particles:vols");
-  MPI_Allgather(&volupto,1,MPI_DOUBLE,vols,1,MPI_DOUBLE,world);
+  MPI_Allgather(&volupto,1,MPI_SFLOAT,vols,1,MPI_SFLOAT,world);
 
   // gathered Scan results not guaranteed to be monotonically increasing
   //   can cause epsilon mis-counts for huge particle counts
@@ -613,9 +614,9 @@ void CreateParticles::create_local()
   // loop over procs insures sum of nme = Np
 
   bigint nstart,nstop;
-  if (me > 0) nstart = static_cast<bigint> (np * (vols[me-1]/vols[nprocs-1]));
+  if (me > 0) nstart = static_cast<bigint> (spval(np * (vols[me-1]/vols[nprocs-1])));
   else nstart = 0;
-  nstop = static_cast<bigint> (np * (vols[me]/vols[nprocs-1]));
+  nstop = static_cast<bigint> (spval(np * (vols[me]/vols[nprocs-1])));
   bigint nme = nstop-nstart;
 
   memory->destroy(vols);
@@ -634,28 +635,28 @@ void CreateParticles::create_local()
   // particle species = random value based on mixture fractions
   // particle velocity = stream velocity + thermal velocity
 
-  double nrho = particle->mixture[imix]->nrho;
+  sfloat nrho = particle->mixture[imix]->nrho;
   int *species = particle->mixture[imix]->species;
-  double *cummulative = particle->mixture[imix]->cummulative;
-  double *vstream = particle->mixture[imix]->vstream;
-  double *vscale = particle->mixture[imix]->vscale;
+  sfloat *cummulative = particle->mixture[imix]->cummulative;
+  sfloat *vstream = particle->mixture[imix]->vstream;
+  sfloat *vscale = particle->mixture[imix]->vscale;
   int nspecies = particle->mixture[imix]->nspecies;
-  double temp_thermal = particle->mixture[imix]->temp_thermal;
-  double temp_rot = particle->mixture[imix]->temp_rot;
-  double temp_vib = particle->mixture[imix]->temp_vib;
+  sfloat temp_thermal = particle->mixture[imix]->temp_thermal;
+  sfloat temp_rot = particle->mixture[imix]->temp_rot;
+  sfloat temp_vib = particle->mixture[imix]->temp_vib;
 
   int npercell,ncreate,isp,ispecies,id,pflag,subcell;
-  double x[3],v[3],xcell[3],vstream_var[3];
-  double ntarget,scale,rn,vn,vr,theta1,theta2,erot,evib;
-  double *lo,*hi;
+  sfloat x[3],v[3],xcell[3],vstream_var[3];
+  sfloat ntarget,scale,rn,vn,vr,theta1,theta2,erot,evib;
+  sfloat *lo,*hi;
 
-  double *vstream_update_custom = vstream;
-  double *cummulative_custom = new double[nspecies];
+  sfloat *vstream_update_custom = vstream;
+  sfloat *cummulative_custom = new sfloat[nspecies];
 
-  double tempscale = 1.0;
-  double sqrttempscale = 1.0;
+  sfloat tempscale = 1.0;
+  sfloat sqrttempscale = 1.0;
 
-  double volsum = 0.0;
+  sfloat volsum = 0.0;
   bigint nprev = 0;
 
   for (int icell = 0; icell < nglocal; icell++) {
@@ -670,7 +671,7 @@ void CreateParticles::create_local()
     volsum += cinfo[icell].volume / cinfo[icell].weight;
 
     ntarget = nme * volsum/insertvolme - nprev;
-    npercell = static_cast<int> (ntarget);
+    npercell = static_cast<int> (spval(ntarget));
 
     if (random->uniform() < ntarget-npercell) npercell++;
     ncreate = npercell;
@@ -684,7 +685,7 @@ void CreateParticles::create_local()
       if (scale < 0.0)
         error->one(FLERR,"Variable/custom density scale factor < 0.0");
       ntarget *= scale;
-      ncreate = static_cast<int> (ntarget);
+      ncreate = static_cast<int> (spval(ntarget));
       if (random->uniform() < ntarget-ncreate) ncreate++;
     }
 
@@ -833,8 +834,8 @@ void CreateParticles::create_local_twopass()
 
   int me = comm->me;
   RanKnuth *random = new RanKnuth(update->ranmaster->uniform());
-  double seed = update->ranmaster->uniform();
-  random->reset(seed,me,100);
+  sfloat seed = update->ranmaster->uniform();
+  random->reset(spval(seed),me,100);
 
   Grid::ChildCell *cells = grid->cells;
   Grid::ChildInfo *cinfo = grid->cinfo;
@@ -854,8 +855,8 @@ void CreateParticles::create_local_twopass()
   //   insertvol = flowvol if cutflag = 1
   //   insertvol < flowvol possible if cutflag = 0 (no cut cells)
 
-  double flowvolme = 0.0;
-  double insertvolme = 0.0;
+  sfloat flowvolme = 0.0;
+  sfloat insertvolme = 0.0;
 
   for (int icell = 0; icell < nglocal; icell++) {
     if (cinfo[icell].type == INSIDE) continue;
@@ -873,20 +874,20 @@ void CreateParticles::create_local_twopass()
   // based on total flowvol and mixture density
 
   if (np == 0) {
-    double flowvol;
-    MPI_Allreduce(&flowvolme,&flowvol,1,MPI_DOUBLE,MPI_SUM,world);
-    np = particle->mixture[imix]->nrho * flowvol / update->fnum;
+    sfloat flowvol;
+    MPI_Allreduce(&flowvolme,&flowvol,1,MPI_SFLOAT,MPI_SUM,world);
+    np = static_cast<bigint>(spval(particle->mixture[imix]->nrho * flowvol / update->fnum));
   }
 
   // gather cummulative insertion volumes across all procs
 
-  double volupto;
-  MPI_Scan(&insertvolme,&volupto,1,MPI_DOUBLE,MPI_SUM,world);
+  sfloat volupto;
+  MPI_Scan(&insertvolme,&volupto,1,MPI_SFLOAT,MPI_SUM,world);
 
-  double *vols;
+  sfloat *vols;
   int nprocs = comm->nprocs;
   memory->create(vols,nprocs,"create_particles:vols");
-  MPI_Allgather(&volupto,1,MPI_DOUBLE,vols,1,MPI_DOUBLE,world);
+  MPI_Allgather(&volupto,1,MPI_SFLOAT,vols,1,MPI_SFLOAT,world);
 
   // gathered Scan results not guaranteed to be monotonically increasing
   //   can cause epsilon mis-counts for huge particle counts
@@ -902,9 +903,9 @@ void CreateParticles::create_local_twopass()
   // loop over procs insures sum of nme = Np
 
   bigint nstart,nstop;
-  if (me > 0) nstart = static_cast<bigint> (np * (vols[me-1]/vols[nprocs-1]));
+  if (me > 0) nstart = static_cast<bigint> (spval(np * (vols[me-1]/vols[nprocs-1])));
   else nstart = 0;
-  nstop = static_cast<bigint> (np * (vols[me]/vols[nprocs-1]));
+  nstop = static_cast<bigint> (spval(np * (vols[me]/vols[nprocs-1])));
   bigint nme = nstop-nstart;
 
   memory->destroy(vols);
@@ -922,27 +923,27 @@ void CreateParticles::create_local_twopass()
   // particle species = random value based on mixture fractions
   // particle velocity = stream velocity + thermal velocity
 
-  double nrho = particle->mixture[imix]->nrho;
+  sfloat nrho = particle->mixture[imix]->nrho;
   int *species = particle->mixture[imix]->species;
-  double *cummulative = particle->mixture[imix]->cummulative;
-  double *vstream = particle->mixture[imix]->vstream;
-  double *vscale = particle->mixture[imix]->vscale;
+  sfloat *cummulative = particle->mixture[imix]->cummulative;
+  sfloat *vstream = particle->mixture[imix]->vstream;
+  sfloat *vscale = particle->mixture[imix]->vscale;
   int nspecies = particle->mixture[imix]->nspecies;
-  double temp_thermal = particle->mixture[imix]->temp_thermal;
-  double temp_rot = particle->mixture[imix]->temp_rot;
-  double temp_vib = particle->mixture[imix]->temp_vib;
+  sfloat temp_thermal = particle->mixture[imix]->temp_thermal;
+  sfloat temp_rot = particle->mixture[imix]->temp_rot;
+  sfloat temp_vib = particle->mixture[imix]->temp_vib;
 
   int npercell,ncreate,isp,ispecies,id,pflag,subcell;
-  double x[3],v[3],xcell[3],vstream_var[3];
-  double ntarget,scale,rn,vn,vr,theta1,theta2,erot,evib;
-  double *lo,*hi;
+  sfloat x[3],v[3],xcell[3],vstream_var[3];
+  sfloat ntarget,scale,rn,vn,vr,theta1,theta2,erot,evib;
+  sfloat *lo,*hi;
 
-  double *cummulative_custom = new double[nspecies];
+  sfloat *cummulative_custom = new sfloat[nspecies];
 
-  double tempscale = 1.0;
-  double sqrttempscale = 1.0;
+  sfloat tempscale = 1.0;
+  sfloat sqrttempscale = 1.0;
 
-  double volsum = 0.0;
+  sfloat volsum = 0.0;
   bigint nprev = 0;
 
   // first pass, just calculate # of particles to create
@@ -963,7 +964,7 @@ void CreateParticles::create_local_twopass()
     volsum += cinfo[icell].volume / cinfo[icell].weight;
 
     ntarget = nme * volsum/insertvolme - nprev;
-    npercell = static_cast<int> (ntarget);
+    npercell = static_cast<int> (spval(ntarget));
 
     if (random->uniform() < ntarget-npercell) npercell++;
     ncreate = npercell;
@@ -977,7 +978,7 @@ void CreateParticles::create_local_twopass()
       if (scale < 0.0)
         error->one(FLERR,"Variable/custom density scale factor < 0.0");
       ntarget *= scale;
-      ncreate = static_cast<int> (ntarget);
+      ncreate = static_cast<int> (spval(ntarget));
       if (random->uniform() < ntarget-ncreate) ncreate++;
     }
 
@@ -991,7 +992,7 @@ void CreateParticles::create_local_twopass()
 
   // second pass, create particles using ncreate_values
 
-  double *vstream_update_custom = vstream;
+  sfloat *vstream_update_custom = vstream;
 
   for (int icell = 0; icell < nglocal; icell++) {
     if (cinfo[icell].type == INSIDE) continue;
@@ -1139,7 +1140,7 @@ void CreateParticles::create_local_twopass()
    else return 0
 ------------------------------------------------------------------------- */
 
-int CreateParticles::outside_region(int dim, double *lo, double *hi)
+int CreateParticles::outside_region(int dim, sfloat *lo, sfloat *hi)
 {
   int flag = 1;
   if (hi[0] > region->extent_xlo &&
@@ -1158,14 +1159,14 @@ int CreateParticles::outside_region(int dim, double *lo, double *hi)
    first plug in particle x,y,z values into sxvar,syvar,szvar
 ------------------------------------------------------------------------- */
 
-int CreateParticles::species_variable(double *x)
+int CreateParticles::species_variable(sfloat *x)
 {
   if (sxstr) input->variable->internal_set(sxvar,x[0]);
   if (systr) input->variable->internal_set(syvar,x[1]);
   if (szstr) input->variable->internal_set(szvar,x[2]);
 
-  double value = input->variable->compute_equal(svar);
-  int isp = static_cast<int> (value);
+  sfloat value = input->variable->compute_equal(svar);
+  int isp = static_cast<int> (spval(value));
   return isp;
 }
 
@@ -1174,9 +1175,9 @@ int CreateParticles::species_variable(double *x)
    first plug in grid x,y,z values into dxvar,dyvar,dzvar
 ------------------------------------------------------------------------- */
 
-double CreateParticles::nrho_variable(double *lo, double *hi)
+sfloat CreateParticles::nrho_variable(sfloat *lo, sfloat *hi)
 {
-  double center[3];
+  sfloat center[3];
   center[0] = 0.5 * (lo[0]+hi[0]);
   center[1] = 0.5 * (lo[1]+hi[1]);
   center[2] = 0.5 * (lo[2]+hi[2]);
@@ -1185,7 +1186,7 @@ double CreateParticles::nrho_variable(double *lo, double *hi)
   if (dystr) input->variable->internal_set(dyvar,center[1]);
   if (dzstr) input->variable->internal_set(dzvar,center[2]);
 
-  double scale = input->variable->compute_equal(dvar);
+  sfloat scale = input->variable->compute_equal(dvar);
   return scale;
 }
 
@@ -1194,14 +1195,14 @@ double CreateParticles::nrho_variable(double *lo, double *hi)
    first plug in grid x,y,z values into txvar,tyvar,tzvar
 ------------------------------------------------------------------------- */
 
-double CreateParticles::temperature_variable(double *x)
+sfloat CreateParticles::temperature_variable(sfloat *x)
 {
 
   if (txstr) input->variable->internal_set(txvar,x[0]);
   if (tystr) input->variable->internal_set(tyvar,x[1]);
   if (tzstr) input->variable->internal_set(tzvar,x[2]);
 
-  double scale = input->variable->compute_equal(tvar);
+  sfloat scale = input->variable->compute_equal(tvar);
   return scale;
 }
 
@@ -1211,8 +1212,8 @@ double CreateParticles::temperature_variable(double *x)
    first plug in particle x,y,z values into vvarx,vvary,vvarz
 ------------------------------------------------------------------------- */
 
-void CreateParticles::vstream_variable(double *x, double *vstream,
-                                       double *vstream_variable)
+void CreateParticles::vstream_variable(sfloat *x, sfloat *vstream,
+                                       sfloat *vstream_variable)
 {
   if (vstrx) input->variable->internal_set(vvarx,x[0]);
   if (vstry) input->variable->internal_set(vvary,x[1]);
@@ -1234,12 +1235,12 @@ void CreateParticles::vstream_variable(double *x, double *vstream,
 ------------------------------------------------------------------------- */
 
 void CreateParticles::fractions_to_cummulative(int nspecies,
-                                               double *fractions, double *cummulative)
+                                               sfloat *fractions, sfloat *cummulative)
 {
   // sum = total frac for species with explicity set fractions
   // nimplicit = number of unset species
 
-  double sum = 0.0;
+  sfloat sum = 0.0;
   int nimplicit = 0;
   for (int i = 0; i < nspecies; i++) {
     if (fractions[i] >= 0.0) sum += fractions[i];
@@ -1249,7 +1250,7 @@ void CreateParticles::fractions_to_cummulative(int nspecies,
   // fraction for each unset species = equal portion of unset remainder
   // cummulative = cummulative fraction across species
 
-  double value;
+  sfloat value;
 
   for (int i = 0; i < nspecies; i++) {
     if (fractions[i] >= 0.0) value = fractions[i];
@@ -1271,18 +1272,18 @@ void CreateParticles::fractions_to_cummulative(int nspecies,
 void CreateParticles::create_all(bigint n)
 {
   int dimension = domain->dimension;
-  double xlo = domain->boxlo[0];
-  double ylo = domain->boxlo[1];
-  double zlo = domain->boxlo[2];
-  double xprd = domain->xprd;
-  double yprd = domain->yprd;
-  double zprd = domain->zprd;
+  sfloat xlo = domain->boxlo[0];
+  sfloat ylo = domain->boxlo[1];
+  sfloat zlo = domain->boxlo[2];
+  sfloat xprd = domain->xprd;
+  sfloat yprd = domain->yprd;
+  sfloat zprd = domain->zprd;
 
   int me = comm->me;
   RanKnuth *random = new RandomPark(update->ranmaster->uniform());
 
   int icell,id;
-  double x,y,z;
+  sfloat x,y,z;
 
   // loop over all N particles
 

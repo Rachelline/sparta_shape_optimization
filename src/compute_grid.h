@@ -1,3 +1,4 @@
+/* AD-CONVERTED: double->sfloat by tools/ad_convert.py (see sfloat.h) */
 /* ----------------------------------------------------------------------
    SPARTA - Stochastic PArallel Rarefied-gas Time-accurate Analyzer
    http://sparta.github.io
@@ -31,8 +32,8 @@ class ComputeGrid : public Compute {
   ~ComputeGrid();
   void init();
   virtual void compute_per_grid();
-  virtual int query_tally_grid(int, double **&, int *&);
-  virtual void post_process_grid(int, int, double **, int *, double *, int);
+  virtual int query_tally_grid(int, sfloat **&, int *&);
+  virtual void post_process_grid(int, int, sfloat **, int *, sfloat *, int);
   virtual void reallocate();
   bigint memory_usage();
 
@@ -48,11 +49,11 @@ class ComputeGrid : public Compute {
 
   int *nmap;                 // # of tally quantities each user value uses
   int **map;                 // which tally columns each output value uses
-  double **tally;            // array of tally quantities, cells by ntotal
+  sfloat **tally;            // array of tally quantities, cells by ntotal
 
-  double eprefactor;         // conversion from velocity^2 to energy
-  double tprefactor;         // conversion from KE to temperature
-  double rvprefactor;        // conversion from rot/vib E to temperature
+  sfloat eprefactor;         // conversion from velocity^2 to energy
+  sfloat tprefactor;         // conversion from KE to temperature
+  sfloat rvprefactor;        // conversion from rot/vib E to temperature
 
   void set_map(int, int);
   void reset_map();

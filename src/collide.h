@@ -1,3 +1,4 @@
+/* AD-CONVERTED: double->sfloat by tools/ad_convert.py (see sfloat.h) */
 /* ----------------------------------------------------------------------
    SPARTA - Stochastic PArallel Rarefied-gas Time-accurate Analyzer
    http://sparta.github.io
@@ -40,15 +41,15 @@ class Collide : protected Pointers {
   virtual void setup();
   virtual void collisions();
 
-  virtual double vremax_init(int, int) = 0;
-  virtual double attempt_collision(int, int, double) = 0;
-  virtual double attempt_collision(int, int, int, double) = 0;
+  virtual sfloat vremax_init(int, int) = 0;
+  virtual sfloat attempt_collision(int, int, sfloat) = 0;
+  virtual sfloat attempt_collision(int, int, int, sfloat) = 0;
   virtual int test_collision(int, int, int,
                              Particle::OnePart *, Particle::OnePart *) = 0;
   virtual void setup_collision(Particle::OnePart *, Particle::OnePart *) = 0;
   virtual int perform_collision(Particle::OnePart *&, Particle::OnePart *&,
                                 Particle::OnePart *&) = 0;
-  virtual double extract(int, int, const char *) {return 0.0;}
+  virtual sfloat extract(int, int, const char *) {return 0.0;}
 
   void modify_params(int, char **);
   void reset_vremax();
@@ -97,9 +98,9 @@ class Collide : protected Pointers {
   bigint vre_next;    // next timestep to reset vre params on
   int remainflag;     // 1 if remain defined, else use random fraction
 
-  double ***vremax;   // max relative velocity, per cell, per group pair
-  double ***remain;   // collision number remainder, per cell, per group pair
-  double **vremax_initial;   // initial vremax value, per group pair
+  sfloat ***vremax;   // max relative velocity, per cell, per group pair
+  sfloat ***remain;   // collision number remainder, per cell, per group pair
+  sfloat **vremax_initial;   // initial vremax value, per group pair
 
   int ngas_tally;            // copy of gas/gas Compute info setup by Update
   class Compute **glist_active;
@@ -107,7 +108,7 @@ class Collide : protected Pointers {
   // recombination reactions
 
   int recombflag;               // 1 if recomb reactions enabled, 0 if not
-  double recomb_boost_inverse;  // recombination rate boost factor from React
+  sfloat recomb_boost_inverse;  // recombination rate boost factor from React
   int **recomb_ijflag;          // 1 if species I,J have recomb reaction(s)
 
   // discrete vibrational energy data structs

@@ -1,0 +1,3 @@
+# Single-species (atomic nitrogen) for the FMF flat-plate value-match test.
+# Columns: ID  Molwt(amu)  Molmass(kg)  Rotdof RotRel Vibdof VibRel VibTemp  wt  charge
+N   14.008  2.325E-26  0    0.0   0    0.0           0.0       1.0      0.0

@@ -1,3 +1,4 @@
+/* AD-CONVERTED: double->sfloat by tools/ad_convert.py (see sfloat.h) */
 /* ----------------------------------------------------------------------
    SPARTA - Stochastic PArallel Rarefied-gas Time-accurate Analyzer
    http://sparta.github.io
@@ -36,7 +37,7 @@ class ComputeSurf : public Compute {
   virtual void init();
   void compute_per_surf();
   virtual void clear();
-  virtual void surf_tally(double, int, int, int, Particle::OnePart *,
+  virtual void surf_tally(sfloat, int, int, int, Particle::OnePart *,
                           Particle::OnePart *, Particle::OnePart *);
   virtual int tallyinfo(surfint *&);
   virtual void post_process_surf();
@@ -47,10 +48,10 @@ class ComputeSurf : public Compute {
   int groupbit,imix,nvalue,ngroup,ntotal;
   int maxsurf,combined;
   int normarea;            // 1 for value/area/time, 0 for value/time
-  double nfactor_inverse;
+  sfloat nfactor_inverse;
   int *which;
   int comflag;             // body center-of-mass setting for torques
-  double com[3];
+  sfloat com[3];
 
   int ntally;              // # of surfs I have tallied for
   int maxtally;            // # of tallies currently allocated
@@ -73,8 +74,18 @@ class ComputeSurf : public Compute {
   Surf::Tri *tris;
 
   int weightflag;          // 1 if cell weighting is enabled
-  double weight;           // particle weight, based on initial cell
-  double *normflux;        // normalization factor for each surf element
+  sfloat weight;           // particle weight, based on initial cell
+  sfloat *normflux;        // normalization factor for each surf element
+
+#ifdef SPARTA_AD
+  int score_correction;    // 1 if SPARTA_AD_SCORE_CORRECTION env var is set:
+                           // inject the flux-measure score-function term
+                           // (docs/AD_GRADIENTS.md) into fluxscale-weighted
+                           // tallies via u/spval(u). No effect on tallied
+                           // VALUES (the factor is exactly 1.0); only
+                           // derivatives change. Off by default -- stock
+                           // build never sees this member at all.
+#endif
 
   virtual void init_normflux();
   virtual void grow_tally();

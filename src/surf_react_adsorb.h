@@ -1,3 +1,4 @@
+/* AD-CONVERTED: double->sfloat by tools/ad_convert.py (see sfloat.h) */
 /* ----------------------------------------------------------------------
    SPARTA - Stochastic PArallel Rarefied-gas Time-accurate Analyzer
    http://sparta.github.io
@@ -30,10 +31,10 @@ class SurfReactAdsorb : public SurfReact {
   SurfReactAdsorb(class SPARTA *, int, char **);
   ~SurfReactAdsorb();
   void init();
-  int react(Particle::OnePart *&, int, double *, Particle::OnePart *&, int &);
+  int react(Particle::OnePart *&, int, sfloat *, Particle::OnePart *&, int &);
 
   char *reactionID(int);
-  double reaction_coeff(int) {return 0.0;};
+  sfloat reaction_coeff(int) {return 0.0;};
   int match_reactant(char *, int);
   int match_product(char *, int);
 
@@ -48,8 +49,8 @@ class SurfReactAdsorb : public SurfReact {
   int mode;                         // FACE or SURF
   int nsync;                        // synchronize surf state
                                     // every this many steps
-  double twall;                     // temperature of face or surf
-  double max_cover;
+  sfloat twall;                     // temperature of face or surf
+  sfloat max_cover;
   int this_index;                   // index of this surf reaction model
                                     // in Surf list of all reaction models
 
@@ -67,13 +68,13 @@ class SurfReactAdsorb : public SurfReact {
 
   int **face_species_state;     // 4 state quantities for up to 6 box faces
   int *face_total_state;
-  double *face_area;
-  double *face_weight;
-  double **face_tau;
+  sfloat *face_area;
+  sfloat *face_weight;
+  sfloat **face_tau;
 
   int **face_species_delta;     // changes to state between syncs
   int **face_sum_delta;         // delta summed across all procs
-  double **face_norm;           // norm of each face
+  sfloat **face_norm;           // norm of each face
 
   // mode = SURF for surface elements (lines or tris)
 
@@ -87,8 +88,8 @@ class SurfReactAdsorb : public SurfReact {
 
   int *mark;               // per-surf mark = 1 if reaction has occured, else 0
   surfint *tally2surf;     // surf ID for each tally entry in incollate
-  double **incollate;      // species changes for each tally
-  double **outcollate;     // collate output for summed changes for owned surfs
+  sfloat **incollate;      // species changes for each tally
+  sfloat **outcollate;     // collate output for summed changes for owned surfs
   int maxtally;            // allocated size of idtally, incollate
 
   // ptrs to data for each box face or surface element
@@ -96,9 +97,9 @@ class SurfReactAdsorb : public SurfReact {
 
   int *total_state;          // total count at last sync
   int **species_state;       // perspecies count at last sync
-  double *area;              // area of surf
-  double *weight;            // weight of surf
-  double **tau;              // PS time of surf
+  sfloat *area;              // area of surf
+  sfloat *weight;            // weight of surf
+  sfloat **tau;              // PS time of surf
 
   int **species_delta;       // change in perspecies count since last sync
 
@@ -120,16 +121,16 @@ class SurfReactAdsorb : public SurfReact {
                                              // reactants and products
     int *reactants,*products;      // species indices of reactants/products
     int *reactants_ad_index,*products_ad_index;
-    double *coeff;                 // numerical coeffs for reaction
-    double k_react;
+    sfloat *coeff;                 // numerical coeffs for reaction
+    sfloat k_react;
     int kisliuk_flag, energy_flag;
-    double kisliuk_coeff[3], energy_coeff[2];
+    sfloat kisliuk_coeff[3], energy_coeff[2];
     int cmodel_ip;                  // style for I's post-reaction surf collision
     int *cmodel_ip_flags;           // integer flags to pass to SC class
-    double *cmodel_ip_coeffs;       // double coeffs to pass to SC class
+    sfloat *cmodel_ip_coeffs;       // sfloat coeffs to pass to SC class
     int cmodel_jp;                  // difto for J particle
     int *cmodel_jp_flags;
-    double *cmodel_jp_coeffs;
+    sfloat *cmodel_jp_coeffs;
   };
 
   OneReaction_GS *rlist_gs;           // list of all reactions read from file
@@ -143,7 +144,7 @@ class SurfReactAdsorb : public SurfReact {
 
   ReactionI_GS *reactions_gs;    // reactions for all species
   int *indices_gs;               // master list of indices
-  double *prob_value;            // scratch per-reaction probabilities (GS react)
+  sfloat *prob_value;            // scratch per-reaction probabilities (GS react)
 
  // PS (on-surf) reaction model
 
@@ -165,14 +166,14 @@ class SurfReactAdsorb : public SurfReact {
     int *reactants,*products;          // species indices of reactants/products
     int *reactants_ad_index, *products_ad_index;   // adsorbed species index of
                                        // reactants and products
-    double *coeff;                     // numerical coeffs for reaction
-    double k_react;
+    sfloat *coeff;                     // numerical coeffs for reaction
+    sfloat k_react;
     int cmodel_ip;                  // style for I's post-reaction surf collision
     int *cmodel_ip_flags;           // integer flags to pass to SC class
-    double *cmodel_ip_coeffs;       // double coeffs to pass to SC class
+    sfloat *cmodel_ip_coeffs;       // sfloat coeffs to pass to SC class
     int cmodel_jp;                  // difto for J particle
     int *cmodel_jp_flags;
-    double *cmodel_jp_coeffs;
+    sfloat *cmodel_jp_coeffs;
   };
 
   OneReaction_PS *rlist_ps;           // list of all reactions read from file
@@ -181,7 +182,7 @@ class SurfReactAdsorb : public SurfReact {
 
   int nactive_ps;
   int *reactions_ps_list;
-  double *nu_react;              // scratch per-reaction rates (PS react)
+  sfloat *nu_react;              // scratch per-reaction rates (PS react)
   long int *nu_tau;             // scratch per-reaction counts (PS react)
   int *rxn_occur;               // scratch per-reaction flags (PS react)
   // SGK check
@@ -192,11 +193,11 @@ class SurfReactAdsorb : public SurfReact {
   struct AddParticle {
     int id;                 // particle ID
     int ispecies;           // particle species index
-    double x[3];            // particle position
-    double v[3];            // particle velocity
-    double erot;            // rotational energy
-    double evib;            // vibrational energy
-    double dtremain;        // fraction of timestep
+    sfloat x[3];            // particle position
+    sfloat v[3];            // particle velocity
+    sfloat erot;            // rotational energy
+    sfloat evib;            // vibrational energy
+    sfloat dtremain;        // fraction of timestep
   };
 
   AddParticle *mypart;      // particles this proc adds
@@ -226,10 +227,10 @@ class SurfReactAdsorb : public SurfReact {
 
   void init_reactions_ps();
   void readfile_ps(char *);
-  void PS_react(int, int, double *);
+  void PS_react(int, int, sfloat *);
   void add_particle_mine(Particle::OnePart *);
   void PS_chemistry();
-  void random_point(int, double*);
+  void random_point(int, sfloat*);
 
   // methods common to both GS and PS
 
@@ -241,14 +242,14 @@ class SurfReactAdsorb : public SurfReact {
 
   // NOTE: can remove these 3 at some point
   /*
-  void energy_barrier_scatter(Particle::OnePart*, double *,
-                              double, double, double);
-  void non_thermal_scatter(Particle::OnePart*, double *,
-                           double, double, double, double);
-  void cll(Particle::OnePart *, double *, double, double, double);
+  void energy_barrier_scatter(Particle::OnePart*, sfloat *,
+                              sfloat, sfloat, sfloat);
+  void non_thermal_scatter(Particle::OnePart*, sfloat *,
+                           sfloat, sfloat, sfloat, sfloat);
+  void cll(Particle::OnePart *, sfloat *, sfloat, sfloat, sfloat);
   */
 
-  double stoich_pow(int, int);
+  sfloat stoich_pow(int, int);
   int find_surf_species(char *);
   void print_reaction(char *, char *);
   int readone(char *, char *, int &, int &);

@@ -1,3 +1,4 @@
+/* AD-CONVERTED: double->sfloat by tools/ad_convert.py (see sfloat.h) */
 /* ----------------------------------------------------------------------
    SPARTA - Stochastic PArallel Rarefied-gas Time-accurate Analyzer
    http://sparta.github.io
@@ -32,30 +33,30 @@ class Mixture : protected Pointers {
   int *mix2group;             // m2g[i] = group that mixture species I is in
 
                               // global attributes
-  double nrho;                // number density
+  sfloat nrho;                // number density
   int nrho_flag;              // 1 if user set nrho
-  double nrho_user;           // user value
-  double vstream[3];          // stream velocity
+  sfloat nrho_user;           // user value
+  sfloat vstream[3];          // stream velocity
   int vstream_flag;           // 1 if user set vstream
-  double vstream_user[3];     // user value
-  double temp_thermal;        // thermal temperature
-  double temp_rot;            // rotational temperature
-  double temp_vib;            // vibrational temperature
+  sfloat vstream_user[3];     // user value
+  sfloat temp_thermal;        // thermal temperature
+  sfloat temp_rot;            // rotational temperature
+  sfloat temp_vib;            // vibrational temperature
   int temp_thermal_flag;      // 1 if user set thermal temp
   int temp_rot_flag;          // 1 if user set rotational temp
   int temp_vib_flag;          // 1 if user set vibrational temp
-  double temp_thermal_user;   // user value
-  double temp_rot_user;       // user value
-  double temp_vib_user;       // user value
+  sfloat temp_thermal_user;   // user value
+  sfloat temp_rot_user;       // user value
+  sfloat temp_vib_user;       // user value
 
                               // per-species attributes
-  double *fraction;           // relative fraction of each species
+  sfloat *fraction;           // relative fraction of each species
   int *fraction_flag;         // 1 if user set fraction for a species
-  double *fraction_user;      // user fractional value
+  sfloat *fraction_user;      // user fractional value
 
   // set by init()
 
-  double *cummulative;        // cummulative fraction for each species
+  sfloat *cummulative;        // cummulative fraction for each species
   int *groupsize;             // # of species in each group
   int **groupspecies;         // list of particle species indices in each group
   int *species2group;         // s2g[i] = group that particle species I is in
@@ -63,14 +64,14 @@ class Mixture : protected Pointers {
   int *species2species;       // s2s[i] = mixture species that
                               //   particle species I is
                               // -1 if species I not in mixture
-  double *vscale;             // pre-computed velocity scale factor
+  sfloat *vscale;             // pre-computed velocity scale factor
 
   Mixture(class SPARTA *, char *);
   ~Mixture();
   void copy(Mixture *);
   void command(int, char **);
   void init();
-  int init_fraction(int *, double *, double *, double *);
+  int init_fraction(int *, sfloat *, sfloat *, sfloat *);
   void add_species_default(char *);
   int find_group(const char *);
   void write_restart(FILE *fp);

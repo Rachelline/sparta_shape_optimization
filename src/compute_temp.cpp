@@ -1,3 +1,4 @@
+/* AD-CONVERTED: double->sfloat by tools/ad_convert.py (see sfloat.h) */
 /* ----------------------------------------------------------------------
    SPARTA - Stochastic PArallel Rarefied-gas Time-accurate Analyzer
    http://sparta.github.io
@@ -34,7 +35,7 @@ ComputeTemp::ComputeTemp(SPARTA *sparta, int narg, char **arg) :
 
 /* ---------------------------------------------------------------------- */
 
-double ComputeTemp::compute_scalar()
+sfloat ComputeTemp::compute_scalar()
 {
   invoked_scalar = update->ntimestep;
 
@@ -42,8 +43,8 @@ double ComputeTemp::compute_scalar()
   Particle::OnePart *particles = particle->particles;
   int nlocal = particle->nlocal;
 
-  double *v;
-  double t = 0.0;
+  sfloat *v;
+  sfloat t = 0.0;
 
   for (int i = 0; i < nlocal; i++) {
     v = particles[i].v;
@@ -51,7 +52,7 @@ double ComputeTemp::compute_scalar()
       species[particles[i].ispecies].mass;
   }
 
-  MPI_Allreduce(&t,&scalar,1,MPI_DOUBLE,MPI_SUM,world);
+  MPI_Allreduce(&t,&scalar,1,MPI_SFLOAT,MPI_SUM,world);
 
   bigint n = particle->nlocal;
   MPI_Allreduce(&n,&particle->nglobal,1,MPI_SPARTA_BIGINT,MPI_SUM,world);
@@ -59,7 +60,7 @@ double ComputeTemp::compute_scalar()
 
   // normalize with 3 instead of dim since even 2d has 3 velocity components
 
-  double factor = update->mvv2e / (3.0 * particle->nglobal * update->boltz);
+  sfloat factor = update->mvv2e / (3.0 * particle->nglobal * update->boltz);
   scalar *= factor;
   return scalar;
 }

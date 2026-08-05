@@ -1,3 +1,4 @@
+/* AD-CONVERTED: double->sfloat by tools/ad_convert.py (see sfloat.h) */
 /* ----------------------------------------------------------------------
    SPARTA - Stochastic PArallel Rarefied-gas Time-accurate Analyzer
    http://sparta.github.io
@@ -39,7 +40,7 @@ class WriteISurf : protected Pointers {
   int ncorner;
 
   class FixAblate *ablate;
-  double *dbuf,*dbufall;
+  sfloat *dbuf,*dbufall;
 
   void collect_values();
   void write_file(FILE *);

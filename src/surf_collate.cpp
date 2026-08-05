@@ -1,3 +1,4 @@
+/* AD-CONVERTED: double->sfloat by tools/ad_convert.py (see sfloat.h) */
 /* ----------------------------------------------------------------------
    SPARTA - Stochastic PArallel Rarefied-gas Time-accurate Analyzer
    http://sparta.github.io
@@ -38,7 +39,7 @@ enum{TALLYAUTO,TALLYREDUCE,TALLYRVOUS};         // same as Update
 ------------------------------------------------------------------------- */
 
 void Surf::collate_vector(int nrow, surfint *tally2surf,
-                          double *in, int instride, double *out)
+                          sfloat *in, int instride, sfloat *out)
 {
   // collate algorithm depends on tally_comm setting
 
@@ -58,7 +59,7 @@ void Surf::collate_vector(int nrow, surfint *tally2surf,
 ------------------------------------------------------------------------- */
 
 void Surf::collate_vector_reduce(int nrow, surfint *tally2surf,
-                                 double *in, int instride, double *out)
+                                 sfloat *in, int instride, sfloat *out)
 {
   int i,j,m;
 
@@ -68,13 +69,13 @@ void Surf::collate_vector_reduce(int nrow, surfint *tally2surf,
 
   int nglobal = nsurf;
 
-  double *one,*all;
+  sfloat *one,*all;
   memory->create(one,nglobal,"collate/vec:one");
   memory->create(all,nglobal,"collate/vec:all");
 
   // zero all values and add in values I accumulated
 
-  bigint bbytes = (bigint) nglobal * sizeof(double);
+  bigint bbytes = (bigint) nglobal * sizeof(sfloat);
   memset(one,0,bbytes);
 
   j = 0;
@@ -86,7 +87,7 @@ void Surf::collate_vector_reduce(int nrow, surfint *tally2surf,
 
   // global allreduce
 
-  MPI_Allreduce(one,all,nglobal,MPI_DOUBLE,MPI_SUM,world);
+  MPI_Allreduce(one,all,nglobal,MPI_SFLOAT,MPI_SUM,world);
 
   // out = only surfs I own
 
@@ -105,7 +106,7 @@ void Surf::collate_vector_reduce(int nrow, surfint *tally2surf,
 ------------------------------------------------------------------------- */
 
 void Surf::collate_vector_rendezvous(int nrow, surfint *tally2surf,
-                                     double *in, int instride, double *out)
+                                     sfloat *in, int instride, sfloat *out)
 {
   int k,m;
 
@@ -113,7 +114,7 @@ void Surf::collate_vector_rendezvous(int nrow, surfint *tally2surf,
 
   int *proclist;
   memory->create(proclist,nrow,"collate/vec:proclist");
-  double *dbuf;
+  sfloat *dbuf;
   memory->create(dbuf,2*nrow,"collate/vec:dbuf");
 
   // create rvous inputs
@@ -140,7 +141,7 @@ void Surf::collate_vector_rendezvous(int nrow, surfint *tally2surf,
   out_rvous = out;
 
   char *buf;
-  int nout = comm->rendezvous(1,nrow,(char *) dbuf,2*sizeof(double),
+  int nout = comm->rendezvous(1,nrow,(char *) dbuf,2*sizeof(sfloat),
                               0,proclist,rendezvous_vector,
                               0,buf,0,(void *) this);
 
@@ -162,22 +163,22 @@ int Surf::rendezvous_vector(int n, char *inbuf, int &flag, int *&proclist,
 
   Surf *sptr = (Surf *) ptr;
   int nown = sptr->nown;
-  double *out = sptr->out_rvous;
+  sfloat *out = sptr->out_rvous;
   int nprocs = sptr->comm->nprocs;
 
   // zero my owned surf values
 
-  bigint bbytes = (bigint) nown * sizeof(double);
+  bigint bbytes = (bigint) nown * sizeof(sfloat);
   memset(out,0,bbytes);
 
   // accumulate per-surf values from different procs to my owned surfs
 
-  double *dbuf = (double *) inbuf;
+  sfloat *dbuf = (sfloat *) inbuf;
   surfint id;
 
   k = 0;
   for (i = 0; i < n; i++) {
-    id = (surfint) ubuf(dbuf[k++]).i;
+    id = (surfint) ubuf(spval(dbuf[k++])).i;
     m = (id-1) / nprocs;
     out[m] += dbuf[k++];
   }
@@ -198,7 +199,7 @@ int Surf::rendezvous_vector(int n, char *inbuf, int &flag, int *&proclist,
 ------------------------------------------------------------------------- */
 
 void Surf::collate_array(int nrow, int ncol, surfint *tally2surf,
-                         double **in, double **out)
+                         sfloat **in, sfloat **out)
 {
   // collate algorithm depends on tally_comm setting
 
@@ -218,7 +219,7 @@ void Surf::collate_array(int nrow, int ncol, surfint *tally2surf,
 ------------------------------------------------------------------------- */
 
 void Surf::collate_array_reduce(int nrow, int ncol, surfint *tally2surf,
-                                double **in, double **out)
+                                sfloat **in, sfloat **out)
 {
   int i,j,m;
 
@@ -230,13 +231,13 @@ void Surf::collate_array_reduce(int nrow, int ncol, surfint *tally2surf,
 
   int nglobal = nsurf;
 
-  double **one,**all;
+  sfloat **one,**all;
   memory->create(one,nglobal,ncol,"surf:one");
   memory->create(all,nglobal,ncol,"surf:all");
 
   // zero all values and set values I accumulated
 
-  bigint bbytes = (bigint) nglobal * ncol * sizeof(double);
+  bigint bbytes = (bigint) nglobal * ncol * sizeof(sfloat);
   memset(&one[0][0],0,bbytes);
 
   for (i = 0; i < nrow; i++) {
@@ -247,7 +248,7 @@ void Surf::collate_array_reduce(int nrow, int ncol, surfint *tally2surf,
 
   // global allreduce
 
-  MPI_Allreduce(&one[0][0],&all[0][0],ntotal,MPI_DOUBLE,MPI_SUM,world);
+  MPI_Allreduce(&one[0][0],&all[0][0],ntotal,MPI_SFLOAT,MPI_SUM,world);
 
   // out = only surfs I own
 
@@ -266,7 +267,7 @@ void Surf::collate_array_reduce(int nrow, int ncol, surfint *tally2surf,
 ------------------------------------------------------------------------- */
 
 void Surf::collate_array_rendezvous(int nrow, int ncol, surfint *tally2surf,
-                                    double **in, double **out)
+                                    sfloat **in, sfloat **out)
 {
   int j,m;
 
@@ -274,8 +275,8 @@ void Surf::collate_array_rendezvous(int nrow, int ncol, surfint *tally2surf,
 
   int *proclist;
   memory->create(proclist,nrow,"surf:proclist");
-  double *in_rvous = (double *)
-    memory->smalloc(nrow*(ncol+1)*sizeof(double*),"surf:in_rvous");
+  sfloat *in_rvous = (sfloat *)
+    memory->smalloc(nrow*(ncol+1)*sizeof(sfloat),"surf:in_rvous");  // upstream bug: was sizeof(double*)
 
   // create rvous inputs
   // proclist = owner of each surf
@@ -300,7 +301,7 @@ void Surf::collate_array_rendezvous(int nrow, int ncol, surfint *tally2surf,
   ncol_rvous = ncol;
   if (out == NULL) out_rvous = NULL;
   else out_rvous = &out[0][0];
-  int size = (ncol+1) * sizeof(double);
+  int size = (ncol+1) * sizeof(sfloat);
 
   char *buf;
   int nout = comm->rendezvous(1,nrow,(char *) in_rvous,size,
@@ -327,22 +328,22 @@ int Surf::rendezvous_array(int n, char *inbuf,
   Surf *sptr = (Surf *) ptr;
   int nown = sptr->nown;
   int ncol = sptr->ncol_rvous;
-  double *out = sptr->out_rvous;
+  sfloat *out = sptr->out_rvous;
   int nprocs = sptr->comm->nprocs;
 
   // zero my owned surf values
 
-  bigint bbytes = (bigint) nown * ncol * sizeof(double);
+  bigint bbytes = (bigint) nown * ncol * sizeof(sfloat);
   memset(out,0,bbytes);
 
   // accumulate per-surf values from different procs to my owned surfs
 
-  double *in_rvous = (double *) inbuf;
+  sfloat *in_rvous = (sfloat *) inbuf;
   surfint id;
 
   m = 0;
   for (int i = 0; i < n; i++) {
-    id = (surfint) ubuf(in_rvous[m++]).i;
+    id = (surfint) ubuf(spval(in_rvous[m++])).i;
     k = (id-1) / nprocs * ncol;
     for (j = 0; j < ncol; j++)
       out[k++] += in_rvous[m++];
@@ -373,7 +374,7 @@ int Surf::rendezvous_array(int n, char *inbuf,
 
 /*
 void Surf::collate_vector_implicit(int nrow, surfint *tally2surf,
-                                   double *in, double *out)
+                                   sfloat *in, sfloat *out)
 {
   int i,j,m,icell;
   cellint cellID;
@@ -430,7 +431,7 @@ void Surf::collate_vector_implicit(int nrow, surfint *tally2surf,
   int ncount = ncell + nsend;
 
   int *proclist;
-  double *in_rvous;
+  sfloat *in_rvous;
   memory->create(proclist,ncount,"surf:proclist");
   memory->create(in_rvous,3*ncount,"surf:in_rvous");
 
@@ -465,10 +466,10 @@ void Surf::collate_vector_implicit(int nrow, surfint *tally2surf,
 
   ncol_rvous = 1;
   char *buf;
-  int nout = comm->rendezvous(1,ncount,(char *) in_rvous,3*sizeof(double),
+  int nout = comm->rendezvous(1,ncount,(char *) in_rvous,3*sizeof(sfloat),
                               0,proclist,rendezvous_implicit,
-                              0,buf,2*sizeof(double),(void *) this);
-  double *out_rvous = (double *) buf;
+                              0,buf,2*sizeof(sfloat),(void *) this);
+  sfloat *out_rvous = (sfloat *) buf;
 
   memory->destroy(proclist);
   memory->destroy(in_rvous);
@@ -504,7 +505,7 @@ void Surf::collate_vector_implicit(int nrow, surfint *tally2surf,
 
 /*
 void Surf::collate_array_implicit(int nrow, int ncol, surfint *tally2surf,
-                                  double **in, double **out)
+                                  sfloat **in, sfloat **out)
 {
   int i,j,m,icell;
   cellint cellID;
@@ -562,7 +563,7 @@ void Surf::collate_array_implicit(int nrow, int ncol, surfint *tally2surf,
   int ncount = ncell + nsend;
 
   int *proclist;
-  double *in_rvous;
+  sfloat *in_rvous;
   memory->create(proclist,ncount,"surf:proclist");
   memory->create(in_rvous,ncount*(ncol+2),"surf:in_rvous");
 
@@ -600,10 +601,10 @@ void Surf::collate_array_implicit(int nrow, int ncol, surfint *tally2surf,
   ncol_rvous = ncol;
   char *buf;
   int nout = comm->rendezvous(1,ncount,(char *) in_rvous,
-                              (ncol+2)*sizeof(double),
+                              (ncol+2)*sizeof(sfloat),
                               0,proclist,rendezvous_implicit,
-                              0,buf,(ncol+1)*sizeof(double),(void *) this);
-  double *out_rvous = (double *) buf;
+                              0,buf,(ncol+1)*sizeof(sfloat),(void *) this);
+  sfloat *out_rvous = (sfloat *) buf;
 
   memory->destroy(proclist);
   memory->destroy(in_rvous);
@@ -645,7 +646,7 @@ int Surf::rendezvous_implicit(int n, char *inbuf,
   // scan inbuf for (proc,cellID) entries
   // create phash so can lookup the proc for each cellID
 
-  double *in_rvous = (double *) inbuf;
+  sfloat *in_rvous = (sfloat *) inbuf;
   MyCellHash phash;
 
   m = 0;
@@ -660,7 +661,7 @@ int Surf::rendezvous_implicit(int n, char *inbuf,
 
   int nmax = phash.size();
   memory->create(proclist,nmax,"surf:proclist");
-  double *out;
+  sfloat *out;
   memory->create(out,nmax*(ncol+1),"surf:out");
 
   // scan inbuf for (cellID,tallies) entries

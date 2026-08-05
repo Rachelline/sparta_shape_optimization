@@ -1,0 +1,39 @@
+site_name: SPARTA Shape Optimization
+site_description: AD-linked DSMC shape-optimization framework built on SPARTA
+repo_url: https://github.com/Rachelline/sparta_shape_optimization
+edit_uri: edit/master/
+
+docs_dir: docs_site
+
+theme:
+  name: material
+  palette:
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+  features:
+    - navigation.tabs
+    - navigation.top
+    - content.action.edit
+    - search.suggest
+
+nav:
+  - Overview: ad_src/README.md
+  - AD Gradients: docs/AD_GRADIENTS.md
+  - Verification Scripts: tools/ad_verify/README.md
+  - Build (CMake): BUILD_CMAKE.md
+  - Known Gaps: KNOWN_GAPS.md
+
+markdown_extensions:
+  - toc:
+      permalink: true
+  - tables
+  - fenced_code
+  - admonition

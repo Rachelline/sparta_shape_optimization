@@ -1,3 +1,4 @@
+/* AD-CONVERTED: double->sfloat by tools/ad_convert.py (see sfloat.h) */
 /* ----------------------------------------------------------------------
    SPARTA - Stochastic PArallel Rarefied-gas Time-accurate Analyzer
    http://sparta.github.io
@@ -263,7 +264,7 @@ FixAveGrid::FixAveGrid(SPARTA *sparta, int narg, char **arg) :
     if (which[m] != COMPUTE) continue;
     n = modify->find_compute(ids[m]);
     if (!modify->compute[n]->post_process_grid_flag) continue;
-    double **array;
+    sfloat **array;
     int *cmap;
     int ncount = modify->compute[n]->query_tally_grid(j,array,cmap);
     tmax = MAX(tmax,ncount);
@@ -303,7 +304,7 @@ FixAveGrid::FixAveGrid(SPARTA *sparta, int narg, char **arg) :
     // and only unique compute tallies to numap/umap/uomap
 
     } else {
-      double **array;
+      sfloat **array;
       int *cmap;
       int ncount = modify->compute[n]->query_tally_grid(j,array,cmap);
       nmap[m] = numap[m] = 0;
@@ -460,8 +461,8 @@ void FixAveGrid::end_of_step()
   int ntally_col,kk;
   surfint surfID;
   int *itmp;
-  double *vec;
-  double **ctally;
+  sfloat *vec;
+  sfloat **ctally;
 
   // skip if not step which requires doing something
 
@@ -523,12 +524,12 @@ void FixAveGrid::end_of_step()
         } else {
           k = umap[m][0];
           if (j == 0) {
-            double *compute_vector = compute->vector_grid;
+            sfloat *compute_vector = compute->vector_grid;
             for (i = 0; i < nglocal; i++)
               tally[i][k] += compute_vector[i];
           } else {
             int jm1 = j - 1;
-            double **compute_array = compute->array_grid;
+            sfloat **compute_array = compute->array_grid;
             for (i = 0; i < nglocal; i++)
               tally[i][k] += compute_array[i][jm1];
           }
@@ -539,12 +540,12 @@ void FixAveGrid::end_of_step()
       } else if (which[m] == FIX) {
         k = umap[m][0];
         if (j == 0) {
-          double *fix_vector = modify->fix[n]->vector_grid;
+          sfloat *fix_vector = modify->fix[n]->vector_grid;
           for (i = 0; i < nglocal; i++)
             tally[i][k] += fix_vector[i];
         } else {
           int jm1 = j - 1;
-          double **fix_array = modify->fix[n]->array_grid;
+          sfloat **fix_array = modify->fix[n]->array_grid;
           for (i = 0; i < nglocal; i++)
             tally[i][k] += fix_array[i][jm1];
         }
@@ -564,7 +565,7 @@ void FixAveGrid::end_of_step()
             int *custom_vector = grid->eivec[grid->ewhich[n]];
             for (i = 0; i < nglocal; i++) tally[i][k] += custom_vector[i];
           } else if (grid->etype[n] == DOUBLE) {
-            double *custom_vector = grid->edvec[grid->ewhich[n]];
+            sfloat *custom_vector = grid->edvec[grid->ewhich[n]];
             for (i = 0; i < nglocal; i++) tally[i][k] += custom_vector[i];
           }
 	} else {
@@ -573,7 +574,7 @@ void FixAveGrid::end_of_step()
             int **custom_array = grid->eiarray[grid->ewhich[n]];
             for (i = 0; i < nglocal; i++) tally[i][k] += custom_array[i][jm1];
           } else if (grid->etype[n] == DOUBLE) {
-            double **custom_array = grid->edarray[grid->ewhich[n]];
+            sfloat **custom_array = grid->edarray[grid->ewhich[n]];
             for (i = 0; i < nglocal; i++) tally[i][k] += custom_array[i][jm1];
           }
 	}
@@ -604,7 +605,7 @@ void FixAveGrid::end_of_step()
       int ntallyID_compute = compute->tallyinfo(tally2surf_compute);
 
       if (j == 0) {
-        double *vector = compute->vector_surf_tally;
+        sfloat *vector = compute->vector_surf_tally;
         if (nvalues == 1) {
           for (i = 0; i < ntallyID_compute; i++) {
             surfID = tally2surf_compute[i];
@@ -637,7 +638,7 @@ void FixAveGrid::end_of_step()
         }
       } else {
         int jm1 = j - 1;
-        double **array = compute->array_surf_tally;
+        sfloat **array = compute->array_surf_tally;
         if (nvalues == 1) {
           for (i = 0; i < ntallyID_compute; i++) {
             surfID = tally2surf_compute[i];
@@ -765,7 +766,7 @@ void FixAveGrid::end_of_step()
       } else {
         for (int j = 0; j < nsplit; j++) {
           jcell = csubs[j];
-          memcpy(array_grid[jcell],array_grid[icell],nvalues*sizeof(double));
+          memcpy(array_grid[jcell],array_grid[icell],nvalues*sizeof(sfloat));
         }
       }
     }
@@ -825,14 +826,14 @@ int FixAveGrid::pack_one(int icell, char *buf, int memflag)
   char *ptr = buf;
 
   if (memflag) {
-    if (nvalues == 1) *((double *) ptr) = vector_grid[icell];
-    else memcpy(ptr,array_grid[icell],nvalues*sizeof(double));
+    if (nvalues == 1) *((sfloat *) ptr) = vector_grid[icell];
+    else memcpy(ptr,array_grid[icell],nvalues*sizeof(sfloat));
   }
-  ptr += nvalues*sizeof(double);
+  ptr += nvalues*sizeof(sfloat);
 
   if (flavor == PERGRID) {
-    if (memflag) memcpy(ptr,tally[icell],ntotal*sizeof(double));
-    ptr += ntotal*sizeof(double);
+    if (memflag) memcpy(ptr,tally[icell],ntotal*sizeof(sfloat));
+    ptr += ntotal*sizeof(sfloat);
   }
 
   return ptr-buf;
@@ -876,13 +877,13 @@ int FixAveGrid::unpack_one(char *buf, int icell)
 {
   char *ptr = buf;
 
-  if (nvalues == 1) vector_grid[icell] = *((double *) ptr);
-  else memcpy(array_grid[icell],ptr,nvalues*sizeof(double));
-  ptr += nvalues*sizeof(double);
+  if (nvalues == 1) vector_grid[icell] = *((sfloat *) ptr);
+  else memcpy(array_grid[icell],ptr,nvalues*sizeof(sfloat));
+  ptr += nvalues*sizeof(sfloat);
 
   if (flavor == PERGRID) {
-    memcpy(tally[icell],ptr,ntotal*sizeof(double));
-    ptr += ntotal*sizeof(double);
+    memcpy(tally[icell],ptr,ntotal*sizeof(sfloat));
+    ptr += ntotal*sizeof(sfloat);
   }
 
   return ptr-buf;
@@ -897,9 +898,9 @@ int FixAveGrid::unpack_one(char *buf, int icell)
 void FixAveGrid::copy_grid_one(int icell, int jcell)
 {
   if (nvalues == 1) vector_grid[jcell] = vector_grid[icell];
-  else memcpy(array_grid[jcell],array_grid[icell],nvalues*sizeof(double));
+  else memcpy(array_grid[jcell],array_grid[icell],nvalues*sizeof(sfloat));
   if (flavor == PERGRID)
-    memcpy(tally[jcell],tally[icell],ntotal*sizeof(double));
+    memcpy(tally[jcell],tally[icell],ntotal*sizeof(sfloat));
 }
 
 /* ----------------------------------------------------------------------
@@ -1012,14 +1013,14 @@ void FixAveGrid::grow_tally()
    memory usage of accumulators
 ------------------------------------------------------------------------- */
 
-double FixAveGrid::memory_usage()
+sfloat FixAveGrid::memory_usage()
 {
-  double bytes = 0.0;
-  bytes += maxgrid*nvalues * sizeof(double);    // vector or array grid
-  if (flavor == PERGRID) bytes += ntotal*maxgrid * sizeof(double);
+  sfloat bytes = 0.0;
+  bytes += maxgrid*nvalues * sizeof(sfloat);    // vector or array grid
+  if (flavor == PERGRID) bytes += ntotal*maxgrid * sizeof(sfloat);
   if (flavor == PERGRIDSURF) {
     bytes += maxtallyID * sizeof(surfint);
-    bytes += nvalues*maxtallyID * sizeof(double);
+    bytes += nvalues*maxtallyID * sizeof(sfloat);
   }
   return bytes;
 }

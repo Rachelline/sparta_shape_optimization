@@ -1,3 +1,4 @@
+/* AD-CONVERTED: double->sfloat by tools/ad_convert.py (see sfloat.h) */
 /* ----------------------------------------------------------------------
    SPARTA - Stochastic PArallel Rarefied-gas Time-accurate Analyzer
    http://sparta.github.io
@@ -276,12 +277,12 @@ void Mixture::init()
    called by init() and also by FixInflowFile::interpolate()
 ------------------------------------------------------------------------- */
 
-int Mixture::init_fraction(int *fflag, double *fuser, double *f, double *c)
+int Mixture::init_fraction(int *fflag, sfloat *fuser, sfloat *f, sfloat *c)
 {
   // sum = total frac for species with explicitly set fractions
   // nimplicit = number of unset species
 
-  double sum = 0.0;
+  sfloat sum = 0.0;
   int nimplicit = 0;
   for (int i = 0; i < nspecies; i++) {
     if (fflag[i]) sum += fuser[i];
@@ -372,7 +373,7 @@ void Mixture::params(int narg, char **arg)
   int deleteflag = 0;
   int fracflag = 0;
   int groupflag = 0;
-  double fracvalue;
+  sfloat fracvalue;
   int grouparg;
 
   int iarg = 0;
@@ -390,6 +391,32 @@ void Mixture::params(int narg, char **arg)
       vstream_user[1] = atof(arg[iarg+2]);
       vstream_user[2] = atof(arg[iarg+3]);
       iarg += 4;
+
+#ifdef SPARTA_AD
+      // Phase C AD-derivative verification hook (tools/ad_verify/
+      // flatplate_derivative_match.py): dormant unless all three env vars
+      // are set and SPARTA_AD_SEED_MIX matches this mixture's id. Seeds
+      // d(vx)/d(delta) and d(vy)/d(delta) into the SAME Sacado direction, so
+      // downstream physics automatically chain-rules to d(anything)/d(delta)
+      // via ordinary sfloat arithmetic -- no other code needs to change.
+      // vx = V*cos(delta), vy = V*sin(delta) is the tilted-freestream
+      // angle-of-incidence convention already established by
+      // tools/ad_verify/flatplate_value_match.py (Phase B).
+      {
+        const char *seed_mix = getenv("SPARTA_AD_SEED_MIX");
+        const char *seed_delta = getenv("SPARTA_AD_SEED_DELTA");
+        if (seed_mix && seed_delta && strcmp(seed_mix,id) == 0) {
+          int dir = 0;
+          const char *seed_dir = getenv("SPARTA_AD_SEED_DIR");
+          if (seed_dir) dir = atoi(seed_dir);
+          double delta0 = atof(seed_delta);
+          double V = sqrt(spval(vstream_user[0])*spval(vstream_user[0]) +
+                           spval(vstream_user[1])*spval(vstream_user[1]));
+          vstream_user[0].fastAccessDx(dir) = -V*sin(delta0);
+          vstream_user[1].fastAccessDx(dir) =  V*cos(delta0);
+        }
+      }
+#endif
 
     } else if (strcmp(arg[iarg],"temp") == 0) {
       if (iarg+2 > narg) error->all(FLERR,"Illegal mixture command");
@@ -658,18 +685,18 @@ void Mixture::write_restart(FILE *fp)
   fwrite(species,sizeof(int),nspecies,fp);
 
   fwrite(&nrho_flag,sizeof(int),1,fp);
-  if (nrho_flag) fwrite(&nrho_user,sizeof(double),1,fp);
+  if (nrho_flag) fwrite(&nrho_user,sizeof(sfloat),1,fp);
   fwrite(&vstream_flag,sizeof(int),1,fp);
-  if (vstream_flag) fwrite(vstream_user,sizeof(double),3,fp);
+  if (vstream_flag) fwrite(vstream_user,sizeof(sfloat),3,fp);
   fwrite(&temp_thermal_flag,sizeof(int),1,fp);
-  if (temp_thermal_flag) fwrite(&temp_thermal_user,sizeof(double),1,fp);
+  if (temp_thermal_flag) fwrite(&temp_thermal_user,sizeof(sfloat),1,fp);
   fwrite(&temp_rot_flag,sizeof(int),1,fp);
-  if (temp_rot_flag) fwrite(&temp_rot_user,sizeof(double),1,fp);
+  if (temp_rot_flag) fwrite(&temp_rot_user,sizeof(sfloat),1,fp);
   fwrite(&temp_vib_flag,sizeof(int),1,fp);
-  if (temp_vib_flag) fwrite(&temp_vib_user,sizeof(double),1,fp);
+  if (temp_vib_flag) fwrite(&temp_vib_user,sizeof(sfloat),1,fp);
 
   fwrite(fraction_flag,sizeof(int),nspecies,fp);
-  fwrite(fraction_user,sizeof(double),nspecies,fp);
+  fwrite(fraction_user,sizeof(sfloat),nspecies,fp);
 
   fwrite(&ngroup,sizeof(int),1,fp);
   for (int i = 0; i < ngroup; i++) {
@@ -702,38 +729,38 @@ void Mixture::read_restart(FILE *fp)
   if (me == 0) tmp = fread(&nrho_flag,sizeof(int),1,fp);
   MPI_Bcast(&nrho_flag,1,MPI_INT,0,world);
   if (nrho_flag) {
-    if (me == 0) tmp = fread(&nrho_user,sizeof(double),1,fp);
-    MPI_Bcast(&nrho_user,1,MPI_DOUBLE,0,world);
+    if (me == 0) tmp = fread(&nrho_user,sizeof(sfloat),1,fp);
+    MPI_Bcast(&nrho_user,1,MPI_SFLOAT,0,world);
   }
   if (me == 0) tmp = fread(&vstream_flag,sizeof(int),1,fp);
   MPI_Bcast(&vstream_flag,1,MPI_INT,0,world);
   if (vstream_flag) {
-    if (me == 0) tmp = fread(vstream_user,sizeof(double),3,fp);
-    MPI_Bcast(vstream_user,3,MPI_DOUBLE,0,world);
+    if (me == 0) tmp = fread(vstream_user,sizeof(sfloat),3,fp);
+    MPI_Bcast(vstream_user,3,MPI_SFLOAT,0,world);
   }
   if (me == 0) tmp = fread(&temp_thermal_flag,sizeof(int),1,fp);
   MPI_Bcast(&temp_thermal_flag,1,MPI_INT,0,world);
   if (temp_thermal_flag) {
-    if (me == 0) tmp = fread(&temp_thermal_user,sizeof(double),1,fp);
-    MPI_Bcast(&temp_thermal_user,1,MPI_DOUBLE,0,world);
+    if (me == 0) tmp = fread(&temp_thermal_user,sizeof(sfloat),1,fp);
+    MPI_Bcast(&temp_thermal_user,1,MPI_SFLOAT,0,world);
   }
   if (me == 0) tmp = fread(&temp_rot_flag,sizeof(int),1,fp);
   MPI_Bcast(&temp_rot_flag,1,MPI_INT,0,world);
   if (temp_rot_flag) {
-    if (me == 0) tmp = fread(&temp_rot_user,sizeof(double),1,fp);
-    MPI_Bcast(&temp_rot_user,1,MPI_DOUBLE,0,world);
+    if (me == 0) tmp = fread(&temp_rot_user,sizeof(sfloat),1,fp);
+    MPI_Bcast(&temp_rot_user,1,MPI_SFLOAT,0,world);
   }
   if (me == 0) tmp = fread(&temp_vib_flag,sizeof(int),1,fp);
   MPI_Bcast(&temp_vib_flag,1,MPI_INT,0,world);
   if (temp_vib_flag) {
-    if (me == 0) tmp = fread(&temp_vib_user,sizeof(double),1,fp);
-    MPI_Bcast(&temp_vib_user,1,MPI_DOUBLE,0,world);
+    if (me == 0) tmp = fread(&temp_vib_user,sizeof(sfloat),1,fp);
+    MPI_Bcast(&temp_vib_user,1,MPI_SFLOAT,0,world);
   }
 
   if (me == 0) tmp = fread(fraction_flag,sizeof(int),nspecies,fp);
   MPI_Bcast(fraction_flag,nspecies,MPI_INT,0,world);
-  if (me == 0) tmp = fread(fraction_user,sizeof(double),nspecies,fp);
-  MPI_Bcast(fraction_user,nspecies,MPI_DOUBLE,0,world);
+  if (me == 0) tmp = fread(fraction_user,sizeof(sfloat),nspecies,fp);
+  MPI_Bcast(fraction_user,nspecies,MPI_SFLOAT,0,world);
 
   int ngroup_file;
   if (me == 0) tmp = fread(&ngroup_file,sizeof(int),1,fp);

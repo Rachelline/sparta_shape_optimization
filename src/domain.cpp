@@ -1,3 +1,4 @@
+/* AD-CONVERTED: double->sfloat by tools/ad_convert.py (see sfloat.h) */
 /* ----------------------------------------------------------------------
    SPARTA - Stochastic PArallel Rarefied-gas Time-accurate Analyzer
    http://sparta.github.io
@@ -282,8 +283,8 @@ void Domain::boundary_modify(int narg, char **arg)
    if needed, update particle x,v,xnew due to collision
 ------------------------------------------------------------------------- */
 
-int Domain::collide(Particle::OnePart *&ip, int face, int icell, double *xnew,
-                    double &dtremain, Particle::OnePart *&jp, int &reaction)
+int Domain::collide(Particle::OnePart *&ip, int face, int icell, sfloat *xnew,
+                    sfloat &dtremain, Particle::OnePart *&jp, int &reaction)
 {
   jp = NULL;
   reaction = 0;
@@ -301,7 +302,7 @@ int Domain::collide(Particle::OnePart *&ip, int face, int icell, double *xnew,
 
   case PERIODIC:
     {
-      double *x = ip->x;
+      sfloat *x = ip->x;
 
       switch (face) {
       case XLO:
@@ -338,9 +339,9 @@ int Domain::collide(Particle::OnePart *&ip, int face, int icell, double *xnew,
 
   case REFLECT:
     {
-      double *v = ip->v;
-      double *lo = grid->cells[icell].lo;
-      double *hi = grid->cells[icell].hi;
+      sfloat *v = ip->v;
+      sfloat *lo = grid->cells[icell].lo;
+      sfloat *hi = grid->cells[icell].hi;
       int dim = face / 2;
 
       if (face % 2 == 0) {
@@ -367,8 +368,8 @@ int Domain::collide(Particle::OnePart *&ip, int face, int icell, double *xnew,
         collide(ip,dtremain,-(face+1),norm[face],surf_react[face],reaction);
 
       if (ip) {
-        double *x = ip->x;
-        double *v = ip->v;
+        sfloat *x = ip->x;
+        sfloat *v = ip->v;
         xnew[0] = x[0] + dtremain*v[0];
         xnew[1] = x[1] + dtremain*v[1];
         if (dimension == 3) xnew[2] = x[2] + dtremain*v[2];
@@ -389,7 +390,7 @@ int Domain::collide(Particle::OnePart *&ip, int face, int icell, double *xnew,
      that contains the remapped coords
 ------------------------------------------------------------------------- */
 
-void Domain::uncollide(int face, double *x)
+void Domain::uncollide(int face, sfloat *x)
 {
   switch (face) {
   case XLO:
@@ -510,9 +511,9 @@ void Domain::print_box(const char *str)
   if (comm->me == 0) {
     if (screen)
       fprintf(screen,"%sorthogonal box = (%g %g %g) to (%g %g %g)\n",
-              str,boxlo[0],boxlo[1],boxlo[2],boxhi[0],boxhi[1],boxhi[2]);
+              str,spval(boxlo[0]),spval(boxlo[1]),spval(boxlo[2]),spval(boxhi[0]),spval(boxhi[1]),spval(boxhi[2]));
     if (logfile)
       fprintf(logfile,"%sorthogonal box = (%g %g %g) to (%g %g %g)\n",
-              str,boxlo[0],boxlo[1],boxlo[2],boxhi[0],boxhi[1],boxhi[2]);
+              str,spval(boxlo[0]),spval(boxlo[1]),spval(boxlo[2]),spval(boxhi[0]),spval(boxhi[1]),spval(boxhi[2]));
   }
 }

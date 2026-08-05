@@ -1,3 +1,4 @@
+/* AD-CONVERTED: double->sfloat by tools/ad_convert.py (see sfloat.h) */
 /* ----------------------------------------------------------------------
    SPARTA - Stochastic PArallel Rarefied-gas Time-accurate Analyzer
    http://sparta.github.io
@@ -31,17 +32,17 @@ class SurfCollideCLL : public SurfCollide {
   SurfCollideCLL(class SPARTA *, int, char **);
   ~SurfCollideCLL();
   void init();
-  Particle::OnePart *collide(Particle::OnePart *&, double &,
-                             int, double *, int, int &);
-  void wrapper(Particle::OnePart *, double *, int *, double*);
-  void flags_and_coeffs(int *, double *);
+  Particle::OnePart *collide(Particle::OnePart *&, sfloat &,
+                             int, sfloat *, int, int &);
+  void wrapper(Particle::OnePart *, sfloat *, int *, sfloat*);
+  void flags_and_coeffs(int *, sfloat *);
 
  private:
-  double acc_n,acc_t,acc_rot,acc_vib;   // surface accomodation coeffs
-  double vx,vy,vz;                      // translational velocity of surface
-  double wx,wy,wz;                      // angular velocity of surface
-  double px,py,pz;                      // point to rotate surface around
-  double eccen;                         // 1 if fully diffuse scattering
+  sfloat acc_n,acc_t,acc_rot,acc_vib;   // surface accomodation coeffs
+  sfloat vx,vy,vz;                      // translational velocity of surface
+  sfloat wx,wy,wz;                      // angular velocity of surface
+  sfloat px,py,pz;                      // point to rotate surface around
+  sfloat eccen;                         // 1 if fully diffuse scattering
                                         // < 1 if partial diffuse scattering
 
   int tflag,rflag;           // flags for translation and rotation
@@ -49,10 +50,10 @@ class SurfCollideCLL : public SurfCollide {
   int pflag;                 // 1 if partially energy accommodation
                              // with partial/fully diffuse scattering
 
-  double vstream[3];
+  sfloat vstream[3];
   class RanKnuth *random;     // RNG for particle reflection
 
-  void cll(Particle::OnePart *, double *);
+  void cll(Particle::OnePart *, sfloat *);
 };
 
 }

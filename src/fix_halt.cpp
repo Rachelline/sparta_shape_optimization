@@ -1,3 +1,4 @@
+/* AD-CONVERTED: double->sfloat by tools/ad_convert.py (see sfloat.h) */
 /* ----------------------------------------------------------------------
    SPARTA - Stochastic PArallel Rarefied-gas Time-accurate Analyzer
    http://sparta.github.io
@@ -176,7 +177,7 @@ void FixHalt::end_of_step()
 {
   // variable evaluation may invoke computes so wrap with clear/add
 
-  double attvalue;
+  sfloat attvalue;
 
   if (attribute == TLIMIT) {
     if (update->ntimestep != nextstep) return;
@@ -189,7 +190,7 @@ void FixHalt::end_of_step()
 
   // ensure that the attribute is *exactly* the same on all ranks
 
-  MPI_Bcast(&attvalue, 1, MPI_DOUBLE, 0, world);
+  MPI_Bcast(&attvalue, 1, MPI_SFLOAT, 0, world);
 
   // check if halt is triggered, else just return
 
@@ -215,7 +216,7 @@ void FixHalt::end_of_step()
 
   char message[128];
   sprintf(message, "Fix halt condition for fix-id %s met on step %ld with value %g",
-                                    id, update->ntimestep, attvalue);
+                                    id, update->ntimestep, spval(attvalue));
   if (eflag == HARD) {
     error->all(FLERR, message);
   } else if ((eflag == SOFT) || (eflag == CONTINUE)) {
@@ -241,14 +242,14 @@ void FixHalt::post_run()
    first project to 1/2 the run time, thereafter to end of run
 ------------------------------------------------------------------------- */
 
-double FixHalt::tlimit()
+sfloat FixHalt::tlimit()
 {
-  double cpu = timer->elapsed(TIME_LOOP);
-  MPI_Bcast(&cpu, 1, MPI_DOUBLE, 0, world);
+  sfloat cpu = timer->elapsed(TIME_LOOP);
+  MPI_Bcast(&cpu, 1, MPI_SFLOAT, 0, world);
 
   if (cpu < value) {
     bigint elapsed = update->ntimestep - update->firststep;
-    bigint final = update->firststep + static_cast<bigint>(tratio * value / cpu * elapsed);
+    bigint final = update->firststep + static_cast<bigint>(spval(tratio * value / cpu * elapsed));
     nextstep = (final / nevery) * nevery + nevery;
     if (nextstep == update->ntimestep) nextstep += nevery;
     tratio = 1.0;

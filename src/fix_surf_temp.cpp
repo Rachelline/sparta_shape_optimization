@@ -1,3 +1,4 @@
+/* AD-CONVERTED: double->sfloat by tools/ad_convert.py (see sfloat.h) */
 /* ----------------------------------------------------------------------
    SPARTA - Stochastic PArallel Rarefied-gas Time-accurate Analyzer
    http://sparta.github.io
@@ -178,7 +179,7 @@ void FixSurfTemp::init()
 
   // one-time initialization of temperature for all surfs in custom vector
 
-  double *tvector = surf->edvec[surf->ewhich[tindex]];
+  sfloat *tvector = surf->edvec[surf->ewhich[tindex]];
   int nsown = surf->nown;
 
   for (int i = 0; i < nsown; i++)
@@ -193,7 +194,7 @@ void FixSurfTemp::init()
 void FixSurfTemp::end_of_step()
 {
   int m,mask;
-  double qw;
+  sfloat qw;
 
   int me = comm->me;
   int nprocs = comm->nprocs;
@@ -217,11 +218,11 @@ void FixSurfTemp::end_of_step()
     tris = surf->tris;
   }
 
-  double *tcustom = surf->edvec[surf->ewhich[tindex]];
+  sfloat *tcustom = surf->edvec[surf->ewhich[tindex]];
   int nsown = surf->nown;
 
   if (qwindex == 0) {
-    double *qwvector;
+    sfloat *qwvector;
     if (source == COMPUTE) {
       cqw->post_process_surf();
       qwvector = cqw->vector_surf;
@@ -240,7 +241,7 @@ void FixSurfTemp::end_of_step()
     }
 
   } else {
-    double **qwarray;
+    sfloat **qwarray;
     if (source == COMPUTE) {
       cqw->post_process_surf();
       qwarray = cqw->array_surf;

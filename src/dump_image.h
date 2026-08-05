@@ -1,3 +1,4 @@
+/* AD-CONVERTED: double->sfloat by tools/ad_convert.py (see sfloat.h) */
 /* ----------------------------------------------------------------------
    SPARTA - Stochastic PArallel Rarefied-gas Time-accurate Analyzer
    http://sparta.github.io
@@ -37,7 +38,7 @@ class DumpImage : public DumpParticle {
   char *thetastr,*phistr;          // variables for view theta,phi
   int thetavar,phivar;             // index to theta,phi vars
   int cflag;                       // static/dynamic box center
-  double cx,cy,cz;                 // fractional box center
+  sfloat cx,cy,cz;                 // fractional box center
   char *cxstr,*cystr,*czstr;       // variables for box center
   int cxvar,cyvar,czvar;           // index to box center vars
   char *upxstr,*upystr,*upzstr;    // view up vector variables
@@ -45,8 +46,8 @@ class DumpImage : public DumpParticle {
   char *zoomstr,*perspstr;         // view zoom and perspective variables
   int zoomvar,perspvar;            // index to zoom,persp vars
   int boxflag,axesflag;            // 0/1 for draw box and axes
-  double boxdiam,axeslen,axesdiam; // params for drawing box and axes
-  double *boxcolor;                // colors for drawing box/grid/surf lines
+  sfloat boxdiam,axeslen,axesdiam; // params for drawing box and axes
+  sfloat *boxcolor;                // colors for drawing box/grid/surf lines
 
   int viewflag;                    // overall view is static or dynamic
 
@@ -55,11 +56,11 @@ class DumpImage : public DumpParticle {
   int particleflag;                // 0/1 for draw particles
   int pcolor;                      // color of parts = TYPE, PROC, ATTRIBUTE
   int pdiam;                       // diam of partciles = TYPE, ATTRIBUTE
-  double pdiamvalue;               // particle diameter value
+  sfloat pdiamvalue;               // particle diameter value
 
-  double **pcolortype;             // per-type particle colors
-  double *pdiamtype;               // per-type particle diameters
-  double *pcolorproc;              // particle color for me
+  sfloat **pcolortype;             // per-type particle colors
+  sfloat *pdiamtype;               // per-type particle diameters
+  sfloat *pcolorproc;              // particle color for me
 
   // grid drawing
 
@@ -71,14 +72,14 @@ class DumpImage : public DumpParticle {
   int gridcol;                     // column of compute/fix array, 0 for vector
   int grid_groupbit;               // bit mask for dump_modify gridgroup
 
-  double *gcolorproc;              // grid color for me
+  sfloat *gcolorproc;              // grid color for me
 
   // grid plane drawing
 
   int gridxflag,gridyflag;
   int gridzflag;                   // 0/1 for draw grid cell planes in xyz
-  double gridxcoord,gridycoord;
-  double gridzcoord;               // coordinate of plane
+  sfloat gridxcoord,gridycoord;
+  sfloat gridzcoord;               // coordinate of plane
   int gxcolor,gycolor,gzcolor;     // color of planes = PROC, ATTRIBUTE
   int gridxwhich,gridywhich;
   int gridzwhich;                  // COMPUTE, FIX, VARIABLE for ATTRIBUTE
@@ -90,28 +91,28 @@ class DumpImage : public DumpParticle {
   // grid line drawing, for volume and planes
 
   int glineflag;                   // 0/1 for draw grid cell lines
-  double glinediam;                // diameter of lines
-  double *glinecolor;              // color of lines
+  sfloat glinediam;                // diameter of lines
+  sfloat *glinecolor;              // color of lines
 
   // surf drawing
 
   int surfflag;                    // 0/1 for draw surf elements
   int scolor;                      // color of surfs = ONE, PROC, ATTRIBUTE
-  double *surfcolorone;            // ONE color of surfs
-  double sdiamvalue;               // surf diameter for 2d lines
+  sfloat *surfcolorone;            // ONE color of surfs
+  sfloat sdiamvalue;               // surf diameter for 2d lines
   int surfwhich;                   // COMPUTE, FIX, VARIABLE for ATTRIBUTE
   char *idsurf;                    // ID of compute, fix, variable
   int surfindex;                   // index of compute, fix, variable
   int surfcol;                     // column of compute/fix array, 0 vor vector
   int surf_groupbit;               // bit mask for dump_modify surfgroup
 
-  double *scolorproc;              // surf color for me
+  sfloat *scolorproc;              // surf color for me
 
   // surf line drawing
 
   int slineflag;                   // 0/1 for draw surf lines
-  double slinediam;                // diameter of lines
-  double *slinecolor;              // color of lines
+  sfloat slinediam;                // diameter of lines
+  sfloat *slinecolor;              // color of lines
 
   // methods
 

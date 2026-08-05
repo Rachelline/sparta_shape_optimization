@@ -1,3 +1,4 @@
+/* AD-CONVERTED: double->sfloat by tools/ad_convert.py (see sfloat.h) */
 /* ----------------------------------------------------------------------
    SPARTA - Stochastic PArallel Rarefied-gas Time-accurate Analyzer
    http://sparta.sandia.gov
@@ -134,8 +135,8 @@ void ComputeGasReactionGrid::compute_per_grid()
 void ComputeGasReactionGrid::clear()
 {
   cinfo = grid->cinfo;
-  if (ncol == 0) memset(vector_grid,0,nglocal*sizeof(double));
-  else if (nglocal) memset(&array_grid[0][0],0,nglocal*ncol*sizeof(double));
+  if (ncol == 0) memset(vector_grid,0,nglocal*sizeof(sfloat));
+  else if (nglocal) memset(&array_grid[0][0],0,nglocal*ncol*sizeof(sfloat));
 }
 
 /* ----------------------------------------------------------------------
@@ -207,8 +208,8 @@ void ComputeGasReactionGrid::reallocate()
   // also note if load-balancing is done, tallies will be lost
   //   would need to implement (un)pack_grid_one() to avoid this
 
-  if (ncol == 0) memset(vector_grid,0,nglocal*sizeof(double));
-  else if (nglocal) memset(&array_grid[0][0],0,nglocal*ncol*sizeof(double));
+  if (ncol == 0) memset(vector_grid,0,nglocal*sizeof(sfloat));
+  else if (nglocal) memset(&array_grid[0][0],0,nglocal*ncol*sizeof(sfloat));
 }
 
 /* ----------------------------------------------------------------------
@@ -218,7 +219,7 @@ void ComputeGasReactionGrid::reallocate()
 bigint ComputeGasReactionGrid::memory_usage()
 {
   bigint bytes = 0;
-  if (ncol == 0) bytes += nglocal * sizeof(double);    // vector_grid
-  else bytes += nglocal * ncol * sizeof(double);       // array_grid
+  if (ncol == 0) bytes += nglocal * sizeof(sfloat);    // vector_grid
+  else bytes += nglocal * ncol * sizeof(sfloat);       // array_grid
   return bytes;
 }

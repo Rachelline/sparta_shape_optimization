@@ -294,14 +294,17 @@ void *sparta_extract_variable(void *ptr, char *name)
 
   if (sparta->input->variable->equal_style(ivar)) {
     double *dptr = (double *) malloc(sizeof(double));
-    *dptr = sparta->input->variable->compute_equal(ivar);
+    *dptr = spval(sparta->input->variable->compute_equal(ivar));
     return (void *) dptr;
   }
 
   if (sparta->input->variable->particle_style(ivar)) {
     int nlocal = sparta->particle->nlocal;
     double *vector = (double *) malloc(nlocal*sizeof(double));
-    sparta->input->variable->compute_particle(ivar,vector,1,0);
+    sfloat *svector = (sfloat *) malloc(nlocal*sizeof(sfloat));
+    sparta->input->variable->compute_particle(ivar,svector,1,0);
+    for (int i = 0; i < nlocal; i++) vector[i] = spval(svector[i]);
+    free(svector);
     return (void *) vector;
   }
 

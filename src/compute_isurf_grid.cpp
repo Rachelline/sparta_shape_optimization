@@ -1,3 +1,4 @@
+/* AD-CONVERTED: double->sfloat by tools/ad_convert.py (see sfloat.h) */
 /* ----------------------------------------------------------------------
    SPARTA - Stochastic PArallel Rarefied-gas Time-accurate Analyzer
    http://sparta.github.io
@@ -152,7 +153,7 @@ void ComputeISurfGrid::init_normflux()
 {
   // normalization nfactor = dt/fnum
 
-  double nfactor = update->dt/update->fnum;
+  sfloat nfactor = update->dt/update->fnum;
   nfactor_inverse = 1.0/nfactor;
 
   // normflux for all surface elements, based on area and timestep size
@@ -165,7 +166,7 @@ void ComputeISurfGrid::init_normflux()
   memory->create(normflux,nsurf,"isurf/grid:normflux");
 
   int axisymmetric = domain->axisymmetric;
-  double tmp;
+  sfloat tmp;
 
   for (int i = 0; i < nsurf; i++) {
     if (dim == 3) normflux[i] = surf->tri_size(i,tmp);
@@ -215,7 +216,7 @@ void ComputeISurfGrid::clear()
      except sum tally to to per-grid-cell array_grid
 ------------------------------------------------------------------------- */
 
-void ComputeISurfGrid::surf_tally(double dtremain,
+void ComputeISurfGrid::surf_tally(sfloat dtremain,
                                   int isurf, int icell, int reaction,
                                   Particle::OnePart *iorig,
                                   Particle::OnePart *ip, Particle::OnePart *jp)
@@ -231,7 +232,7 @@ void ComputeISurfGrid::surf_tally(double dtremain,
   // grow tally list if needed
 
   int itally;
-  double *vec;
+  sfloat *vec;
 
   surfint surfID;
   if (dim == 2) surfID = lines[isurf].id;
@@ -248,7 +249,7 @@ void ComputeISurfGrid::surf_tally(double dtremain,
     ntally++;
   }
 
-  double fluxscale = normflux[isurf];
+  sfloat fluxscale = normflux[isurf];
 
   // tally all values associated with group into array
   // set nflag and tflag after normal and tangent computation is done once
@@ -256,22 +257,22 @@ void ComputeISurfGrid::surf_tally(double dtremain,
   // forcescale factor applied for keywords FX,FY,FZ
   // fluxscale factor applied for all keywords except NUM,FX,FY,FZ
 
-  double vsqpre,ivsqpost,jvsqpost;
-  double ierot,jerot,ievib,jevib,iother,jother,otherpre,etot;
-  double pdelta[3],pnorm[3],ptang[3],pdelta_force[3];
+  sfloat vsqpre,ivsqpost,jvsqpost;
+  sfloat ierot,jerot,ievib,jevib,iother,jother,otherpre,etot;
+  sfloat pdelta[3],pnorm[3],ptang[3],pdelta_force[3];
 
-  double *norm;
+  sfloat *norm;
   if (dim == 2) norm = lines[isurf].norm;
   else norm = tris[isurf].norm;
 
-  double origmass,imass,jmass;
+  sfloat origmass,imass,jmass;
   if (weightflag) weight = iorig->weight;
   origmass = particle->species[origspecies].mass * weight;
   if (ip) imass = particle->species[ip->ispecies].mass * weight;
   if (jp) jmass = particle->species[jp->ispecies].mass * weight;
 
-  double *vorig = iorig->v;
-  double mvv2e = update->mvv2e;
+  sfloat *vorig = iorig->v;
+  sfloat mvv2e = update->mvv2e;
 
   vec = array_surf_tally[itally];
   int k = igroup*nvalue;
@@ -486,7 +487,7 @@ void ComputeISurfGrid::post_process_isurf_grid()
     csubs = sinfo[cells[icell].isplit].csubs;
     for (int j = 0; j < nsplit; j++) {
       jcell = csubs[j];
-      memcpy(array_grid[jcell],array_grid[icell],ntotal*sizeof(double));
+      memcpy(array_grid[jcell],array_grid[icell],ntotal*sizeof(sfloat));
     }
   }
 }
@@ -523,8 +524,8 @@ void ComputeISurfGrid::reallocate()
 bigint ComputeISurfGrid::memory_usage()
 {
   bigint bytes = 0;
-  bytes += ntotal*maxgrid * sizeof(double);     // array_grid
-  bytes += ntotal*maxtally * sizeof(double);    // array_surf_tally
+  bytes += ntotal*maxgrid * sizeof(sfloat);     // array_grid
+  bytes += ntotal*maxtally * sizeof(sfloat);    // array_surf_tally
   bytes += maxtally * sizeof(surfint);          // tally2surf
   return bytes;
 }

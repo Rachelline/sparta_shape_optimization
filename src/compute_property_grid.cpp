@@ -1,3 +1,4 @@
+/* AD-CONVERTED: double->sfloat by tools/ad_convert.py (see sfloat.h) */
 /* ----------------------------------------------------------------------
    SPARTA - Stochastic PArallel Rarefied-gas Time-accurate Analyzer
    http://sparta.github.io
@@ -155,7 +156,7 @@ void ComputePropertyGrid::reallocate()
 bigint ComputePropertyGrid::memory_usage()
 {
   bigint bytes;
-  bytes = nvalues*nglocal * sizeof(double);
+  bytes = nvalues*nglocal * sizeof(sfloat);
   return bytes;
 }
 
@@ -172,7 +173,7 @@ void ComputePropertyGrid::pack_id(int n)
   Grid::ChildCell *cells = grid->cells;
   Grid::ChildInfo *cinfo = grid->cinfo;
 
-  // NOTE: cellint (bigint) won't fit in double in some cases
+  // NOTE: cellint (bigint) won't fit in sfloat in some cases
 
   for (int i = 0; i < nglocal; i++) {
     if (cinfo[i].mask & groupbit) buf[n] = cells[i].id;

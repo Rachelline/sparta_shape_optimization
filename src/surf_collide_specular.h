@@ -1,3 +1,4 @@
+/* AD-CONVERTED: double->sfloat by tools/ad_convert.py (see sfloat.h) */
 /* ----------------------------------------------------------------------
    SPARTA - Stochastic PArallel Rarefied-gas Time-accurate Analyzer
    http://sparta.github.io
@@ -31,10 +32,10 @@ class SurfCollideSpecular : public SurfCollide {
   SurfCollideSpecular(class SPARTA *, int, char **);
   SurfCollideSpecular(class SPARTA *sparta) : SurfCollide(sparta) {} // needed for Kokkos
   virtual ~SurfCollideSpecular() {}
-  Particle::OnePart *collide(Particle::OnePart *&, double &,
-                             int, double *, int, int &);
-  void wrapper(Particle::OnePart *, double *, int *, double*);
-  void flags_and_coeffs(int *, double *);
+  Particle::OnePart *collide(Particle::OnePart *&, sfloat &,
+                             int, sfloat *, int, int &);
+  void wrapper(Particle::OnePart *, sfloat *, int *, sfloat*);
+  void flags_and_coeffs(int *, sfloat *);
 
  protected:
   int noslip_flag;

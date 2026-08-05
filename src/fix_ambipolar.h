@@ -1,3 +1,4 @@
+/* AD-CONVERTED: double->sfloat by tools/ad_convert.py (see sfloat.h) */
 /* ----------------------------------------------------------------------
    SPARTA - Stochastic PArallel Rarefied-gas Time-accurate Analyzer
    http://sparta.github.io
@@ -36,7 +37,7 @@ class FixAmbipolar : public Fix {
   virtual ~FixAmbipolar();
   int setmask();
   void init();
-  virtual void update_custom(int, double, double, double, double *);
+  virtual void update_custom(int, sfloat, sfloat, sfloat, sfloat *);
   void surf_react(Particle::OnePart *, int &, int &);
 
  protected:

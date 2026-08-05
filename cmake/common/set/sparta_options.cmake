@@ -48,6 +48,18 @@ sparta_option(BUILD_JPEG "Enable or disable JPEG TPL. Default: OFF." OFF
 sparta_option(BUILD_PNG "Enable or disable PNG TPL. Default: OFF." OFF
               SPARTA_BUILD_TPL_LIST)
 
+# AD: build with forward-mode automatic differentiation (sfloat = Sacado SFad).
+# Requires a minimal Trilinos/Sacado install; point at it with -DSACADO_ROOT=...
+# See BUILD_CMAKE.md's "Automatic differentiation (AD)" section and
+# cmake/common/process/sparta_build_options.cmake.
+sparta_option(
+  SPARTA_ENABLE_AD
+  "Enable forward-mode AD (sfloat=Sacado::Fad::SFad). Requires SACADO_ROOT. Default: OFF."
+  OFF
+  SPARTA_BUILD_TPL_LIST)
+set(SPARTA_AD_NDIR "4" CACHE STRING
+    "Number of AD directions (SFad compile-time size). Default: 4.")
+
 set(FFT "OFF" CACHE STRING "Select a FFT TPL from FFTW3, MKL, or KISS. Default: KISS.")
 set(FFT_KOKKOS "OFF" CACHE STRING "Select a FFT TPL for Kokkos from CUFFT, HIPFFT, FFTW3, MKL, or KISS. Default: KISS.")
 # ######### END   SPARTA TPL DEPENDENCIES ##########

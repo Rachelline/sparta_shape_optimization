@@ -1,3 +1,4 @@
+/* AD-CONVERTED: double->sfloat by tools/ad_convert.py (see sfloat.h) */
 /* ----------------------------------------------------------------------
    SPARTA - Stochastic PArallel Rarefied-gas Time-accurate Analyzer
    http://sparta.github.io
@@ -55,12 +56,12 @@ RegSphere::RegSphere(SPARTA *sparta, int narg, char **arg) :
    inside = 0 if x,y,z is outside and not on surface
 ------------------------------------------------------------------------- */
 
-int RegSphere::inside(double *x)
+int RegSphere::inside(sfloat *x)
 {
-  double delx = x[0] - xc;
-  double dely = x[1] - yc;
-  double delz = x[2] - zc;
-  double r = sqrt(delx*delx + dely*dely + delz*delz);
+  sfloat delx = x[0] - xc;
+  sfloat dely = x[1] - yc;
+  sfloat delz = x[2] - zc;
+  sfloat r = sqrt(delx*delx + dely*dely + delz*delz);
 
   if (r <= radius) return 1;
   return 0;

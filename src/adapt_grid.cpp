@@ -1,3 +1,4 @@
+/* AD-CONVERTED: double->sfloat by tools/ad_convert.py (see sfloat.h) */
 /* ----------------------------------------------------------------------
    SPARTA - Stochastic PArallel Rarefied-gas Time-accurate Analyzer
    http://sparta.github.io
@@ -98,7 +99,7 @@ void AdaptGrid::command(int narg, char **arg)
   }
 
   MPI_Barrier(world);
-  double time1 = MPI_Wtime();
+  sfloat time1 = MPI_Wtime();
 
   // invoke init()
   // so all grid cell info including collide & fixes is ready to migrate
@@ -149,7 +150,7 @@ void AdaptGrid::command(int narg, char **arg)
   }
 
   MPI_Barrier(world);
-  double time2 = MPI_Wtime();
+  sfloat time2 = MPI_Wtime();
 
   // reset all attributes of adapted grid
   // same steps as in create_grid
@@ -184,18 +185,18 @@ void AdaptGrid::command(int narg, char **arg)
   if (file) write_file();
 
   MPI_Barrier(world);
-  double time3 = MPI_Wtime();
+  sfloat time3 = MPI_Wtime();
 
   // stats
 
-  double time_total = time3-time1;
+  sfloat time_total = time3-time1;
 
   if (me == 0) {
     if (screen) {
       fprintf(screen,"  " BIGINT_FORMAT " cells refined, " BIGINT_FORMAT
               " cells coarsened\n",nrefine_total,ncoarsen_total);
       fprintf(screen,"  adapted to " BIGINT_FORMAT " grid cells\n",grid->ncell);
-      fprintf(screen,"  CPU time = %g secs\n",time_total);
+      fprintf(screen,"  CPU time = %g secs\n",spval(time_total));
       fprintf(screen,"  adapt/redo percent = %g %g\n",
               100.0*(time2-time1)/time_total,100.0*(time3-time2)/time_total);
     }
@@ -204,7 +205,7 @@ void AdaptGrid::command(int narg, char **arg)
       fprintf(logfile,"  " BIGINT_FORMAT " cells refined, " BIGINT_FORMAT
               " cells coarsened\n",nrefine_total,ncoarsen_total);
       fprintf(logfile,"  adapted to " BIGINT_FORMAT " grid cells\n",grid->ncell);
-      fprintf(logfile,"  CPU time = %g secs\n",time_total);
+      fprintf(logfile,"  CPU time = %g secs\n",spval(time_total));
       fprintf(logfile,"  adapt/redo percent = %g %g\n",
               100.0*(time2-time1)/time_total,100.0*(time3-time2)/time_total);
     }
@@ -514,8 +515,8 @@ void AdaptGrid::setup(int iter)
 
   if (style == RANDOM) {
     random = new RanKnuth(update->ranmaster->uniform());
-    double seed = update->ranmaster->uniform();
-    random->reset(seed,comm->me,100);
+    sfloat seed = update->ranmaster->uniform();
+    random->reset(spval(seed),comm->me,100);
   } else random = NULL;
 
   // list of new cell indices for one refined cell
@@ -717,7 +718,7 @@ void AdaptGrid::refine_surf()
 {
   int j,m,icell,flag,nsurf,plevel;
   surfint *csurfs;
-  double *norm,*lo,*hi;
+  sfloat *norm,*lo,*hi;
 
   int dim = domain->dimension;
   Grid::ChildCell *cells = grid->cells;
@@ -763,7 +764,7 @@ void AdaptGrid::refine_surf()
 void AdaptGrid::refine_value()
 {
   int icell,nsplit,jcell;
-  double value;
+  sfloat value;
   int *csubs;
 
   // invoke compute each time refinement is done
@@ -900,7 +901,7 @@ void AdaptGrid::candidates_coarsen()
 {
   int m,n,level,nxyz,nchild;
   cellint parentID;
-  double lo[3],hi[3];
+  sfloat lo[3],hi[3];
 
   // for style = VALUE, invoke compute each time coarsening is done
   // grid could have changed from previous refinement or coarsening
@@ -920,8 +921,8 @@ void AdaptGrid::candidates_coarsen()
   //         key = parentID, value = # of child cells I own
   // active = 1 for participating child cells
 
-  double *boxlo = domain->boxlo;
-  double *boxhi = domain->boxhi;
+  sfloat *boxlo = domain->boxlo;
+  sfloat *boxhi = domain->boxhi;
   Grid::ChildCell *cells = grid->cells;
   Grid::ChildInfo *cinfo = grid->cinfo;
   int nglocal = grid->nlocal;
@@ -995,7 +996,7 @@ void AdaptGrid::candidates_coarsen()
         clist[m].nexist = 0;
         clist[m].proc = new int[nxyz];
         clist[m].index = new int[nxyz];
-        clist[m].value = new double[nxyz];
+        clist[m].value = new sfloat[nxyz];
       } else m = (*clhash)[parentID];
 
       n = clist[m].nexist;
@@ -1060,7 +1061,7 @@ void AdaptGrid::candidates_coarsen()
       clist[cnum].nexist = 0;
       clist[cnum].proc = new int[nchild];
       clist[cnum].index = new int[nchild];
-      clist[cnum].value = new double[nchild];
+      clist[cnum].value = new sfloat[nchild];
       m = cnum++;
     } else m = (*clhash)[parentID];
 
@@ -1091,7 +1092,7 @@ void AdaptGrid::candidates_coarsen()
    return particle count for one child cell
 ------------------------------------------------------------------------- */
 
-double AdaptGrid::coarsen_particle_cell(int icell)
+sfloat AdaptGrid::coarsen_particle_cell(int icell)
 {
   Grid::ChildCell *cells = grid->cells;
   Grid::ChildInfo *cinfo = grid->cinfo;
@@ -1110,7 +1111,7 @@ double AdaptGrid::coarsen_particle_cell(int icell)
     }
   }
 
-  return (double) np;
+  return (sfloat) np;
 }
 
 /* ----------------------------------------------------------------------
@@ -1118,9 +1119,9 @@ double AdaptGrid::coarsen_particle_cell(int icell)
    else return 0
 ------------------------------------------------------------------------- */
 
-double AdaptGrid::coarsen_surf_cell(int icell)
+sfloat AdaptGrid::coarsen_surf_cell(int icell)
 {
-  double *norm;
+  sfloat *norm;
 
   int dim = domain->dimension;
   Surf::Line *lines = surf->lines;
@@ -1145,7 +1146,7 @@ double AdaptGrid::coarsen_surf_cell(int icell)
     }
   }
 
-  return (double) anysurf;
+  return (sfloat) anysurf;
 }
 
 /* ----------------------------------------------------------------------
@@ -1153,7 +1154,7 @@ double AdaptGrid::coarsen_surf_cell(int icell)
    if child cell is split cell, accumulate value over sub cells
 ------------------------------------------------------------------------- */
 
-double AdaptGrid::coarsen_value_cell(int icell)
+sfloat AdaptGrid::coarsen_value_cell(int icell)
 {
   Grid::ChildCell *cells = grid->cells;
   Grid::SplitInfo *sinfo = grid->sinfo;
@@ -1167,7 +1168,7 @@ double AdaptGrid::coarsen_value_cell(int icell)
   int nsplit = cells[icell].nsplit;
 
   int jcell;
-  double value = 0.0;
+  sfloat value = 0.0;
 
   for (int i = 0; i < nsplit; i++) {
     jcell = csubs[i];
@@ -1197,7 +1198,7 @@ double AdaptGrid::coarsen_value_cell(int icell)
 void AdaptGrid::coarsen_particle()
 {
   int m,nchild,np;
-  double *values;
+  sfloat *values;
 
   for (int i = 0; i < cnum; i++) {
     if (clist[i].flag == 0) continue;
@@ -1206,7 +1207,7 @@ void AdaptGrid::coarsen_particle()
     nchild = clist[i].nchild;
 
     np = 0;
-    for (m = 0; m < nchild; m++) np += static_cast<int> (values[m]);
+    for (m = 0; m < nchild; m++) np += static_cast<int> (spval(values[m]));
     if (np < ccount) clist[i].flag = 1;
     else clist[i].flag = 0;
   }
@@ -1221,7 +1222,7 @@ void AdaptGrid::coarsen_particle()
 void AdaptGrid::coarsen_surf()
 {
   int m,nchild,anysurf;
-  double *values;
+  sfloat *values;
 
   for (int i = 0; i < cnum; i++) {
     if (clist[i].flag == 0) continue;
@@ -1230,7 +1231,7 @@ void AdaptGrid::coarsen_surf()
     nchild = clist[i].nchild;
 
     anysurf = 0;
-    for (m = 0; m < nchild; m++) anysurf += static_cast<int> (values[m]);
+    for (m = 0; m < nchild; m++) anysurf += static_cast<int> (spval(values[m]));
     if (anysurf) clist[i].flag = 1;
     else clist[i].flag = 0;
   }
@@ -1243,8 +1244,8 @@ void AdaptGrid::coarsen_surf()
 void AdaptGrid::coarsen_value()
 {
   int m,nchild;
-  double onevalue,allvalues;
-  double *values;
+  sfloat onevalue,allvalues;
+  sfloat *values;
 
   for (int i = 0; i < cnum; i++) {
     if (clist[i].flag == 0) continue;
@@ -1501,15 +1502,15 @@ int AdaptGrid::perform_coarsen()
   int i,nchild,newcell,mask;
   int plevel,nsplit,jcell;
   cellint parentID;
-  double plo[3],phi[3];
+  sfloat plo[3],phi[3];
   int *csubs;
 
   Grid::ChildCell *cells;
   Grid::ChildInfo *cinfo;;
   Grid::SplitInfo *sinfo;
 
-  double *boxlo = domain->boxlo;
-  double *boxhi = domain->boxhi;
+  sfloat *boxlo = domain->boxlo;
+  sfloat *boxhi = domain->boxhi;
 
   // coarsening with distributed surfs requires use of hash
   // used by grid->coarsen_cell() method to add new unique surfs
@@ -1579,9 +1580,9 @@ int AdaptGrid::perform_coarsen()
    extract a value for icell,valindex from a compute
 ------------------------------------------------------------------------- */
 
-double AdaptGrid::value_compute(int icell)
+sfloat AdaptGrid::value_compute(int icell)
 {
-  double value;
+  sfloat value;
 
   if (valindex == 0 || compute->post_process_grid_flag)
     value = compute->vector_grid[icell];
@@ -1594,9 +1595,9 @@ double AdaptGrid::value_compute(int icell)
    extract a value for icell,valindex from a fix
 ------------------------------------------------------------------------- */
 
-double AdaptGrid::value_fix(int icell)
+sfloat AdaptGrid::value_fix(int icell)
 {
-  double value;
+  sfloat value;
 
   if (valindex == 0) value = fix->vector_grid[icell];
   else value = fix->array_grid[icell][valindex-1];
@@ -1610,9 +1611,9 @@ double AdaptGrid::value_fix(int icell)
    so count/first values in cinfo are still valid
 ------------------------------------------------------------------------- */
 
-int AdaptGrid::region_check(double *lo, double *hi)
+int AdaptGrid::region_check(sfloat *lo, sfloat *hi)
 {
-  double pt[3];
+  sfloat pt[3];
 
   if (domain->dimension == 2) {
     if (regstyle == REGION_ALL) {

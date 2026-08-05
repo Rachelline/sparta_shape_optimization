@@ -1,3 +1,4 @@
+/* AD-CONVERTED: double->sfloat by tools/ad_convert.py (see sfloat.h) */
 /* ----------------------------------------------------------------------
    SPARTA - Stochastic PArallel Rarefied-gas Time-accurate Analyzer
    http://sparta.github.io
@@ -41,18 +42,18 @@ class RemoveSurf : protected Pointers {
 
   Surf::Line *lines;       // local copy of Surf lines
   Surf::Tri *tris;         // local copy of Surf tris
-  double **cvalues;        // local copy of custom per-surf data
+  sfloat **cvalues;        // local copy of custom per-surf data
 
   bigint remove(int);
 
-  // union data struct for packing 32-bit and 64-bit ints into double bufs
-  // this avoids aliasing issues by having 2 pointers (double,int)
+  // union data struct for packing 32-bit and 64-bit ints into sfloat bufs
+  // this avoids aliasing issues by having 2 pointers (sfloat,int)
   //   to same buf memory
   // constructor for 32-bit int prevents compiler
-  //   from possibly calling the double constructor when passed an int
-  // copy to a double *buf:
+  //   from possibly calling the sfloat constructor when passed an int
+  // copy to a sfloat *buf:
   //   buf[m++] = ubuf(foo).d, where foo is a 32-bit or 64-bit int
-  // copy from a double *buf:
+  // copy from a sfloat *buf:
   //   foo = (int) ubuf(buf[m++]).i;, where (int) or (tagint) match foo
   //   the cast prevents compiler warnings about possible truncation
 

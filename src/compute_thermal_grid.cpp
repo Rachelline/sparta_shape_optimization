@@ -1,3 +1,4 @@
+/* AD-CONVERTED: double->sfloat by tools/ad_convert.py (see sfloat.h) */
 /* ----------------------------------------------------------------------
    SPARTA - Stochastic PArallel Rarefied-gas Time-accurate Analyzer
    http://sparta.github.io
@@ -126,8 +127,8 @@ void ComputeThermalGrid::compute_per_grid()
   int nlocal = particle->nlocal;
 
   int i,j,k,ispecies,igroup,icell;
-  double mass;
-  double *v,*vec;
+  sfloat mass;
+  sfloat *v,*vec;
 
   // zero all accumulators - could do this with memset()
 
@@ -169,7 +170,7 @@ void ComputeThermalGrid::compute_per_grid()
    also return cols = ptr to list of columns in tally for this index
 ------------------------------------------------------------------------- */
 
-int ComputeThermalGrid::query_tally_grid(int index, double **&array, int *&cols)
+int ComputeThermalGrid::query_tally_grid(int index, sfloat **&array, int *&cols)
 {
   index--;
   int ivalue = index % nvalue;
@@ -195,7 +196,7 @@ int ComputeThermalGrid::query_tally_grid(int index, double **&array, int *&cols)
 
 void ComputeThermalGrid::
 post_process_grid(int index, int nsample,
-                  double **etally, int *emap, double *vec, int nstride)
+                  sfloat **etally, int *emap, sfloat *vec, int nstride)
 {
   index--;
   int ivalue = index % nvalue;
@@ -224,13 +225,13 @@ post_process_grid(int index, int nsample,
   int tflag = 1;
   if (value[ivalue] == PRESS) tflag = 0;
 
-  double prefactor;
+  sfloat prefactor;
   if (value[ivalue] == TEMP) prefactor = tprefactor;
   else if (value[ivalue] == PRESS) prefactor = pprefactor;
 
   Grid::ChildInfo *cinfo = grid->cinfo;
-  double ncount,mass,mvx,mvy,mvz,mvsq;
-  double *values;
+  sfloat ncount,mass,mvx,mvy,mvz,mvsq;
+  sfloat *values;
 
   int n = emap[0];
 
@@ -276,7 +277,7 @@ void ComputeThermalGrid::reallocate()
 bigint ComputeThermalGrid::memory_usage()
 {
   bigint bytes = 0;
-  bytes = nglocal * sizeof(double);
-  bytes = ntotal*nglocal * sizeof(double);
+  bytes = nglocal * sizeof(sfloat);
+  bytes = ntotal*nglocal * sizeof(sfloat);
   return bytes;
 }

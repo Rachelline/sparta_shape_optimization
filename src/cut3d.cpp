@@ -1,3 +1,4 @@
+/* AD-CONVERTED: double->sfloat by tools/ad_convert.py (see sfloat.h) */
 /* ----------------------------------------------------------------------
    SPARTA - Stochastic PArallel Rarefied-gas Time-accurate Analyzer
    http://sparta.github.io
@@ -69,7 +70,7 @@ Cut3d::~Cut3d()
    return -1 if nsurf > max
 ------------------------------------------------------------------------- */
 
-int Cut3d::surf2grid(cellint id_caller, double *lo_caller, double *hi_caller,
+int Cut3d::surf2grid(cellint id_caller, sfloat *lo_caller, sfloat *hi_caller,
                      surfint *surfs_caller, int max)
 {
   id = id_caller;
@@ -80,8 +81,8 @@ int Cut3d::surf2grid(cellint id_caller, double *lo_caller, double *hi_caller,
   Surf::Tri *tris = surf->tris;
   int ntotal = surf->nsurf;
 
-  double value;
-  double *x1,*x2,*x3;
+  sfloat value;
+  sfloat *x1,*x2,*x3;
 
   nsurf = 0;
   for (int m = 0; m < ntotal; m++) {
@@ -134,7 +135,7 @@ int Cut3d::surf2grid(cellint id_caller, double *lo_caller, double *hi_caller,
 ------------------------------------------------------------------------- */
 
 int Cut3d::surf2grid_list(cellint id_caller,
-                          double *lo_caller, double *hi_caller,
+                          sfloat *lo_caller, sfloat *hi_caller,
                           int nlist, surfint *list,
                           surfint *surfs_caller, int max)
 {
@@ -146,8 +147,8 @@ int Cut3d::surf2grid_list(cellint id_caller,
   Surf::Tri *tris = surf->tris;
 
   int m;
-  double value;
-  double *x1,*x2,*x3;
+  sfloat value;
+  sfloat *x1,*x2,*x3;
 
   nsurf = 0;
   for (int i = 0; i < nlist; i++) {
@@ -199,8 +200,8 @@ int Cut3d::surf2grid_list(cellint id_caller,
    called by Grid::surf2grid2
 ------------------------------------------------------------------------- */
 
-int Cut3d::surf2grid_one(double *p0, double *p1, double *p2,
-                         double *lo_caller, double *hi_caller)
+int Cut3d::surf2grid_one(sfloat *p0, sfloat *p1, sfloat *p2,
+                         sfloat *lo_caller, sfloat *hi_caller)
 {
   lo[0] = lo_caller[0]; lo[1] = lo_caller[1]; lo[2] = lo_caller[2];
   hi[0] = hi_caller[0]; hi[1] = hi_caller[1]; hi[2] = hi_caller[2];
@@ -224,10 +225,10 @@ int Cut3d::surf2grid_one(double *p0, double *p1, double *p2,
    call it once more with shrunk grid cell if first attempt fails
 ------------------------------------------------------------------------- */
 
-int Cut3d::split(cellint id_caller, double *lo_caller, double *hi_caller,
+int Cut3d::split(cellint id_caller, sfloat *lo_caller, sfloat *hi_caller,
                  int nsurf_caller, surfint *surfs_caller,
-                 double *&vols_caller, int *surfmap,
-                 int *corners, int &xsub, double *xsplit)
+                 sfloat *&vols_caller, int *surfmap,
+                 int *corners, int &xsub, sfloat *xsplit)
 {
   lo[0] = lo_caller[0]; lo[1] = lo_caller[1]; lo[2] = lo_caller[2];
   hi[0] = hi_caller[0]; hi[1] = hi_caller[1]; hi[2] = hi_caller[2];
@@ -246,8 +247,8 @@ int Cut3d::split(cellint id_caller, double *lo_caller, double *hi_caller,
   if (errflag) {
     nshrink++;
 
-    double newlo = lo[0] + SHRINK*(hi[0]-lo[0]);
-    double newhi = hi[0] - SHRINK*(hi[0]-lo[0]);
+    sfloat newlo = lo[0] + SHRINK*(hi[0]-lo[0]);
+    sfloat newhi = hi[0] - SHRINK*(hi[0]-lo[0]);
     lo[0] = newlo;
     hi[0] = newhi;
 
@@ -288,20 +289,20 @@ int Cut3d::split(cellint id_caller, double *lo_caller, double *hi_caller,
    uses Sutherland-Hodgman clipping algorithm
 ------------------------------------------------------------------------- */
 
-int Cut3d::clip_external(double *p0, double *p1, double *p2,
-                         double *clo, double *chi, double *cpath)
+int Cut3d::clip_external(sfloat *p0, sfloat *p1, sfloat *p2,
+                         sfloat *clo, sfloat *chi, sfloat *cpath)
 {
   int i,npath,nnew;
-  double value;
-  double *s,*e;
-  double **path,**newpath;
+  sfloat value;
+  sfloat *s,*e;
+  sfloat **path,**newpath;
 
   // initial path = tri vertices
 
   nnew = 3;
-  memcpy(path1[0],p0,3*sizeof(double));
-  memcpy(path1[1],p1,3*sizeof(double));
-  memcpy(path1[2],p2,3*sizeof(double));
+  memcpy(path1[0],p0,3*sizeof(sfloat));
+  memcpy(path1[1],p1,3*sizeof(sfloat));
+  memcpy(path1[2],p2,3*sizeof(sfloat));
 
   // clip tri against each of 6 grid face planes
 
@@ -317,7 +318,7 @@ int Cut3d::clip_external(double *p0, double *p1, double *p2,
       e = path[i];
       if (e[dim] >= value) {
         if (s[dim] < value) between(s,e,dim,value,newpath[nnew++]);
-        memcpy(newpath[nnew++],e,3*sizeof(double));
+        memcpy(newpath[nnew++],e,3*sizeof(sfloat));
       } else if (s[dim] >= value) between(e,s,dim,value,newpath[nnew++]);
       s = e;
     }
@@ -334,7 +335,7 @@ int Cut3d::clip_external(double *p0, double *p1, double *p2,
       e = path[i];
       if (e[dim] <= value) {
         if (s[dim] > value) between(s,e,dim,value,newpath[nnew++]);
-        memcpy(newpath[nnew++],e,3*sizeof(double));
+        memcpy(newpath[nnew++],e,3*sizeof(sfloat));
       } else if (s[dim] <= value) between(e,s,dim,value,newpath[nnew++]);
       s = e;
     }
@@ -372,7 +373,7 @@ int Cut3d::clip_external(double *p0, double *p1, double *p2,
    return 0 if not, including inside
 ------------------------------------------------------------------------- */
 
-int Cut3d::sameface(double *a, double *b, double *c)
+int Cut3d::sameface(sfloat *a, sfloat *b, sfloat *c)
 {
   if (a[0] == lo[0] and b[0] == lo[0] and c[0] == lo[0]) return 1;
   if (a[0] == hi[0] and b[0] == hi[0] and c[0] == hi[0]) return 2;
@@ -390,7 +391,7 @@ int Cut3d::sameface(double *a, double *b, double *c)
    called externally, depends on no class variables
 ------------------------------------------------------------------------- */
 
-int Cut3d::sameface_external(double *a, double *b, double *c, double *clo, double *chi)
+int Cut3d::sameface_external(sfloat *a, sfloat *b, sfloat *c, sfloat *clo, sfloat *chi)
 {
   if (a[0] == clo[0] and b[0] == clo[0] and c[0] == clo[0]) return 1;
   if (a[0] == chi[0] and b[0] == chi[0] and c[0] == chi[0]) return 2;
@@ -410,19 +411,19 @@ int Cut3d::sameface_external(double *a, double *b, double *c, double *clo, doubl
    don't need to delete duplicate points since touching counts as intersection
 ------------------------------------------------------------------------- */
 
-int Cut3d::clip(double *p0, double *p1, double *p2)
+int Cut3d::clip(sfloat *p0, sfloat *p1, sfloat *p2)
 {
   int i,npath,nnew;
-  double value;
-  double *s,*e;
-  double **path,**newpath;
+  sfloat value;
+  sfloat *s,*e;
+  sfloat **path,**newpath;
 
   // initial path = tri vertices
 
   nnew = 3;
-  memcpy(path1[0],p0,3*sizeof(double));
-  memcpy(path1[1],p1,3*sizeof(double));
-  memcpy(path1[2],p2,3*sizeof(double));
+  memcpy(path1[0],p0,3*sizeof(sfloat));
+  memcpy(path1[1],p1,3*sizeof(sfloat));
+  memcpy(path1[2],p2,3*sizeof(sfloat));
 
   // intersect if any of tri vertices is within grid cell
 
@@ -450,7 +451,7 @@ int Cut3d::clip(double *p0, double *p1, double *p2)
       e = path[i];
       if (e[dim] >= value) {
         if (s[dim] < value) between(s,e,dim,value,newpath[nnew++]);
-        memcpy(newpath[nnew++],e,3*sizeof(double));
+        memcpy(newpath[nnew++],e,3*sizeof(sfloat));
       } else if (s[dim] >= value) between(e,s,dim,value,newpath[nnew++]);
       s = e;
     }
@@ -467,7 +468,7 @@ int Cut3d::clip(double *p0, double *p1, double *p2)
       e = path[i];
       if (e[dim] <= value) {
         if (s[dim] > value) between(s,e,dim,value,newpath[nnew++]);
-        memcpy(newpath[nnew++],e,3*sizeof(double));
+        memcpy(newpath[nnew++],e,3*sizeof(sfloat));
       } else if (s[dim] <= value) between(e,s,dim,value,newpath[nnew++]);
       s = e;
     }
@@ -485,8 +486,8 @@ int Cut3d::clip(double *p0, double *p1, double *p2)
 
 int Cut3d::split_try(cellint id_caller,
                      int nsurf_caller, surfint *surfs_caller,
-                     double *&vols_caller, int *surfmap,
-                     int *corners, int &xsub, double *xsplit, int &nsplit)
+                     sfloat *&vols_caller, int *surfmap,
+                     int *corners, int &xsub, sfloat *xsplit, int &nsplit)
 {
   id = id_caller;
   nsurf = nsurf_caller;
@@ -518,7 +519,7 @@ int Cut3d::split_try(cellint id_caller,
     corners[0] = corners[1] = corners[2] = corners[3] =
       corners[4] = corners[5] = corners[6] = corners[7] = mark;
 
-    double vol = 0.0;
+    sfloat vol = 0.0;
     if (mark == OUTSIDE) vol = (hi[0]-lo[0]) * (hi[1]-lo[1]) * (hi[2]-lo[2]);
 
     vols.grow(1);
@@ -532,7 +533,7 @@ int Cut3d::split_try(cellint id_caller,
   errflag = edge2face();
   if (errflag) return errflag;
 
-  double lo2d[2],hi2d[2];
+  sfloat lo2d[2],hi2d[2];
 
   for (int iface = 0; iface < 6; iface++) {
     if (facelist[iface].n) {
@@ -571,7 +572,7 @@ int Cut3d::split_try(cellint id_caller,
   if (errflag == 4) {
     corners[0] = corners[1] = corners[2] = corners[3] =
       corners[4] = corners[5] = corners[6] = corners[7] = INSIDE;
-    double volume = 0.0;
+    sfloat volume = 0.0;
     vols.grow(1);
     vols[0] = volume;
     vols_caller = &vols[0];
@@ -598,7 +599,7 @@ int Cut3d::split_try(cellint id_caller,
   // else set corners = INSIDE
 
   int icorner;
-  double *p1,*p2;
+  sfloat *p1,*p2;
 
   corners[0] = corners[1] = corners[2] = corners[3] =
     corners[4] = corners[5] = corners[6] = corners[7] = INSIDE;
@@ -690,7 +691,7 @@ int Cut3d::add_tris()
 {
   int i,m;
   int e1,e2,e3,dir1,dir2,dir3;
-  double p1[3],p2[3],p3[3];
+  sfloat p1[3],p2[3],p3[3];
   Surf::Tri *tri;
   Vertex *vert;
   Edge *edge;
@@ -708,9 +709,9 @@ int Cut3d::add_tris()
     tri = &tris[m];
     if (tri->transparent) continue;
 
-    memcpy(p1,tri->p1,3*sizeof(double));
-    memcpy(p2,tri->p2,3*sizeof(double));
-    memcpy(p3,tri->p3,3*sizeof(double));
+    memcpy(p1,tri->p1,3*sizeof(sfloat));
+    memcpy(p2,tri->p2,3*sizeof(sfloat));
+    memcpy(p3,tri->p3,3*sizeof(sfloat));
 
     vert = &verts[nvert];
     vert->active = 1;
@@ -734,8 +735,8 @@ int Cut3d::add_tris()
       edge->style = CTRI;
       edge->nvert = 0;
       edge->verts[0] = edge->verts[1] = -1;
-      memcpy(edge->p1,p1,3*sizeof(double));
-      memcpy(edge->p2,p2,3*sizeof(double));
+      memcpy(edge->p1,p1,3*sizeof(sfloat));
+      memcpy(edge->p2,p2,3*sizeof(sfloat));
     }
     edge_insert(e1,dir1,nvert,-1,-1,-1,-1);
 
@@ -749,8 +750,8 @@ int Cut3d::add_tris()
       edge->style = CTRI;
       edge->nvert = 0;
       edge->verts[0] = edge->verts[1] = -1;
-      memcpy(edge->p1,p2,3*sizeof(double));
-      memcpy(edge->p2,p3,3*sizeof(double));
+      memcpy(edge->p1,p2,3*sizeof(sfloat));
+      memcpy(edge->p2,p3,3*sizeof(sfloat));
     }
     edge_insert(e2,dir2,nvert,e1,dir1,-1,-1);
 
@@ -764,8 +765,8 @@ int Cut3d::add_tris()
       edge->style = CTRI;
       edge->nvert = 0;
       edge->verts[0] = edge->verts[1] = -1;
-      memcpy(edge->p1,p3,3*sizeof(double));
-      memcpy(edge->p2,p1,3*sizeof(double));
+      memcpy(edge->p1,p3,3*sizeof(sfloat));
+      memcpy(edge->p2,p1,3*sizeof(sfloat));
     }
     edge_insert(e3,dir3,nvert,e2,dir2,-1,-1);
 
@@ -787,8 +788,8 @@ void Cut3d::clip_tris()
 {
   int i,n,dim,lohi,ivert,iedge,jedge,idir,jdir,nedge;
   int p1flag,p2flag;
-  double value;
-  double *p1,*p2;
+  sfloat value;
+  sfloat *p1,*p2;
   Edge *edge,*newedge;
 
   // loop over all 6 faces of cell
@@ -927,8 +928,8 @@ void Cut3d::clip_tris()
           newedge->style = CTRI;
           newedge->nvert = 0;
           newedge->verts[0] = newedge->verts[1] = -1;
-          memcpy(newedge->p1,p1,3*sizeof(double));
-          memcpy(newedge->p2,p2,3*sizeof(double));
+          memcpy(newedge->p1,p1,3*sizeof(sfloat));
+          memcpy(newedge->p2,p2,3*sizeof(sfloat));
           // convert jedge back to -1 for last vertex
           if (jedge == verts[ivert].first) jedge = -1;
           edge_insert(n,0,ivert,iedge,idir,jedge,jdir);
@@ -965,8 +966,8 @@ void Cut3d::clip_adjust()
 {
   int nvert,nedge,nface1,nface2;
   int faces1[6],faces2[6];
-  double pboth[3],move1[3],move2[3];
-  double *p1,*p2,*p3;
+  sfloat pboth[3],move1[3],move2[3];
+  sfloat *p1,*p2,*p3;
   Edge *edge;
 
 #ifdef VERBOSE
@@ -994,10 +995,10 @@ void Cut3d::clip_adjust()
     edge = &edges[iedge];
     p1 = edge->p1;
     p2 = edge->p2;
-    double dx = p1[0]-p2[0];
-    double dy = p1[1]-p2[1];
-    double dz = p1[2]-p2[2];
-    double edgelen = sqrt(dx*dx+dy*dy+dz*dz);
+    sfloat dx = p1[0]-p2[0];
+    sfloat dy = p1[1]-p2[1];
+    sfloat dz = p1[2]-p2[2];
+    sfloat edgelen = sqrt(dx*dx+dy*dy+dz*dz);
 
     if (edgelen < epsilon) {
       //printf("TINY EDGE id %ld nsurf %d i/nedge %d %d len %g eps %g\n",
@@ -1015,22 +1016,22 @@ void Cut3d::clip_adjust()
       //   if pt X is on more faces, pboth = X, else pboth = p1
 
       if (!nface1 && !nface2) {
-        memcpy(pboth,p1,3*sizeof(double));
+        memcpy(pboth,p1,3*sizeof(sfloat));
         //printf("INTERIOR EDGE %ld %d %d %g %g\n",
         //       id,iedge,nedge,edgelen,epsilon);
       } else if (nface1 && !nface2) {
-        memcpy(pboth,p1,3*sizeof(double));
+        memcpy(pboth,p1,3*sizeof(sfloat));
       } else if (nface2 && !nface1) {
-        memcpy(pboth,p2,3*sizeof(double));
+        memcpy(pboth,p2,3*sizeof(sfloat));
       } else {
-        memcpy(move1,p1,3*sizeof(double));
-        memcpy(move2,p2,3*sizeof(double));
+        memcpy(move1,p1,3*sizeof(sfloat));
+        memcpy(move2,p2,3*sizeof(sfloat));
         move_to_faces(move1);
         move_to_faces(move2);
         nface1 = on_faces(move1,faces1);
         nface2 = on_faces(move2,faces2);
-        if (nface2 > nface1) memcpy(pboth,move2,3*sizeof(double));
-        else memcpy(pboth,move1,3*sizeof(double));
+        if (nface2 > nface1) memcpy(pboth,move2,3*sizeof(sfloat));
+        else memcpy(pboth,move1,3*sizeof(sfloat));
       }
 
       // set all points that are same as old p1 or p2 to pboth
@@ -1041,18 +1042,18 @@ void Cut3d::clip_adjust()
         if (jedge == iedge) continue;
 
         if (samepoint(edges[jedge].p1,p1))
-          memcpy(edges[jedge].p1,pboth,3*sizeof(double));
+          memcpy(edges[jedge].p1,pboth,3*sizeof(sfloat));
         if (samepoint(edges[jedge].p2,p1))
-          memcpy(edges[jedge].p2,pboth,3*sizeof(double));
+          memcpy(edges[jedge].p2,pboth,3*sizeof(sfloat));
 
         if (samepoint(edges[jedge].p1,p2))
-          memcpy(edges[jedge].p1,pboth,3*sizeof(double));
+          memcpy(edges[jedge].p1,pboth,3*sizeof(sfloat));
         if (samepoint(edges[jedge].p2,p2))
-          memcpy(edges[jedge].p2,pboth,3*sizeof(double));
+          memcpy(edges[jedge].p2,pboth,3*sizeof(sfloat));
       }
 
-      memcpy(edges[iedge].p1,pboth,3*sizeof(double));
-      memcpy(edges[iedge].p2,pboth,3*sizeof(double));
+      memcpy(edges[iedge].p1,pboth,3*sizeof(sfloat));
+      memcpy(edges[iedge].p2,pboth,3*sizeof(sfloat));
     }
   }
 
@@ -1093,7 +1094,7 @@ void Cut3d::clip_adjust()
   int noutside = 0;
   int ninside = 0;
 
-  double cbox[3],ctri[3],t2b[3];
+  sfloat cbox[3],ctri[3],t2b[3];
 
   nvert = verts.n;
 
@@ -1111,7 +1112,7 @@ void Cut3d::clip_adjust()
       ctri[1] = (p1[1]+p2[1]+p3[1])/3.0;
       ctri[2] = (p1[2]+p2[2]+p3[2])/3.0;
       MathExtra::sub3(cbox,ctri,t2b);
-      double dot = MathExtra::dot3(verts[ivert].norm,t2b);
+      sfloat dot = MathExtra::dot3(verts[ivert].norm,t2b);
       if (dot > 0.0) noutside++;
       if (dot < 0.0) ninside++;
       vertex_remove(&verts[ivert]);
@@ -1164,8 +1165,8 @@ void Cut3d::clip_adjust()
 void Cut3d::ctri_volume()
 {
   int i,iedge,idir,nedge;
-  double zarea,volume;
-  double *p0,*p1,*p2;
+  sfloat zarea,volume;
+  sfloat *p0,*p1,*p2;
   Edge *edge;
 
   int nvert = verts.n;
@@ -1219,9 +1220,9 @@ int Cut3d::edge2face()
 {
   int n,iface,nface,ivert;
   int faces[6];
-  double dot0;
-  double norm_inward[3];
-  double *trinorm;
+  sfloat dot0;
+  sfloat norm_inward[3];
+  sfloat *trinorm;
   Edge *edge;
 
   // insure each facelist has sufficient length
@@ -1285,7 +1286,7 @@ int Cut3d::edge2face()
 void Cut3d::edge2clines(int iface)
 {
   int iedge;
-  double *p1,*p2;
+  sfloat *p1,*p2;
   Edge *edge;
   Cut2d::Cline *cline;
 
@@ -1331,7 +1332,7 @@ int Cut3d::add_face_pgons(int iface)
 {
   int iloop,mloop,nloop,ipt,mpt,npt;
   int iedge,dir,prev,dirprev;
-  double p1[3],p2[3];
+  sfloat p1[3],p2[3];
   Vertex *vert;
   Edge *edge;
   Cut2d::PG *pg;
@@ -1345,7 +1346,7 @@ int Cut3d::add_face_pgons(int iface)
   int flip = 0;
   if (iface == 0 || iface == 3 || iface == 4) flip = 1;
 
-  double value;
+  sfloat value;
   int dim = iface / 2;
   int lohi = iface % 2;
   if (lohi == 0) value = lo[dim];
@@ -1420,11 +1421,11 @@ int Cut3d::add_face_pgons(int iface)
         edge->nvert = 0;
         edge->verts[0] = edge->verts[1] = -1;
         if (flip) {
-          memcpy(edge->p1,p2,3*sizeof(double));
-          memcpy(edge->p2,p1,3*sizeof(double));
+          memcpy(edge->p1,p2,3*sizeof(sfloat));
+          memcpy(edge->p2,p1,3*sizeof(sfloat));
         } else {
-          memcpy(edge->p1,p1,3*sizeof(double));
-          memcpy(edge->p2,p2,3*sizeof(double));
+          memcpy(edge->p1,p1,3*sizeof(sfloat));
+          memcpy(edge->p2,p2,3*sizeof(sfloat));
         }
         dir = 0;
         edge_insert(iedge,dir,nvert,prev,dirprev,-1,-1);
@@ -1448,10 +1449,10 @@ int Cut3d::add_face_pgons(int iface)
    caller sets outerflag2d if cut2d requires adding perimeter face edges
 ------------------------------------------------------------------------- */
 
-int Cut3d::add_face(int iface, double *lo2d, double *hi2d)
+int Cut3d::add_face(int iface, sfloat *lo2d, sfloat *hi2d)
 {
   int i,j,iedge,dir,prev,dirprev;
-  double p1[3],p2[3];
+  sfloat p1[3],p2[3];
   Vertex *vert;
   Edge *edge;
 
@@ -1467,7 +1468,7 @@ int Cut3d::add_face(int iface, double *lo2d, double *hi2d)
   vert->nedge = 0;
   vert->norm = NULL;
 
-  double value;
+  sfloat value;
   int dim = iface / 2;
   int lohi = iface % 2;
   if (lohi == 0) value = lo[dim];
@@ -1479,7 +1480,7 @@ int Cut3d::add_face(int iface, double *lo2d, double *hi2d)
   int flip = 0;
   if (iface == 0 || iface == 3 || iface == 4) flip = 1;
 
-  double cpts[4][2];
+  sfloat cpts[4][2];
 
   if (flip) {
     cpts[0][0] = lo2d[0]; cpts[0][1] = lo2d[1];
@@ -1523,8 +1524,8 @@ int Cut3d::add_face(int iface, double *lo2d, double *hi2d)
     edge->style = vert->style;
     edge->nvert = 0;
     edge->verts[0] = edge->verts[1] = -1;
-    memcpy(edge->p1,p1,3*sizeof(double));
-    memcpy(edge->p2,p2,3*sizeof(double));
+    memcpy(edge->p1,p1,3*sizeof(sfloat));
+    memcpy(edge->p2,p2,3*sizeof(sfloat));
     dir = 0;
     edge_insert(iedge,dir,nvert,prev,dirprev,-1,-1);
     prev = iedge;
@@ -1652,7 +1653,7 @@ int Cut3d::check()
 void Cut3d::walk()
 {
   int flag,ncount,ivert,firstvert,iedge,dir,nedge,prev;
-  double volume;
+  sfloat volume;
   Vertex *vert;
   Edge *edge;
 
@@ -1768,7 +1769,7 @@ int Cut3d::loop2ph()
   phs.grow(positive);
 
   if (positive == 1) {
-    double volume = 0.0;
+    sfloat volume = 0.0;
     for (int i = 0; i < nloop; i++) {
       volume += loops[i].volume;
       loops[i].next = i+1;
@@ -1833,10 +1834,10 @@ void Cut3d::create_surfmap(int *surfmap)
    return xsub = sub-cell index the chosen surf is in
 ------------------------------------------------------------------------- */
 
-int Cut3d::split_point_explicit(int *surfmap, double *xsplit, int &xsub)
+int Cut3d::split_point_explicit(int *surfmap, sfloat *xsplit, int &xsub)
 {
   int itri;
-  double *x1,*x2,*x3;
+  sfloat *x1,*x2,*x3;
 
   Surf::Tri *tris = surf->tris;
 
@@ -1892,7 +1893,7 @@ int Cut3d::split_point_explicit(int *surfmap, double *xsplit, int &xsub)
    return xsub = sub-cell index the chosen surf is in
 ------------------------------------------------------------------------- */
 
-int Cut3d::split_point_implicit(int *surfmap, double *xsplit, int &xsub)
+int Cut3d::split_point_implicit(int *surfmap, sfloat *xsplit, int &xsub)
 {
   Surf::Tri *tris = surf->tris;
 
@@ -1905,7 +1906,7 @@ int Cut3d::split_point_implicit(int *surfmap, double *xsplit, int &xsub)
   // xsplit = center point of triangle wholly contained in cell
 
   int itri = surfs[i];
-  double onethird = 1.0/3.0;
+  sfloat onethird = 1.0/3.0;
   xsplit[0] = onethird * (tris[itri].p1[0] + tris[itri].p2[0] + tris[itri].p3[0]);
   xsplit[1] = onethird * (tris[itri].p1[1] + tris[itri].p2[1] + tris[itri].p3[1]);
   xsplit[2] = onethird * (tris[itri].p1[2] + tris[itri].p2[2] + tris[itri].p3[2]);
@@ -2056,7 +2057,7 @@ void Cut3d::vertex_remove(Vertex *vert)
 int Cut3d::grazing(Vertex *vert)
 {
   int count[6];
-  double *p;
+  sfloat *p;
   Edge *edge;
 
   int iedge = vert->first;
@@ -2081,7 +2082,7 @@ int Cut3d::grazing(Vertex *vert)
     idir = edge->dirnext[idir];
   }
 
-  double *norm = vert->norm;
+  sfloat *norm = vert->norm;
   if (count[0] == nedge && norm[0] < 0.0) return 1;
   if (count[1] == nedge && norm[0] > 0.0) return 1;
   if (count[2] == nedge && norm[1] < 0.0) return 1;
@@ -2097,7 +2098,7 @@ int Cut3d::grazing(Vertex *vert)
    list length can be 0,1,2
 ------------------------------------------------------------------------- */
 
-int Cut3d::on_faces(double *p, int *faces)
+int Cut3d::on_faces(sfloat *p, int *faces)
 {
   int n = 0;
   if (p[0] == lo[0]) faces[n++] = 0;
@@ -2116,7 +2117,7 @@ int Cut3d::on_faces(double *p, int *faces)
    list length can be 0,1,2
 ------------------------------------------------------------------------- */
 
-int Cut3d::which_faces(double *p1, double *p2, int *faces)
+int Cut3d::which_faces(sfloat *p1, sfloat *p2, int *faces)
 {
   int n = 0;
   if (p1[0] == lo[0] && p2[0] == lo[0]) faces[n++] = 0;
@@ -2136,7 +2137,7 @@ int Cut3d::which_faces(double *p1, double *p2, int *faces)
 # for ZLO/ZHI, keep (x,y) -> (x,y), look at face from inside/outside 3d cell
 ------------------------------------------------------------------------- */
 
-void Cut3d::face_from_cell(int iface, double *lo2d, double *hi2d)
+void Cut3d::face_from_cell(int iface, sfloat *lo2d, sfloat *hi2d)
 {
   if (iface < 2) {
     lo2d[0] = lo[1]; hi2d[0] = hi[1];
@@ -2154,7 +2155,7 @@ void Cut3d::face_from_cell(int iface, double *lo2d, double *hi2d)
    compress a 3d pt into a 2d pt on iface
 ------------------------------------------------------------------------- */
 
-void Cut3d::compress2d(int iface, double *p3, double *p2)
+void Cut3d::compress2d(int iface, sfloat *p3, sfloat *p2)
 {
   if (iface < 2) {
     p2[0] = p3[1]; p2[1] = p3[2];
@@ -2169,7 +2170,7 @@ void Cut3d::compress2d(int iface, double *p3, double *p2)
    expand a 2d pt into 3d pt on iface with extra coord = value
 ------------------------------------------------------------------------- */
 
-void Cut3d::expand2d(int iface, double value, double *p2, double *p3)
+void Cut3d::expand2d(int iface, sfloat value, sfloat *p2, sfloat *p3)
 {
   if (iface < 2) {
     p3[0] = value; p3[1] = p2[0]; p3[2] = p2[1];
@@ -2192,9 +2193,9 @@ void Cut3d::expand2d(int iface, double value, double *p2, double *p3)
    return -2 as error if edge already exists in same dir as this one
 ------------------------------------------------------------------------- */
 
-int Cut3d::findedge(double *x, double *y, int flag, int &dir)
+int Cut3d::findedge(sfloat *x, sfloat *y, int flag, int &dir)
 {
-  double *p1,*p2;
+  sfloat *p1,*p2;
 
   int nedge = edges.n;
 
@@ -2226,7 +2227,7 @@ int Cut3d::findedge(double *x, double *y, int flag, int &dir)
    C can be same as A or B, will just overwrite
 ------------------------------------------------------------------------- */
 
-void Cut3d::between(double *a, double *b, int dim, double value, double *c)
+void Cut3d::between(sfloat *a, sfloat *b, int dim, sfloat value, sfloat *c)
 {
   if (dim == 0) {
     c[1] = a[1] + (value-a[dim])/(b[dim]-a[dim]) * (b[1]-a[1]);
@@ -2247,7 +2248,7 @@ void Cut3d::between(double *a, double *b, int dim, double value, double *c)
    return 1 if x,y are same point, else 0
 ------------------------------------------------------------------------- */
 
-int Cut3d::samepoint(double *x, double *y)
+int Cut3d::samepoint(sfloat *x, sfloat *y)
 {
   if (x[0] == y[0] && x[1] == y[1] && x[2] == y[2]) return 1;
   return 0;
@@ -2258,7 +2259,7 @@ int Cut3d::samepoint(double *x, double *y)
    else return -1
 ------------------------------------------------------------------------- */
 
-int Cut3d::corner(double *pt)
+int Cut3d::corner(sfloat *pt)
 {
   if (pt[2] == lo[2]) {
     if (pt[1] == lo[1]) {
@@ -2285,7 +2286,7 @@ int Cut3d::corner(double *pt)
    move point within epsilon of any cell face to be on cell faces
 ------------------------------------------------------------------------- */
 
-void Cut3d::move_to_faces(double *pt)
+void Cut3d::move_to_faces(sfloat *pt)
 {
   if (fabs(pt[0]-lo[0]) < epsilon) pt[0] = lo[0];
   if (fabs(pt[0]-hi[0]) < epsilon) pt[0] = hi[0];
@@ -2300,11 +2301,11 @@ void Cut3d::move_to_faces(double *pt)
    return EXTERIOR,BORDER,INTERIOR
 ------------------------------------------------------------------------- */
 
-int Cut3d::ptflag(double *pt)
+int Cut3d::ptflag(sfloat *pt)
 {
-  double x = pt[0];
-  double y = pt[1];
-  double z = pt[2];
+  sfloat x = pt[0];
+  sfloat y = pt[1];
+  sfloat z = pt[2];
   if (x < lo[0] || x > hi[0] || y < lo[1] || y > hi[1] ||
       z < lo[2] || z > hi[2]) return EXTERIOR;
   if (x > lo[0] && x < hi[0] && y > lo[1] && y < hi[1] &&
@@ -2320,17 +2321,17 @@ void Cut3d::failed_cell()
 {
   printf("Cut3d failed on proc %d in cell ID: " CELLINT_FORMAT "\n",comm->me,id);
   Surf::Tri *tris = surf->tris;
-  printf("  lo corner %g %g %g\n",lo[0],lo[1],lo[2]);
-  printf("  hi corner %g %g %g\n",hi[0],hi[1],hi[2]);
+  printf("  lo corner %g %g %g\n",spval(lo[0]),spval(lo[1]),spval(lo[2]));
+  printf("  hi corner %g %g %g\n",spval(hi[0]),spval(hi[1]),spval(hi[2]));
   printf("  # of surfs = %d out of " BIGINT_FORMAT "\n",nsurf,surf->nsurf);
   for (int i = 0; i < nsurf; i++) {
     printf("  surf " SURFINT_FORMAT ":\n",tris[surfs[i]].id);
     printf("     p1: %g %g %g\n",
-           tris[surfs[i]].p1[0],tris[surfs[i]].p1[1],tris[surfs[i]].p1[2]);
+           spval(tris[surfs[i]].p1[0]),spval(tris[surfs[i]].p1[1]),spval(tris[surfs[i]].p1[2]));
     printf("     p2: %g %g %g\n",
-           tris[surfs[i]].p2[0],tris[surfs[i]].p2[1],tris[surfs[i]].p2[2]);
+           spval(tris[surfs[i]].p2[0]),spval(tris[surfs[i]].p2[1]),spval(tris[surfs[i]].p2[2]));
     printf("     p3: %g %g %g\n",
-           tris[surfs[i]].p3[0],tris[surfs[i]].p3[1],tris[surfs[i]].p3[2]);
+           spval(tris[surfs[i]].p3[0]),spval(tris[surfs[i]].p3[1]),spval(tris[surfs[i]].p3[2]));
   }
 }
 
@@ -2340,7 +2341,7 @@ void Cut3d::failed_cell()
 void Cut3d::print_bpg(const char *str)
 {
   int iedge,dir,newedge,newdir,prevedge,prevdir;
-  double *p1,*p2;
+  sfloat *p1,*p2;
 
   printf("%s " CELLINT_FORMAT "\n",str,id);
   printf("  Sizes: %d %d\n",verts.n,edges.n);
@@ -2384,11 +2385,11 @@ void Cut3d::print_bpg(const char *str)
     for (int j = 0; j < verts[i].nedge; j++) {
       p1 = edges[iedge].p1;
       p2 = edges[iedge].p2;
-      double dx = p1[0]-p2[0];
-      double dy = p1[1]-p2[1];
-      double dz = p1[2]-p2[2];
-      double delta = sqrt(dx*dx+dy*dy+dz*dz);
-      printf("%g",delta);
+      sfloat dx = p1[0]-p2[0];
+      sfloat dy = p1[1]-p2[1];
+      sfloat dz = p1[2]-p2[2];
+      sfloat delta = sqrt(dx*dx+dy*dy+dz*dz);
+      printf("%g",spval(delta));
       if (j < verts[i].nedge-1) printf(" ");
       newedge = edges[iedge].next[dir];
       newdir = edges[iedge].dirnext[dir];
@@ -2423,7 +2424,7 @@ void Cut3d::print_bpg(const char *str)
 
     if (verts[i].norm) {
       printf(" norm [%g %g %g]\n",
-             verts[i].norm[0],verts[i].norm[1],verts[i].norm[2]);
+             spval(verts[i].norm[0]),spval(verts[i].norm[1]),spval(verts[i].norm[2]));
     } else printf(" [NULL]\n");
   }
 
@@ -2432,8 +2433,8 @@ void Cut3d::print_bpg(const char *str)
     if (edges[i].active == 0) continue;
 
     printf("   %d %d %d",i,edges[i].active,edges[i].style);
-    printf(" (%g %g %g)",edges[i].p1[0],edges[i].p1[1],edges[i].p1[2]);
-    printf(" (%g %g %g)",edges[i].p2[0],edges[i].p2[1],edges[i].p2[2]);
+    printf(" (%g %g %g)",spval(edges[i].p1[0]),spval(edges[i].p1[1]),spval(edges[i].p1[2]));
+    printf(" (%g %g %g)",spval(edges[i].p2[0]),spval(edges[i].p2[1]),spval(edges[i].p2[2]));
     if (edges[i].nvert == 0) printf(" [-1]");
     if (edges[i].nvert == 1) {
       printf(" [%d]",edges[i].verts[0]);
@@ -2467,7 +2468,7 @@ void Cut3d::print_loops()
   for (int i = 0; i < loops.n; i++) {
     printf("  loop %d\n",i);
     printf("    flag %d\n",loops[i].flag);
-    printf("    volume %g\n",loops[i].volume);
+    printf("    volume %g\n",spval(loops[i].volume));
     printf("    nverts %d\n",loops[i].n);
     printf("    verts: [");
     int ivert = loops[i].first;

@@ -1,3 +1,4 @@
+/* AD-CONVERTED: double->sfloat by tools/ad_convert.py (see sfloat.h) */
 /* ----------------------------------------------------------------------
    SPARTA - Stochastic PArallel Rarefied-gas Time-accurate Analyzer
    http://sparta.github.io
@@ -23,12 +24,12 @@ namespace SPARTA_NS {
 class Cut2d : protected Pointers {
  public:
   struct Cline {
-    double x[2],y[2];   // coords of end points of line clipped to cell
+    sfloat x[2],y[2];   // coords of end points of line clipped to cell
     int line;           // index in list of lines that intersect this cell
   };
 
   struct Point {
-    double x[2];        // coords of point
+    sfloat x[2];        // coords of point
     int type;           // type of pt = ENTRY,EXIT,TWO,CORNER
                         // TWO if part of two Clines
                         // ENTRY/EXIT if only part of one Cline
@@ -45,12 +46,12 @@ class Cut2d : protected Pointers {
                         //   walking in counter-clockwise direction
     int side;           // which side of cell (0,1,2,3) pt is on
                         // only for ENTRY/EXIT/CORNER pts to make linked list
-    double value;       // coord along the side
+    sfloat value;       // coord along the side
                         // only for ENTRY/EXIT/CORNER pts to make linked list
   };
 
   struct Loop {
-    double area;        // area of loop
+    sfloat area;        // area of loop
     int active;         // 1/0 if active or not
     int flag;           // INTERIOR, if all TWO pts (TWO pt can be on border)
                         // BORDER, if all CORNER pts
@@ -61,7 +62,7 @@ class Cut2d : protected Pointers {
   };
 
   struct PG {
-    double area;        // summed area (over loops) of PG
+    sfloat area;        // summed area (over loops) of PG
     int n;              // # of loops in PG
     int first;          // index of first loop in PG
   };
@@ -73,25 +74,25 @@ class Cut2d : protected Pointers {
 
   Cut2d(class SPARTA *, int);
   ~Cut2d() {}
-  int surf2grid(cellint, double *, double *, surfint *, int);
-  int surf2grid_list(cellint, double *, double *, int, surfint *,
+  int surf2grid(cellint, sfloat *, sfloat *, surfint *, int);
+  int surf2grid_list(cellint, sfloat *, sfloat *, int, surfint *,
                      surfint *, int);
-  int surf2grid_one(double *, double *, double *, double *);
+  int surf2grid_one(sfloat *, sfloat *, sfloat *, sfloat *);
 
-  int split(cellint, double *, double *, int, surfint *,
-            double *&, int *, int *, int &, double *);
-  int split_face(int, int, double *, double *);
+  int split(cellint, sfloat *, sfloat *, int, surfint *,
+            sfloat *&, int *, int *, int &, sfloat *);
+  int split_face(int, int, sfloat *, sfloat *);
 
-  int clip_external(double *, double *, double *, double *, double *);
-  int sameedge(double *, double *);
-  int sameedge_external(double *, double *, double *, double *);
+  int clip_external(sfloat *, sfloat *, sfloat *, sfloat *, sfloat *);
+  int sameedge(sfloat *, sfloat *);
+  int sameedge_external(sfloat *, sfloat *, sfloat *, sfloat *);
 
  private:
   int axisymmetric;
   int implicit;
 
   cellint id;            // ID of cell being worked on
-  double *lo,*hi;        // opposite corner pts of cell
+  sfloat *lo,*hi;        // opposite corner pts of cell
   int nsurf;             // # of surf elements in cell
   surfint *surfs;        // indices of surf elements in cell
 
@@ -99,7 +100,7 @@ class Cut2d : protected Pointers {
   int touchcount;        // count of line that only touch cell surf
   int touchmark;         // corner marking inferred by touching lines
 
-  MyVec<double> areas;   // areas of each flow polygon found
+  MyVec<sfloat> areas;   // areas of each flow polygon found
   MyVec<int> used;       // 0/1 flag for each point when walking loops
 
   // methods
@@ -109,14 +110,14 @@ class Cut2d : protected Pointers {
   void weiler_loops();
   int loop2pg();
   void create_surfmap(int *);
-  int split_point_explicit(int *, double *, int &);
-  int split_point_implicit(int *, double *, int &);
+  int split_point_explicit(int *, sfloat *, int &);
+  int split_point_implicit(int *, sfloat *, int &);
 
-  int cliptest(double *, double *);
-  void clip(double *, double *, double *, double *);
+  int cliptest(sfloat *, sfloat *);
+  void clip(sfloat *, sfloat *, sfloat *, sfloat *);
 
-  int ptflag(double *);
-  int whichside(double *);
+  int ptflag(sfloat *);
+  int whichside(sfloat *);
 
   void failed_cell();
   void print_clines();

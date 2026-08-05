@@ -1,3 +1,4 @@
+/* AD-CONVERTED: double->sfloat by tools/ad_convert.py (see sfloat.h) */
 /* ----------------------------------------------------------------------
    SPARTA - Stochastic PArallel Rarefied-gas Time-accurate Analyzer
    http://sparta.github.io
@@ -34,7 +35,7 @@ class FixAveSurf : public Fix {
   void init();
   void setup();
   void end_of_step();
-  double memory_usage();
+  sfloat memory_usage();
 
  private:
   int groupbit;
@@ -46,17 +47,17 @@ class FixAveSurf : public Fix {
 
   int nsurf;               // # of explicit surfs I store = surf->nlocal+nghost
   int nown;                // # of explicit surfs I own = surf->nown
-  double *accvec;          // accumulation vector
-  double **accarray;       // accumulation array
-  double *bufvec;          // surf collate vector for surfs I own
-  double **bufarray;       // surf collate array for surfs I own
+  sfloat *accvec;          // accumulation vector
+  sfloat **accarray;       // accumulation array
+  sfloat *bufvec;          // surf collate vector for surfs I own
+  sfloat **bufarray;       // surf collate array for surfs I own
   int *masks;              // surface element group masks for surfs I own
 
   int ntally;              // # of surfs I have tallies for
   int maxtally;            // # of tallies currently allocated
   surfint *tally2surf;     // tally2surf[I] = surf ID of Ith tally
-  double *vec_tally;       // tally values, maxtally in length
-  double **array_tally;
+  sfloat *vec_tally;       // tally values, maxtally in length
+  sfloat **array_tally;
 
   int count_tally;         // # of values which process particle/surf tallies
 

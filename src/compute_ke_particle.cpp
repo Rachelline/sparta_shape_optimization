@@ -1,3 +1,4 @@
+/* AD-CONVERTED: double->sfloat by tools/ad_convert.py (see sfloat.h) */
 /* ----------------------------------------------------------------------
    SPARTA - Stochastic PArallel Rarefied-gas Time-accurate Analyzer
    http://sparta.github.io
@@ -77,9 +78,9 @@ void ComputeKEParticle::compute_per_particle()
   Particle::OnePart *particles = particle->particles;
   int nlocal = particle->nlocal;
 
-  double mass;
-  double *v;
-  double mvv2e = update->mvv2e;
+  sfloat mass;
+  sfloat *v;
+  sfloat mvv2e = update->mvv2e;
 
   for (int i = 0; i < nlocal; i++) {
     mass = species[particles[i].ispecies].mass;
@@ -94,6 +95,6 @@ void ComputeKEParticle::compute_per_particle()
 
 bigint ComputeKEParticle::memory_usage()
 {
-  bigint bytes = nmax * sizeof(double);
+  bigint bytes = nmax * sizeof(sfloat);
   return bytes;
 }

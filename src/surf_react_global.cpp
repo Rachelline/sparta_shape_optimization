@@ -1,3 +1,4 @@
+/* AD-CONVERTED: double->sfloat by tools/ad_convert.py (see sfloat.h) */
 /* ----------------------------------------------------------------------
    SPARTA - Stochastic PArallel Rarefied-gas Time-accurate Analyzer
    http://sparta.github.io
@@ -54,8 +55,8 @@ SurfReactGlobal::SurfReactGlobal(SPARTA *sparta, int narg, char **arg) :
   // initialize RNG
 
   random = new RanKnuth(update->ranmaster->uniform());
-  double seed = update->ranmaster->uniform();
-  random->reset(seed,comm->me,100);
+  sfloat seed = update->ranmaster->uniform();
+  random->reset(spval(seed),comm->me,100);
 }
 
 /* ---------------------------------------------------------------------- */
@@ -73,10 +74,10 @@ SurfReactGlobal::~SurfReactGlobal()
    if create, add particle and return ptr JP
 ------------------------------------------------------------------------- */
 
-int SurfReactGlobal::react(Particle::OnePart *&ip, int, double *,
+int SurfReactGlobal::react(Particle::OnePart *&ip, int, sfloat *,
                            Particle::OnePart *&jp, int &)
 {
-  double r = random->uniform();
+  sfloat r = random->uniform();
 
   // perform destroy reaction
 
@@ -97,10 +98,10 @@ int SurfReactGlobal::react(Particle::OnePart *&ip, int, double *,
   if (r < prob_destroy+prob_create) {
     nsingle++;
     tally_single[1]++;
-    double x[3],v[3];
+    sfloat x[3],v[3];
     int id = MAXSMALLINT*random->uniform();
-    memcpy(x,ip->x,3*sizeof(double));
-    memcpy(v,ip->v,3*sizeof(double));
+    memcpy(x,ip->x,3*sizeof(sfloat));
+    memcpy(v,ip->v,3*sizeof(sfloat));
     Particle::OnePart *particles = particle->particles;
     int reallocflag =
       particle->add_particle(id,ip->ispecies,ip->icell,x,v,0.0,0.0);

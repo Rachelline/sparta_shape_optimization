@@ -1,3 +1,4 @@
+/* AD-CONVERTED: double->sfloat by tools/ad_convert.py (see sfloat.h) */
 /* ----------------------------------------------------------------------
    SPARTA - Stochastic PArallel Rarefied-gas Time-accurate Analyzer
    http://sparta.github.io
@@ -12,6 +13,7 @@
    See the README file in the top-level SPARTA directory.
 ------------------------------------------------------------------------- */
 
+#include "stdio.h"
 #include "string.h"
 #include "compute_boundary.h"
 #include "particle.h"
@@ -99,7 +101,7 @@ void ComputeBoundary::init()
 
   // set normflux based on box face area and timestep size
 
-  double nfactor = update->dt/update->fnum;
+  sfloat nfactor = update->dt/update->fnum;
   if (domain->dimension == 2) {
     normflux[XLO] = normflux[XHI] = domain->yprd * nfactor;
 
@@ -137,7 +139,7 @@ void ComputeBoundary::compute_array()
   // sum tallies across processors
 
   MPI_Allreduce(&myarray[0][0],&array[0][0],nrow*ntotal,
-                MPI_DOUBLE,MPI_SUM,world);
+                MPI_SFLOAT,MPI_SUM,world);
 
   // normalize tallies
 
@@ -148,6 +150,28 @@ void ComputeBoundary::compute_array()
       for (int i = 0; i < size_array_rows; i++)
         array[i][j] /= normflux[i];
   }
+
+#ifdef SPARTA_AD
+  // Phase C AD-derivative verification hook (tools/ad_verify/
+  // flatplate_derivative_match.py): dormant unless SPARTA_AD_DUMP_DX (the
+  // Sacado direction index to dump) is set. array[i][j] is the final
+  // sfloat-typed per-boundary-face tally at this point -- BEFORE it would
+  // reach the standard "variable equal c_cb[...]" pipeline, which discards
+  // derivative information (variable.cpp calls spval(), extracting only
+  // .val()). This is the only way a derivative from this compute can reach
+  // the test driver. Dumps every cell rather than a targeted one so no
+  // additional env vars are needed to address a specific boundary/column.
+  {
+    const char *dump_dir = getenv("SPARTA_AD_DUMP_DX");
+    if (dump_dir) {
+      int dir = atoi(dump_dir);
+      for (int i = 0; i < size_array_rows; i++)
+        for (int j = 0; j < ntotal; j++)
+          fprintf(stderr, "AD_DX step=" BIGINT_FORMAT " iface=%d col=%d val=%.15g dx=%.15g\n",
+                  update->ntimestep, i, j, spval(array[i][j]), array[i][j].fastAccessDx(dir));
+    }
+  }
+#endif
 }
 
 /* ---------------------------------------------------------------------- */
@@ -172,7 +196,7 @@ void ComputeBoundary::clear()
    jp != NULL means two particles after collision
 ------------------------------------------------------------------------- */
 
-void ComputeBoundary::boundary_tally(double dtremain,
+void ComputeBoundary::boundary_tally(sfloat dtremain,
                                      int iface, int istyle, int reaction,
                                      Particle::OnePart *iorig,
                                      Particle::OnePart *ip,
@@ -189,22 +213,22 @@ void ComputeBoundary::boundary_tally(double dtremain,
   // particle weight used for all keywords except NUM
   // styles PERIODIC and OUTFLOW do not have post-bounce velocity
 
-  double vsqpre,ivsqpost,jvsqpost;
-  double ierot,jerot,ievib,jevib,iother,jother,otherpre;
-  double vnorm[3],vtang[3],pdelta[3],pnorm[3],ptang[3];
+  sfloat vsqpre,ivsqpost,jvsqpost;
+  sfloat ierot,jerot,ievib,jevib,iother,jother,otherpre;
+  sfloat vnorm[3],vtang[3],pdelta[3],pnorm[3],ptang[3];
 
-  double *norm = domain->norm[iface];
+  sfloat *norm = domain->norm[iface];
 
-  double origmass,imass,jmass,pre;
+  sfloat origmass,imass,jmass,pre;
   if (weightflag) weight = iorig->weight;
   origmass = particle->species[origspecies].mass * weight;
   if (ip) imass = particle->species[ip->ispecies].mass * weight;
   if (jp) jmass = particle->species[jp->ispecies].mass * weight;
 
-  double *vorig = iorig->v;
-  double mvv2e = update->mvv2e;
+  sfloat *vorig = iorig->v;
+  sfloat mvv2e = update->mvv2e;
 
-  double *vec = myarray[iface];
+  sfloat *vec = myarray[iface];
   int k = igroup*nvalue;
   int nflag = 0;
   int tflag = 0;

@@ -1,3 +1,4 @@
+/* AD-CONVERTED: double->sfloat by tools/ad_convert.py (see sfloat.h) */
 /* ----------------------------------------------------------------------
    SPARTA - Stochastic PArallel Rarefied-gas Time-accurate Analyzer
    http://sparta.github.io
@@ -51,30 +52,30 @@ class MoveSurf : protected Pointers {
   ~MoveSurf();
   void command(int, char **);
   void process_args(int, char **);
-  void move_lines(double, Surf::Line *);
-  void move_tris(double, Surf::Tri *);
+  void move_lines(sfloat, Surf::Line *);
+  void move_tris(sfloat, Surf::Tri *);
   bigint remove_particles();
 
  private:
   int me,nprocs;
   int dim,action,connectflag;
   char *file,*entry;
-  double theta;
-  double delta[3],rvec[3],origin[3];
+  sfloat theta;
+  sfloat delta[3],rvec[3],origin[3];
   FILE *fp;
 
   int *pselect;                    // 1 if point is moved, else 0
 
   int nread;
   int *readindex;
-  double **oldcoord,**newcoord;
+  sfloat **oldcoord,**newcoord;
 
   void readfile();
-  void update_points(double);
-  void translate_2d(double, Surf::Line *);
-  void translate_3d(double, Surf::Tri *);
-  void rotate_2d(double, Surf::Line *);
-  void rotate_3d(double, Surf::Tri *);
+  void update_points(sfloat);
+  void translate_2d(sfloat, Surf::Line *);
+  void translate_3d(sfloat, Surf::Tri *);
+  void rotate_2d(sfloat, Surf::Line *);
+  void rotate_3d(sfloat, Surf::Tri *);
   void connect_2d_pre();
   void connect_2d_post();
   void connect_3d_pre();

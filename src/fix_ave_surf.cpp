@@ -1,3 +1,4 @@
+/* AD-CONVERTED: double->sfloat by tools/ad_convert.py (see sfloat.h) */
 /* ----------------------------------------------------------------------
    SPARTA - Stochastic PArallel Rarefied-gas Time-accurate Analyzer
    http://sparta.github.io
@@ -377,7 +378,7 @@ void FixAveSurf::end_of_step()
 {
   int i,j,k,m,n,itally;
   surfint surfID;
-  double *vec;
+  sfloat *vec;
 
   // skip if not step which requires doing something
 
@@ -424,7 +425,7 @@ void FixAveSurf::end_of_step()
       int ntally_compute = compute->tallyinfo(tally2surf_compute);
 
       if (j == 0) {
-        double *vector = compute->vector_surf_tally;
+        sfloat *vector = compute->vector_surf_tally;
         if (nvalues == 1) {
           for (i = 0; i < ntally_compute; i++) {
             surfID = tally2surf_compute[i];
@@ -457,7 +458,7 @@ void FixAveSurf::end_of_step()
         }
       } else {
         int jm1 = j - 1;
-        double **array = compute->array_surf_tally;
+        sfloat **array = compute->array_surf_tally;
         if (nvalues == 1) {
           for (i = 0; i < ntally_compute; i++) {
             surfID = tally2surf_compute[i];
@@ -494,14 +495,14 @@ void FixAveSurf::end_of_step()
 
     } else if (which[m] == FIX) {
       if (j == 0) {
-        double *fix_vector = modify->fix[n]->vector_surf;
+        sfloat *fix_vector = modify->fix[n]->vector_surf;
         if (nvalues == 1)
           for (i = 0; i < nown; i++) accvec[i] += fix_vector[i];
         else
           for (i = 0; i < nown; i++) accarray[i][m] += fix_vector[i];
       } else {
         int jm1 = j - 1;
-        double **fix_array = modify->fix[n]->array_surf;
+        sfloat **fix_array = modify->fix[n]->array_surf;
         if (nvalues == 1)
           for (i = 0; i < nown; i++) accvec[i] += fix_array[i][jm1];
         else
@@ -525,7 +526,7 @@ void FixAveSurf::end_of_step()
 	    int *custom_vector = surf->eivec[surf->ewhich[n]];
 	    for (i = 0; i < nown; i++) accvec[i] += custom_vector[i];
 	  } else if (surf->etype[n] == DOUBLE) {
-	    double *custom_vector = surf->edvec[surf->ewhich[n]];
+	    sfloat *custom_vector = surf->edvec[surf->ewhich[n]];
 	    for (i = 0; i < nown; i++) accvec[i] += custom_vector[i];
 	  }
 	} else {
@@ -533,7 +534,7 @@ void FixAveSurf::end_of_step()
 	    int *custom_vector = surf->eivec[surf->ewhich[n]];
 	    for (i = 0; i < nown; i++) accarray[i][m] += custom_vector[i];
 	  } else if (surf->etype[n] == DOUBLE) {
-	    double *custom_vector = surf->edvec[surf->ewhich[n]];
+	    sfloat *custom_vector = surf->edvec[surf->ewhich[n]];
 	    for (i = 0; i < nown; i++) accarray[i][m] += custom_vector[i];
 	  }
 	}
@@ -544,7 +545,7 @@ void FixAveSurf::end_of_step()
 	    int **custom_array = surf->eiarray[surf->ewhich[n]];
 	    for (i = 0; i < nown; i++) accvec[i] += custom_array[i][jm1];
 	  } else if (surf->etype[n] == DOUBLE) {
-	    double **custom_array = surf->edarray[surf->ewhich[n]];
+	    sfloat **custom_array = surf->edarray[surf->ewhich[n]];
 	    for (i = 0; i < nown; i++) accvec[i] += custom_array[i][jm1];
 	  }
 	} else {
@@ -552,7 +553,7 @@ void FixAveSurf::end_of_step()
 	    int **custom_array = surf->eiarray[surf->ewhich[n]];
 	    for (i = 0; i < nown; i++) accarray[i][m] += custom_array[i][jm1];
 	  } else if (surf->etype[n] == DOUBLE) {
-	    double **custom_array = surf->edarray[surf->ewhich[n]];
+	    sfloat **custom_array = surf->edarray[surf->ewhich[n]];
 	    for (i = 0; i < nown; i++) accarray[i][m] += custom_array[i][jm1];
 	  }
 	}
@@ -668,11 +669,11 @@ void FixAveSurf::grow_tally()
    memory usage of accumulators
 ------------------------------------------------------------------------- */
 
-double FixAveSurf::memory_usage()
+sfloat FixAveSurf::memory_usage()
 {
-  double bytes = 0.0;
-  bytes += nown*nvalues * sizeof(double);
-  if (ave == RUNNING) bytes += nown*nvalues * sizeof(double);
+  sfloat bytes = 0.0;
+  bytes += nown*nvalues * sizeof(sfloat);
+  if (ave == RUNNING) bytes += nown*nvalues * sizeof(sfloat);
   return bytes;
 }
 

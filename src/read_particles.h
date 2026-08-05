@@ -1,3 +1,4 @@
+/* AD-CONVERTED: double->sfloat by tools/ad_convert.py (see sfloat.h) */
 /* ----------------------------------------------------------------------
    SPARTA - Stochastic PArallel Rarefied-gas Time-accurate Analyzer
    http://sparta.github.io
@@ -37,12 +38,12 @@ class ReadParticles : protected Pointers {
   char *line;
   FILE *fp;
 
-  void process_particles(int, int, double **);
+  void process_particles(int, int, sfloat **);
 
   int read_time(bigint &);
   void skip();
   bigint read_header();
-  void read_particles(int, int, double **);
+  void read_particles(int, int, sfloat **);
   void read_lines(int);
 };
 

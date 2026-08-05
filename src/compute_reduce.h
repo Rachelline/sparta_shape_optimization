@@ -1,3 +1,4 @@
+/* AD-CONVERTED: double->sfloat by tools/ad_convert.py (see sfloat.h) */
 /* ----------------------------------------------------------------------
    SPARTA - Stochastic PArallel Rarefied-gas Time-accurate Analyzer
    http://sparta.github.io
@@ -30,17 +31,17 @@ class ComputeReduce : public Compute {
   ComputeReduce(class SPARTA *, int, char **);
   ~ComputeReduce();
   void init();
-  double compute_scalar();
+  sfloat compute_scalar();
   void compute_vector();
   bigint memory_usage();
 
  protected:
   int me,nprocs;
   int mode,nvalues,iregion;
-  double area_total;
+  sfloat area_total;
   int *which,*argindex,*flavor,*value2index;
   char **ids;
-  double *onevec;
+  sfloat *onevec;
   int *replace,*indices,*owner;
   int index;
 
@@ -50,21 +51,21 @@ class ComputeReduce : public Compute {
   int gridgroupbit,surfgroupbit;
 
   int maxparticle,maxgrid,maxsurf;
-  double *varparticle,*vargrid,*varsurf;
+  sfloat *varparticle,*vargrid,*varsurf;
 
   int *smasks;
-  double *areasurf;
+  sfloat *areasurf;
 
   struct Pair {
-    double value;
+    sfloat value;
     int proc;
   };
   Pair pairme,pairall;
 
-  double compute_one(int, int);
+  sfloat compute_one(int, int);
   bigint count_included();
-  double area_per_surf();
-  void combine(double &, double, int);
+  sfloat area_per_surf();
+  void combine(sfloat &, sfloat, int);
 };
 
 }

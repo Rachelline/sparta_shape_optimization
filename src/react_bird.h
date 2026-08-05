@@ -1,3 +1,4 @@
+/* AD-CONVERTED: double->sfloat by tools/ad_convert.py (see sfloat.h) */
 /* ----------------------------------------------------------------------
    SPARTA - Stochastic PArallel Rarefied-gas Time-accurate Analyzer
    http://sparta.github.io
@@ -30,9 +31,9 @@ class ReactBird : public React {
   int recomb_exist(int, int);
   void ambi_check();
   virtual int attempt(Particle::OnePart *, Particle::OnePart *,
-                      double, double, double, double &, int &) = 0;
+                      sfloat, sfloat, sfloat, sfloat &, int &) = 0;
   char *reactionID(int);
-  virtual double extract_tally(int);
+  virtual sfloat extract_tally(int);
 
  protected:
   FILE *fp;
@@ -51,7 +52,7 @@ class ReactBird : public React {
     int nreactant,nproduct;        // # of reactants and products
     char **id_reactants,**id_products;  // species IDs of reactants/products
     int *reactants,*products;      // species indices of reactants/products
-    double *coeff;                 // numerical coeffs for reaction
+    sfloat *coeff;                 // numerical coeffs for reaction
     char *id;                      // reaction ID (formula)
   };
 

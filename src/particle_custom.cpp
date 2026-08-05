@@ -1,3 +1,4 @@
+/* AD-CONVERTED: double->sfloat by tools/ad_convert.py (see sfloat.h) */
 /* ----------------------------------------------------------------------
    SPARTA - Stochastic PArallel Rarefied-gas Time-accurate Analyzer
    http://sparta.github.io
@@ -57,7 +58,7 @@ void Particle::error_custom()
 /* ----------------------------------------------------------------------
    add a custom attribute with name
    assumes name does not already exist, else error
-   type = 0/1 for int/double
+   type = 0/1 for int/sfloat
    size = 0 for vector, size > 0 for array with size columns
    allocate the vector or array to current maxlocal via grow_custom()
    return index of its location;
@@ -115,15 +116,15 @@ int Particle::add_custom(char *name, int type, int size)
   } else if (type == DOUBLE) {
     if (size == 0) {
       ewhich[index] = ncustom_dvec++;
-      edvec = (double **)
-        memory->srealloc(edvec,ncustom_dvec*sizeof(double *),"particle:edvec");
+      edvec = (sfloat **)
+        memory->srealloc(edvec,ncustom_dvec*sizeof(sfloat *),"particle:edvec");
       edvec[ncustom_dvec-1] = NULL;
       memory->grow(icustom_dvec,ncustom_dvec,"particle:icustom_dvec");
       icustom_dvec[ncustom_dvec-1] = index;
     } else {
       ewhich[index] = ncustom_darray++;
-      edarray = (double ***)
-        memory->srealloc(edarray,ncustom_darray*sizeof(double **),
+      edarray = (sfloat ***)
+        memory->srealloc(edarray,ncustom_darray*sizeof(sfloat **),
                          "particle:edarray");
       edarray[ncustom_darray-1] = NULL;
       memory->grow(icustom_darray,ncustom_darray,"particle:icustom_darray");
@@ -162,15 +163,15 @@ void Particle::grow_custom(int index, int nold, int nnew)
 
   } else {
     if (esize[index] == 0) {
-      double *dvector = edvec[ewhich[index]];
+      sfloat *dvector = edvec[ewhich[index]];
       memory->grow(dvector,nnew,"particle:edvec");
-      if (dvector) memset(&dvector[nold],0,(nnew-nold)*sizeof(double));
+      if (dvector) memset(&dvector[nold],0,(nnew-nold)*sizeof(sfloat));
       edvec[ewhich[index]] = dvector;
     } else {
-      double **darray = edarray[ewhich[index]];
+      sfloat **darray = edarray[ewhich[index]];
       memory->grow(darray,nnew,esize[index],"particle:edarray");
       if (darray)
-        memset(&darray[nold][0],0,(nnew-nold)*esize[index]*sizeof(double));
+        memset(&darray[nold][0],0,(nnew-nold)*esize[index]*sizeof(sfloat));
       edarray[ewhich[index]] = darray;
     }
   }
@@ -294,7 +295,7 @@ void Particle::copy_custom(int i, int j)
   }
   if (ncustom_darray) {
     for (m = 0; m < ncustom_darray; m++)
-      memcpy(edarray[m][i],edarray[m][j],edcol[m]*sizeof(double));
+      memcpy(edarray[m][i],edarray[m][j],edcol[m]*sizeof(sfloat));
   }
 }
 
@@ -411,10 +412,10 @@ int Particle::sizeof_custom()
 
   n = IROUNDUP(n);
 
-  n += ncustom_dvec*sizeof(double);
+  n += ncustom_dvec*sizeof(sfloat);
   if (ncustom_darray)
     for (int i = 0; i < ncustom_darray; i++)
-      n += edcol[i]*sizeof(double);
+      n += edcol[i]*sizeof(sfloat);
 
   return n;
 }
@@ -446,14 +447,14 @@ void Particle::pack_custom(int n, char *buf)
 
   if (ncustom_dvec) {
     for (i = 0; i < ncustom_dvec; i++) {
-      memcpy(ptr,&edvec[i][n],sizeof(double));
-      ptr += sizeof(double);
+      memcpy(ptr,&edvec[i][n],sizeof(sfloat));
+      ptr += sizeof(sfloat);
     }
   }
   if (ncustom_darray) {
     for (i = 0; i < ncustom_darray; i++) {
-      memcpy(ptr,edarray[i][n],edcol[i]*sizeof(double));
-      ptr += edcol[i]*sizeof(double);
+      memcpy(ptr,edarray[i][n],edcol[i]*sizeof(sfloat));
+      ptr += edcol[i]*sizeof(sfloat);
     }
   }
 }
@@ -485,14 +486,14 @@ void Particle::unpack_custom(char *buf, int n)
 
   if (ncustom_dvec) {
     for (i = 0; i < ncustom_dvec; i++) {
-      memcpy(&edvec[i][n],ptr,sizeof(double));
-      ptr += sizeof(double);
+      memcpy(&edvec[i][n],ptr,sizeof(sfloat));
+      ptr += sizeof(sfloat);
     }
   }
   if (ncustom_darray) {
     for (i = 0; i < ncustom_darray; i++) {
-      memcpy(edarray[i][n],ptr,edcol[i]*sizeof(double));
-      ptr += edcol[i]*sizeof(double);
+      memcpy(edarray[i][n],ptr,edcol[i]*sizeof(sfloat));
+      ptr += edcol[i]*sizeof(sfloat);
     }
   }
 }

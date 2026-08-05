@@ -3,18 +3,22 @@ name: AD Distribution
 on:
   workflow_dispatch:
 
-# Statistical distribution/equivalence screen for the tests EXCLUDED from
-# the mpi-stubs-ad-sacado gold-log regression in ad.yml (see
-# SPARTA_DISABLED_TESTS in cmake/common/set/sparta_cmake_defaults.cmake).
-# Those tests are excluded because a single fixed-seed trajectory can never
-# be relied on to match between stock and AD for them -- the AD build's
-# arithmetic diverges from stock's by ~1 ULP at essentially every operation
-# (see the comment block in sparta_cmake_defaults.cmake for the traced
-# mechanism), which occasionally flips a probabilistic accept/reject or
-# truncation-based decision boundary and desyncs the RNG stream for the
-# rest of that run. This workflow runs the three complementary statistical
-# checks (tools/ad_verify/) that replace a fixed-trajectory regression test
-# for exactly these cases:
+# PURELY INFORMATIVE statistical health-check for the inputs historically
+# prone to AD-vs-stock fixed-seed divergence (this used to be a hardcoded
+# SPARTA_DISABLED_TESTS exclusion list in
+# cmake/common/set/sparta_cmake_defaults.cmake; that list is gone now --
+# ad.yml's mpi-stubs-ad-sacado job runs the full ctest suite unconditionally
+# and falls back to a statistical check automatically, per-input, only when
+# ctest actually fails on it -- see tools/ad_verify/ctest_fallback_gate.py
+# and the comment block in sparta_cmake_defaults.cmake for the mechanism).
+# This workflow is a broader, standing, NON-BLOCKING check across the same
+# known-tricky decks, run on demand rather than tied to any specific ctest
+# failure. Every test step below is continue-on-error: this workflow is
+# reporting-only and can never fail a build -- deliberately, since one of
+# the three checks (the KS distribution test) is prone to occasional false
+# positives from running many independent hypothesis tests (confirmed in
+# practice; see docs/PLAN.md), which is exactly why ctest_fallback_gate.py
+# does NOT use it as an actual gate. It stays useful here as a diagnostic.
 #   ad_stochastic_equivalence.py -- TOST-style mean equivalence (z-score
 #     against pooled SEM) between a stock and an AD ensemble of runs.
 #   ad_convergence_sweep.py -- sweeps N and checks the AD-vs-stock mean
@@ -22,7 +26,7 @@ on:
 #     1/sqrt(N) signature of sampling noise, not a systematic bias).
 #   ad_distribution_test.py -- permutation Kolmogorov-Smirnov two-sample
 #     test on the full distributions, catching shape/variance differences
-#     a mean-only check could miss.
+#     a mean-only check could miss -- informative only, see above.
 # Each needs TWO binaries (a stock build and an -DSPARTA_ENABLE_AD build)
 # in the same job -- unlike ad.yml's single-binary jobs -- so this workflow
 # builds both once and shares them with a test matrix via artifacts, rather
@@ -131,22 +135,46 @@ jobs:
         echo "SPARTA_STOCK=${{ github.workspace }}/bin/build-stock/src/spa_serial" >> "$GITHUB_ENV"
         echo "SPARTA_AD=${{ github.workspace }}/bin/build-ad/src/spa_serial" >> "$GITHUB_ENV"
 
+    # Every test step is continue-on-error: this workflow reports, it never
+    # gates -- see the file header for why. The summary step below reports
+    # a clear pass/fail per check without ever failing the job itself.
     - name: Mean equivalence (TOST-style z-score)
+      id: equivalence
+      continue-on-error: true
       run: |
         python3 tools/ad_verify/ad_stochastic_equivalence.py \
           --seeds 32 --case ${{ matrix.case }}
 
     - name: 1/sqrt(N) convergence sweep
+      id: sweep
+      continue-on-error: true
       run: |
         python3 tools/ad_verify/ad_convergence_sweep.py \
           --sweep-ns 4,8,16,32,64 --jobs 4 --case ${{ matrix.case }} \
           --out-json sweep-${{ matrix.name }}.json
 
-    - name: Distribution screen (permutation KS)
+    - name: Distribution screen (permutation KS, informative only)
+      id: distribution
+      continue-on-error: true
       run: |
         python3 tools/ad_verify/ad_distribution_test.py \
           --n 64 --jobs 4 --n-perm 5000 --case ${{ matrix.case }} \
           --out-json dist-${{ matrix.name }}.json
+
+    - name: Summary (this job never fails -- reporting only)
+      if: always()
+      run: |
+        echo "=== ${{ matrix.name }} statistical health-check summary ==="
+        echo "mean equivalence:      ${{ steps.equivalence.outcome }}"
+        echo "convergence sweep:     ${{ steps.sweep.outcome }}"
+        echo "distribution (info):   ${{ steps.distribution.outcome }}"
+        if [ "${{ steps.equivalence.outcome }}" != "success" ] || \
+           [ "${{ steps.sweep.outcome }}" != "success" ]; then
+          echo "::warning::${{ matrix.name }}: mean-equivalence and/or convergence-sweep did not pass -- worth a look, though this workflow never fails the build on it. If this input is currently failing ctest in ad.yml too, that job's own fallback gate is the one that actually matters for CI status."
+        fi
+        if [ "${{ steps.distribution.outcome }}" != "success" ]; then
+          echo "::notice::${{ matrix.name }}: distribution screen did not pass -- informative only, prone to occasional false positives (see file header), not by itself a sign of a problem."
+        fi
 
     - uses: actions/upload-artifact@v4
       if: always()

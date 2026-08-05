@@ -1,3 +1,4 @@
+/* AD-CONVERTED: double->sfloat by tools/ad_convert.py (see sfloat.h) */
 /* ----------------------------------------------------------------------
    SPARTA - Stochastic PArallel Rarefied-gas Time-accurate Analyzer
    http://sparta.github.io
@@ -335,7 +336,7 @@ DumpImage::DumpImage(SPARTA *sparta, int narg, char **arg) :
         thetastr = new char[n];
         strcpy(thetastr,&arg[iarg+1][2]);
       } else {
-        double theta = atof(arg[iarg+1]);
+        sfloat theta = atof(arg[iarg+1]);
         if (theta < 0.0 || theta > 180.0)
           error->all(FLERR,"Invalid dump image theta value");
         theta *= MY_PI/180.0;
@@ -346,7 +347,7 @@ DumpImage::DumpImage(SPARTA *sparta, int narg, char **arg) :
         phistr = new char[n];
         strcpy(phistr,&arg[iarg+2][2]);
       } else {
-        double phi = atof(arg[iarg+2]);
+        sfloat phi = atof(arg[iarg+2]);
         phi *= MY_PI/180.0;
         image->phi = phi;
       }
@@ -403,7 +404,7 @@ DumpImage::DumpImage(SPARTA *sparta, int narg, char **arg) :
         zoomstr = new char[n];
         strcpy(zoomstr,&arg[iarg+1][2]);
       } else {
-        double zoom = atof(arg[iarg+1]);
+        sfloat zoom = atof(arg[iarg+1]);
         if (zoom <= 0.0) error->all(FLERR,"Illegal dump image command");
         image->zoom = zoom;
       }
@@ -417,7 +418,7 @@ DumpImage::DumpImage(SPARTA *sparta, int narg, char **arg) :
         perspstr = new char[n];
         strcpy(perspstr,&arg[iarg+1][2]);
       } else {
-        double persp = atof(arg[iarg+1]);
+        sfloat persp = atof(arg[iarg+1]);
         if (persp < 0.0) error->all(FLERR,"Illegal dump image command");
         image->persp = persp;
       }
@@ -463,7 +464,7 @@ DumpImage::DumpImage(SPARTA *sparta, int narg, char **arg) :
 
     } else if (strcmp(arg[iarg],"shiny") == 0) {
       if (iarg+2 > narg) error->all(FLERR,"Illegal dump image command");
-      double shiny = atof(arg[iarg+1]);
+      sfloat shiny = atof(arg[iarg+1]);
       if (shiny < 0.0 || shiny > 1.0)
         error->all(FLERR,"Illegal dump image command");
       image->shiny = shiny;
@@ -477,7 +478,7 @@ DumpImage::DumpImage(SPARTA *sparta, int narg, char **arg) :
       int seed = atoi(arg[iarg+2]);
       if (seed <= 0) error->all(FLERR,"Illegal dump image command");
       image->seed = seed;
-      double ssaoint = atof(arg[iarg+3]);
+      sfloat ssaoint = atof(arg[iarg+3]);
       if (ssaoint < 0.0 || ssaoint > 1.0)
         error->all(FLERR,"Illegal dump image command");
       image->ssaoint = ssaoint;
@@ -498,8 +499,8 @@ DumpImage::DumpImage(SPARTA *sparta, int narg, char **arg) :
   // additional defaults for dump_modify options
 
   int ntypes = particle->nspecies;
-  pcolortype = new double*[ntypes+1];
-  pdiamtype = new double[ntypes+1];
+  pcolortype = new sfloat*[ntypes+1];
+  pdiamtype = new sfloat[ntypes+1];
 
   for (int i = 1; i <= ntypes; i++) {
     pdiamtype[i] = 1.0;
@@ -814,9 +815,9 @@ void DumpImage::write()
   // set minmax color ranges if using dynamic color maps
 
   if (particleflag && pcolor == ATTRIBUTE && image->map_dynamic(PARTICLE)) {
-    double two[2],twoall[2];
-    double lo = BIG;
-    double hi = -BIG;
+    sfloat two[2],twoall[2];
+    sfloat lo = BIG;
+    sfloat hi = -BIG;
     int m = 0;
     for (int i = 0; i < nchoose; i++) {
       lo = MIN(lo,buf[m]);
@@ -825,7 +826,7 @@ void DumpImage::write()
     }
     two[0] = -lo;
     two[1] = hi;
-    MPI_Allreduce(two,twoall,2,MPI_DOUBLE,MPI_MAX,world);
+    MPI_Allreduce(two,twoall,2,MPI_SFLOAT,MPI_MAX,world);
     int flag = image->map_minmax(PARTICLE,-twoall[0],twoall[1]);
     if (flag) error->all(FLERR,"Invalid color map min/max values");
   }
@@ -835,9 +836,9 @@ void DumpImage::write()
   int ppgflag;
 
   if (gridflag && gcolor == ATTRIBUTE && image->map_dynamic(GRID)) {
-    double value,two[2],twoall[2];
-    double lo = BIG;
-    double hi = -BIG;
+    sfloat value,two[2],twoall[2];
+    sfloat lo = BIG;
+    sfloat hi = -BIG;
 
     if (gridwhich == COMPUTE) {
       c = modify->compute[gridindex];
@@ -871,15 +872,15 @@ void DumpImage::write()
     }
     two[0] = -lo;
     two[1] = hi;
-    MPI_Allreduce(two,twoall,2,MPI_DOUBLE,MPI_MAX,world);
+    MPI_Allreduce(two,twoall,2,MPI_SFLOAT,MPI_MAX,world);
     int flag = image->map_minmax(GRID,-twoall[0],twoall[1]);
     if (flag) error->all(FLERR,"Invalid color map min/max values");
   }
 
   if (gridxflag && gxcolor == ATTRIBUTE && image->map_dynamic(XPLANE)) {
-    double value,two[2],twoall[2];
-    double lo = BIG;
-    double hi = -BIG;
+    sfloat value,two[2],twoall[2];
+    sfloat lo = BIG;
+    sfloat hi = -BIG;
 
     if (gridxwhich == COMPUTE) {
       c = modify->compute[gridxindex];
@@ -913,15 +914,15 @@ void DumpImage::write()
     }
     two[0] = -lo;
     two[1] = hi;
-    MPI_Allreduce(two,twoall,2,MPI_DOUBLE,MPI_MAX,world);
+    MPI_Allreduce(two,twoall,2,MPI_SFLOAT,MPI_MAX,world);
     int flag = image->map_minmax(XPLANE,-twoall[0],twoall[1]);
     if (flag) error->all(FLERR,"Invalid color map min/max values");
   }
 
   if (gridyflag && gycolor == ATTRIBUTE && image->map_dynamic(YPLANE)) {
-    double value,two[2],twoall[2];
-    double lo = BIG;
-    double hi = -BIG;
+    sfloat value,two[2],twoall[2];
+    sfloat lo = BIG;
+    sfloat hi = -BIG;
 
     if (gridywhich == COMPUTE) {
       c = modify->compute[gridyindex];
@@ -955,15 +956,15 @@ void DumpImage::write()
     }
     two[0] = -lo;
     two[1] = hi;
-    MPI_Allreduce(two,twoall,2,MPI_DOUBLE,MPI_MAX,world);
+    MPI_Allreduce(two,twoall,2,MPI_SFLOAT,MPI_MAX,world);
     int flag = image->map_minmax(YPLANE,-twoall[0],twoall[1]);
     if (flag) error->all(FLERR,"Invalid color map min/max values");
   }
 
   if (gridzflag && gzcolor == ATTRIBUTE && image->map_dynamic(ZPLANE)) {
-    double value,two[2],twoall[2];
-    double lo = BIG;
-    double hi = -BIG;
+    sfloat value,two[2],twoall[2];
+    sfloat lo = BIG;
+    sfloat hi = -BIG;
 
     if (gridzwhich == COMPUTE) {
       c = modify->compute[gridzindex];
@@ -997,15 +998,15 @@ void DumpImage::write()
     }
     two[0] = -lo;
     two[1] = hi;
-    MPI_Allreduce(two,twoall,2,MPI_DOUBLE,MPI_MAX,world);
+    MPI_Allreduce(two,twoall,2,MPI_SFLOAT,MPI_MAX,world);
     int flag = image->map_minmax(ZPLANE,-twoall[0],twoall[1]);
     if (flag) error->all(FLERR,"Invalid color map min/max values");
   }
 
   if (surfflag && scolor == ATTRIBUTE && image->map_dynamic(SURF)) {
-    double value,two[2],twoall[2];
-    double lo = BIG;
-    double hi = -BIG;
+    sfloat value,two[2],twoall[2];
+    sfloat lo = BIG;
+    sfloat hi = -BIG;
 
     if (surfwhich == COMPUTE) {
       c = modify->compute[surfindex];
@@ -1035,7 +1036,7 @@ void DumpImage::write()
     }
     two[0] = -lo;
     two[1] = hi;
-    MPI_Allreduce(two,twoall,2,MPI_DOUBLE,MPI_MAX,world);
+    MPI_Allreduce(two,twoall,2,MPI_SFLOAT,MPI_MAX,world);
     int flag = image->map_minmax(SURF,-twoall[0],twoall[1]);
     if (flag) error->all(FLERR,"Invalid color map min/max values");
   }
@@ -1104,7 +1105,7 @@ void DumpImage::view_params()
   // view direction theta and phi
 
   if (thetastr) {
-    double theta = input->variable->compute_equal(thetavar);
+    sfloat theta = input->variable->compute_equal(thetavar);
     if (theta < 0.0 || theta > 180.0)
       error->all(FLERR,"Invalid dump image theta value");
     theta *= MY_PI/180.0;
@@ -1112,7 +1113,7 @@ void DumpImage::view_params()
   }
 
   if (phistr) {
-    double phi = input->variable->compute_equal(phivar);
+    sfloat phi = input->variable->compute_equal(phivar);
     phi *= MY_PI/180.0;
     image->phi = phi;
   }
@@ -1147,8 +1148,8 @@ void DumpImage::view_params()
 void DumpImage::create_image()
 {
   int i,j,m,itype;
-  double diameter;
-  double *color;
+  sfloat diameter;
+  sfloat *color;
 
   // render my partiless
   // mixture ID is used as a filter by parent class
@@ -1162,7 +1163,7 @@ void DumpImage::create_image()
       j = clist[i];
 
       if (pcolor == TYPE) {
-        itype = ubuf(buf[m]).i;
+        itype = ubuf(spval(buf[m])).i;
         color = pcolortype[itype];
       } else if (pcolor == PROC) {
         color = pcolorproc;
@@ -1173,7 +1174,7 @@ void DumpImage::create_image()
       if (pdiam == NUMERIC) {
         diameter = pdiamvalue;
       } else if (pdiam == TYPE) {
-        itype = ubuf(buf[m+1]).i;
+        itype = ubuf(spval(buf[m+1])).i;
         diameter = pdiamtype[itype];
       } else if (pdiam == ATTRIBUTE) {
         diameter = buf[m+1];
@@ -1191,9 +1192,9 @@ void DumpImage::create_image()
   // use region as a filter
 
   if (gridflag) {
-    double value;
-    double x[3],diam[3];
-    double *lo,*hi;
+    sfloat value;
+    sfloat x[3],diam[3];
+    sfloat *lo,*hi;
 
     Compute *c;
     Fix *f;
@@ -1262,9 +1263,9 @@ void DumpImage::create_image()
   //   NOTE: could add this if allow for specifying different regions
 
   if (gridxflag || gridyflag || gridzflag) {
-    double value;
-    double x[3],diam[3];
-    double *lo,*hi;
+    sfloat value;
+    sfloat x[3],diam[3];
+    sfloat *lo,*hi;
 
     Compute *cx,*cy,*cz;
     Fix *fx,*fy,*fz;
@@ -1419,8 +1420,8 @@ void DumpImage::create_image()
   //   NOTE: could add this if allow for specifying different regions
 
   if (glineflag && (gridxflag || gridyflag || gridzflag)) {
-    double x[3];
-    double *lo,*hi;
+    sfloat x[3];
+    sfloat *lo,*hi;
 
     Region *region = NULL;
     //if (iregion >= 0) region = domain->regions[iregion];
@@ -1433,7 +1434,7 @@ void DumpImage::create_image()
     Grid::ChildInfo *cinfo = grid->cinfo;
     int nglocal = grid->nlocal;
 
-    double box[8][3];
+    sfloat box[8][3];
 
     for (int icell = 0; icell < nglocal; icell++) {
       if (cells[icell].nsplit <= 0) continue;
@@ -1492,8 +1493,8 @@ void DumpImage::create_image()
   // use region as a filter
 
   else if (glineflag) {
-    double x[3];
-    double *lo,*hi;
+    sfloat x[3];
+    sfloat *lo,*hi;
 
     Region *region = NULL;
     if (iregion >= 0) region = domain->regions[iregion];
@@ -1506,7 +1507,7 @@ void DumpImage::create_image()
     Grid::ChildInfo *cinfo = grid->cinfo;
     int nglocal = grid->nlocal;
 
-    double box[8][3];
+    sfloat box[8][3];
 
     for (int icell = 0; icell < nglocal; icell++) {
       if (cells[icell].nsplit <= 0) continue;
@@ -1538,7 +1539,7 @@ void DumpImage::create_image()
   // do not use region as a filter
 
   if (surfflag) {
-    double value;
+    sfloat value;
 
     Compute *c;
     Fix *f;
@@ -1670,7 +1671,7 @@ void DumpImage::create_image()
     if (domain->dimension == 3) diameter = MIN(diameter,boxzhi-boxzlo);
     diameter *= boxdiam;
 
-    double box[8][3];
+    sfloat box[8][3];
     box[0][0] = boxxlo; box[0][1] = boxylo; box[0][2] = boxzlo;
     box[1][0] = boxxhi; box[1][1] = boxylo; box[1][2] = boxzlo;
     box[2][0] = boxxlo; box[2][1] = boxyhi; box[2][2] = boxzlo;
@@ -1691,13 +1692,13 @@ void DumpImage::create_image()
     if (domain->dimension == 3) diameter = MIN(diameter,boxzhi-boxzlo);
     diameter *= axesdiam;
 
-    double axes[4][3];
+    sfloat axes[4][3];
     axes[0][0] = boxxlo; axes[0][1] = boxylo; axes[0][2] = boxzlo;
     axes[1][0] = boxxhi; axes[1][1] = boxylo; axes[1][2] = boxzlo;
     axes[2][0] = boxxlo; axes[2][1] = boxyhi; axes[2][2] = boxzlo;
     axes[3][0] = boxxlo; axes[3][1] = boxylo; axes[3][2] = boxzhi;
 
-    double offset = MAX(boxxhi-boxxlo,boxyhi-boxylo);
+    sfloat offset = MAX(boxxhi-boxxlo,boxyhi-boxylo);
     if (domain->dimension == 3) offset = MAX(offset,boxzhi-boxzlo);
     offset *= 0.1;
     axes[0][0] -= offset; axes[0][1] -= offset; axes[0][2] -= offset;
@@ -1727,10 +1728,10 @@ void DumpImage::create_image()
   if (domain->dimension == 3) diameter = MIN(diameter,boxzhi-boxzlo);
   diameter *= 0.5*boxdiam;
 
-  double *rcblo = update->rcblo;
-  double *rcbhi = update->rcbhi;
+  sfloat *rcblo = update->rcblo;
+  sfloat *rcbhi = update->rcbhi;
 
-  double box[4][3];
+  sfloat box[4][3];
   box[0][0] = rcblo[0]; box[0][1] = rcblo[1]; box[0][2] = boxzhi;
   box[1][0] = rcbhi[0]; box[1][1] = rcblo[1]; box[1][2] = boxzhi;
   box[2][0] = rcblo[0]; box[2][1] = rcbhi[1]; box[2][2] = boxzhi;
@@ -1750,11 +1751,11 @@ int DumpImage::modify_param(int narg, char **arg)
 
   if (strcmp(arg[0],"backcolor") == 0) {
     if (narg < 2) error->all(FLERR,"Illegal dump_modify command");
-    double *color = image->color2rgb(arg[1]);
+    sfloat *color = image->color2rgb(arg[1]);
     if (color == NULL) error->all(FLERR,"Invalid color in dump_modify command");
-    image->background[0] = static_cast<int> (color[0]*255.0);
-    image->background[1] = static_cast<int> (color[1]*255.0);
-    image->background[2] = static_cast<int> (color[2]*255.0);
+    image->background[0] = static_cast<int> (spval(color[0]*255.0));
+    image->background[1] = static_cast<int> (spval(color[1]*255.0));
+    image->background[2] = static_cast<int> (spval(color[2]*255.0));
     return 2;
   }
 
@@ -1905,7 +1906,7 @@ int DumpImage::modify_param(int narg, char **arg)
     int err,nlo,nhi;
     err = MathExtra::bounds(arg[1],particle->nspecies,nlo,nhi);
     if (err) error->all(FLERR,"Illegal dump_modify command");
-    double diam = atof(arg[2]);
+    sfloat diam = atof(arg[2]);
     if (diam <= 0.0) error->all(FLERR,"Illegal dump_modify command");
     for (int i = nlo; i <= nhi; i++) pdiamtype[i] = diam;
     return 3;

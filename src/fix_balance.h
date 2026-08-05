@@ -1,3 +1,4 @@
+/* AD-CONVERTED: double->sfloat by tools/ad_convert.py (see sfloat.h) */
 /* ----------------------------------------------------------------------
    SPARTA - Stochastic PArallel Rarefied-gas Time-accurate Analyzer
    http://sparta.github.io
@@ -32,29 +33,29 @@ class FixBalance : public Fix {
   int setmask();
   void init();
   virtual void end_of_step();
-  double compute_scalar();
-  double compute_vector(int);
-  double memory_usage();
+  sfloat compute_scalar();
+  sfloat compute_vector(int);
+  sfloat memory_usage();
 
  private:
   int me,nprocs;
-  double thresh;
+  sfloat thresh;
   int bstyle,rcbwt,rcbflip;
   char eligible[4];
-  double last,my_timer_cost;
+  sfloat last,my_timer_cost;
 
   int nbalance;                 // # of rebalancings performed
-  double imbnow;                // current imbalance factor
-  double imbprev;               // imbalance factor before last rebalancing
-  double imbfinal;              // imbalance factor after last rebalancing
-  double maxperproc;            // max atoms or CPU cost on any processor
+  sfloat imbnow;                // current imbalance factor
+  sfloat imbprev;               // imbalance factor before last rebalancing
+  sfloat imbfinal;              // imbalance factor after last rebalancing
+  sfloat maxperproc;            // max atoms or CPU cost on any processor
 
   class RanKnuth *random;
   class RCB *rcb;
 
-  double imbalance_factor(double &);
+  sfloat imbalance_factor(sfloat &);
   void timer_cost();
-  void timer_cell_weights(double *&);
+  void timer_cell_weights(sfloat *&);
 };
 
 }

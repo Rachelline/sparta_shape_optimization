@@ -1,3 +1,4 @@
+/* AD-CONVERTED: double->sfloat by tools/ad_convert.py (see sfloat.h) */
 /* ----------------------------------------------------------------------
    SPARTA - Stochastic PArallel Rarefied-gas Time-accurate Analyzer
    http://sparta.github.io
@@ -57,9 +58,9 @@ void FixTempGlobalRescale::end_of_step()
 
   // set current t_target
 
-  double delta = update->ntimestep - update->beginstep;
+  sfloat delta = update->ntimestep - update->beginstep;
   if (delta != 0.0) delta /= update->endstep - update->beginstep;
-  double t_target = tstart + delta * (tstop-tstart);
+  sfloat t_target = tstart + delta * (tstop-tstart);
 
   // t_current = global temperature
   // just return if no particles or t_current = 0.0
@@ -68,8 +69,8 @@ void FixTempGlobalRescale::end_of_step()
   Particle::OnePart *particles = particle->particles;
   int nlocal = particle->nlocal;
 
-  double *v;
-  double t = 0.0;
+  sfloat *v;
+  sfloat t = 0.0;
 
   for (int i = 0; i < nlocal; i++) {
     v = particles[i].v;
@@ -77,20 +78,20 @@ void FixTempGlobalRescale::end_of_step()
       species[particles[i].ispecies].mass;
   }
 
-  double t_current;
-  MPI_Allreduce(&t,&t_current,1,MPI_DOUBLE,MPI_SUM,world);
+  sfloat t_current;
+  MPI_Allreduce(&t,&t_current,1,MPI_SFLOAT,MPI_SUM,world);
 
   bigint n = particle->nlocal;
   MPI_Allreduce(&n,&particle->nglobal,1,MPI_SPARTA_BIGINT,MPI_SUM,world);
   if (particle->nglobal == 0 || t_current == 0.0) return;
 
-  double tscale = update->mvv2e / (3.0 * particle->nglobal * update->boltz);
+  sfloat tscale = update->mvv2e / (3.0 * particle->nglobal * update->boltz);
   t_current *= tscale;
 
   // rescale all particle velocities
 
   t_target = t_current - fraction*(t_current-t_target);
-  double vscale = sqrt(t_target/t_current);
+  sfloat vscale = sqrt(t_target/t_current);
 
   for (int i = 0; i < nlocal; i++) {
     v = particles[i].v;

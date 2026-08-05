@@ -1,3 +1,4 @@
+/* AD-CONVERTED: double->sfloat by tools/ad_convert.py (see sfloat.h) */
 /* ----------------------------------------------------------------------
    SPARTA - Stochastic PArallel Rarefied-gas Time-accurate Analyzer
    http://sparta.github.io
@@ -369,11 +370,11 @@ template < int DIM, int SURF, int OPT > void Update::move()
   int pstart,pstop,entryexit,any_entryexit,reaction;
   surfint *csurfs;
   cellint *neigh;
-  double dtremain,frac,newfrac,param,minparam,rnew,dtsurf,tc,tmp;
-  double xnew[3],xhold[3],xc[3],vc[3],minxc[3],minvc[3];
-  double *x,*v,*lo,*hi;
-  double Lx,Ly,Lz,dx,dy,dz;
-  double *boxlo, *boxhi;
+  sfloat dtremain,frac,newfrac,param,minparam,rnew,dtsurf,tc,tmp;
+  sfloat xnew[3],xhold[3],xc[3],vc[3],minxc[3],minvc[3];
+  sfloat *x,*v,*lo,*hi;
+  sfloat Lx,Ly,Lz,dx,dy,dz;
+  sfloat *boxlo, *boxhi;
   Grid::ParentCell *pcell;
   Surf::Tri *tri;
   Surf::Line *line;
@@ -422,7 +423,7 @@ template < int DIM, int SURF, int OPT > void Update::move()
   Grid::ParentCell *pcells = grid->pcells;
   Surf::Tri *tris = surf->tris;
   Surf::Line *lines = surf->lines;
-  double dt = update->dt;
+  sfloat dt = update->dt;
 
   // external per particle field
   // fix calculates field acting on all owned particles
@@ -529,10 +530,10 @@ template < int DIM, int SURF, int OPT > void Update::move()
         }
 
         if (optmove) {
-          const int ip = static_cast<int>((xnew[0] - boxlo[0])/dx);
-          const int jp = static_cast<int>((xnew[1] - boxlo[1])/dy);
+          const int ip = static_cast<int>(spval((xnew[0] - boxlo[0])/dx));
+          const int jp = static_cast<int>(spval((xnew[1] - boxlo[1])/dy));
           int kp = 0;
-          if (DIM == 3) kp = static_cast<int>((xnew[2] - boxlo[2])/dz);
+          if (DIM == 3) kp = static_cast<int>(spval((xnew[2] - boxlo[2])/dz));
 
           int cellIdx = (kp*grid->uny + jp)*grid->unx + ip + 1;
 
@@ -851,7 +852,7 @@ template < int DIM, int SURF, int OPT > void Update::move()
                          line->p1[0],line->p1[1],line->p2[0],line->p2[1],
                          line->norm[0],line->norm[1],
                          xc[0],xc[1],vc[0],vc[1],vc[2],param,side);
-                double edge1[3],edge2[3],xfinal[3],cross[3];
+                sfloat edge1[3],edge2[3],xfinal[3],cross[3];
                 MathExtra::sub3(line->p2,line->p1,edge1);
                 MathExtra::sub3(x,line->p1,edge2);
                 MathExtra::cross3(edge2,edge1,cross);
@@ -1314,10 +1315,10 @@ template < int DIM, int SURF, int OPT > void Update::move()
    array in fix[ifieldfix] stores per particle perturbations for x and v
 ------------------------------------------------------------------------- */
 
-void Update::field_per_particle(int i, int icell, double dt, double *x, double *v)
+void Update::field_per_particle(int i, int icell, sfloat dt, sfloat *x, sfloat *v)
 {
-  double dtsq = 0.5*dt*dt;
-  double **array = modify->fix[ifieldfix]->array_particle;
+  sfloat dtsq = 0.5*dt*dt;
+  sfloat **array = modify->fix[ifieldfix]->array_particle;
 
   int icol = 0;
   if (field_active[0]) {
@@ -1343,10 +1344,10 @@ void Update::field_per_particle(int i, int icell, double dt, double *x, double *
    array in fix[ifieldfix] stores per grid cell perturbations for x and v
 ------------------------------------------------------------------------- */
 
-void Update::field_per_grid(int i, int icell, double dt, double *x, double *v)
+void Update::field_per_grid(int i, int icell, sfloat dt, sfloat *x, sfloat *v)
 {
-  double dtsq = 0.5*dt*dt;
-  double **array = modify->fix[ifieldfix]->array_grid;
+  sfloat dtsq = 0.5*dt*dt;
+  sfloat **array = modify->fix[ifieldfix]->array_grid;
 
   int icol = 0;
   if (field_active[0]) {
@@ -1372,11 +1373,11 @@ void Update::field_per_grid(int i, int icell, double dt, double *x, double *v)
    return index of sub-cell in ChildCell
 ------------------------------------------------------------------------- */
 
-int Update::split3d(int icell, double *x)
+int Update::split3d(int icell, sfloat *x)
 {
   int m,cflag,isurf,hitflag,side,minsurfindex;
-  double param,minparam;
-  double xc[3];
+  sfloat param,minparam;
+  sfloat xc[3];
   Surf::Tri *tri;
 
   Grid::ChildCell *cells = grid->cells;
@@ -1396,7 +1397,7 @@ int Update::split3d(int icell, double *x)
   surfint *csurfs = cells[icell].csurfs;
   int isplit = cells[icell].isplit;
   int *csplits = sinfo[isplit].csplits;
-  double *xnew = sinfo[isplit].xsplit;
+  sfloat *xnew = sinfo[isplit].xsplit;
 
   cflag = 0;
   minparam = 2.0;
@@ -1427,11 +1428,11 @@ int Update::split3d(int icell, double *x)
    return index of sub-cell in ChildCell
 ------------------------------------------------------------------------- */
 
-int Update::split2d(int icell, double *x)
+int Update::split2d(int icell, sfloat *x)
 {
   int m,cflag,isurf,hitflag,side,minsurfindex;
-  double param,minparam;
-  double xc[3];
+  sfloat param,minparam;
+  sfloat xc[3];
   Surf::Line *line;
 
   Grid::ChildCell *cells = grid->cells;
@@ -1451,7 +1452,7 @@ int Update::split2d(int icell, double *x)
   surfint *csurfs = cells[icell].csurfs;
   int isplit = cells[icell].isplit;
   int *csplits = sinfo[isplit].csplits;
-  double *xnew = sinfo[isplit].xsplit;
+  sfloat *xnew = sinfo[isplit].xsplit;
 
   cflag = 0;
   minparam = 2.0;
@@ -1688,7 +1689,7 @@ void Update::global(int narg, char **arg)
       } else if (strcmp(arg[iarg+1],"constant") == 0) {
         if (iarg+6 > narg) error->all(FLERR,"Illegal global field command");
         fstyle = CFIELD;
-        double fmag = input->numeric(FLERR,arg[iarg+2]);
+        sfloat fmag = input->numeric(FLERR,arg[iarg+2]);
         field[0] = input->numeric(FLERR,arg[iarg+3]);
         field[1] = input->numeric(FLERR,arg[iarg+4]);
         field[2] = input->numeric(FLERR,arg[iarg+5]);
@@ -1795,8 +1796,8 @@ void Update::global(int narg, char **arg)
       if (iarg+2 > narg) error->all(FLERR,"Illegal global command");
       if (strcmp(arg[iarg+1],"grid") == 0) mem_limit_grid_flag = 1;
       else {
-        double factor = input->numeric(FLERR,arg[iarg+1]);
-        bigint global_mem_limit_big = static_cast<bigint> (factor * 1024*1024);
+        sfloat factor = input->numeric(FLERR,arg[iarg+1]);
+        bigint global_mem_limit_big = static_cast<bigint> (spval(factor * 1024*1024));
         if (global_mem_limit_big < 0) error->all(FLERR,"Illegal global command");
         if (global_mem_limit_big > MAXSMALLINT)
           error->all(FLERR,"Global mem/limit setting cannot exceed 2GB");

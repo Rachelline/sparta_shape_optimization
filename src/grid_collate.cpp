@@ -1,3 +1,4 @@
+/* AD-CONVERTED: double->sfloat by tools/ad_convert.py (see sfloat.h) */
 /* ----------------------------------------------------------------------
    SPARTA - Stochastic PArallel Rarefied-gas Time-accurate Analyzer
    http://sparta.github.io
@@ -38,7 +39,7 @@ using namespace SPARTA_NS;
 ------------------------------------------------------------------------- */
 
 void Grid::collate_vector_implicit(int n, cellint *ids,
-                                   double *in, double *out)
+                                   sfloat *in, sfloat *out)
 {
   int i,icell;
   cellint cellID;
@@ -49,7 +50,7 @@ void Grid::collate_vector_implicit(int n, cellint *ids,
 
   // zero output values, only for owned cells
 
-  if (nlocal) memset(out,0,nlocal*sizeof(double));
+  if (nlocal) memset(out,0,nlocal*sizeof(sfloat));
 
   // if I own grid cell, sum in value to out values directly
   // else nsend = # of tallies to contribute to irregular
@@ -70,7 +71,7 @@ void Grid::collate_vector_implicit(int n, cellint *ids,
 
   int *proclist;
   memory->create(proclist,nsend,"grid:proclist");
-  double *in_rvous;
+  sfloat *in_rvous;
   memory->create(in_rvous,2*nsend,"grid:in_rvous");
 
   int m = 0;
@@ -97,10 +98,10 @@ void Grid::collate_vector_implicit(int n, cellint *ids,
 
   char *buf;
   int nout = comm->rendezvous(which,nsend,(char *) in_rvous,
-                              2*sizeof(double),
+                              2*sizeof(sfloat),
                               0,proclist,NULL,
-                              0,buf,2*sizeof(double),(void *) this);
-  double *out_rvous = (double *) buf;
+                              0,buf,2*sizeof(sfloat),(void *) this);
+  sfloat *out_rvous = (sfloat *) buf;
 
   memory->destroy(proclist);
   memory->destroy(in_rvous);
@@ -109,7 +110,7 @@ void Grid::collate_vector_implicit(int n, cellint *ids,
 
   m = 0;
   for (i = 0; i < nout; i++) {
-    cellID = (cellint) ubuf(out_rvous[m++]).u;
+    cellID = (cellint) ubuf(spval(out_rvous[m++])).u;
     icell = (*hash)[cellID];
     out[icell] += out_rvous[m++];
   }
@@ -135,7 +136,7 @@ void Grid::collate_vector_implicit(int n, cellint *ids,
 ------------------------------------------------------------------------- */
 
 void Grid::collate_array_implicit(int nrow, int ncol, cellint *ids,
-                                  double **in, double **out)
+                                  sfloat **in, sfloat **out)
 {
   int i,j,icell;
   cellint cellID;
@@ -146,7 +147,7 @@ void Grid::collate_array_implicit(int nrow, int ncol, cellint *ids,
 
   // zero output values for owned cells
 
-  if (nlocal) memset(&out[0][0],0,nlocal*ncol*sizeof(double));
+  if (nlocal) memset(&out[0][0],0,nlocal*ncol*sizeof(sfloat));
 
   // if I own grid cell, sum in values to out values directly
   // else nsend = # of tallies to contribute to rendezvous
@@ -170,7 +171,7 @@ void Grid::collate_array_implicit(int nrow, int ncol, cellint *ids,
 
   int *proclist;
   memory->create(proclist,nsend,"grid:proclist");
-  double *in_rvous;
+  sfloat *in_rvous;
   memory->create(in_rvous,(1+ncol)*nsend,"grid:in_rvous");
 
   int m = 0;
@@ -199,10 +200,10 @@ void Grid::collate_array_implicit(int nrow, int ncol, cellint *ids,
 
   char *buf;
   int nout = comm->rendezvous(which,nsend,(char *) in_rvous,
-                              (ncol+1)*sizeof(double),
+                              (ncol+1)*sizeof(sfloat),
                               0,proclist,NULL,
-                              0,buf,(ncol+1)*sizeof(double),(void *) this);
-  double *out_rvous = (double *) buf;
+                              0,buf,(ncol+1)*sizeof(sfloat),(void *) this);
+  sfloat *out_rvous = (sfloat *) buf;
 
   memory->destroy(proclist);
   memory->destroy(in_rvous);
@@ -211,7 +212,7 @@ void Grid::collate_array_implicit(int nrow, int ncol, cellint *ids,
 
   m = 0;
   for (i = 0; i < nout; i++) {
-    cellID = (cellint) ubuf(out_rvous[m++]).u;
+    cellID = (cellint) ubuf(spval(out_rvous[m++])).u;
     icell = (*hash)[cellID];
     for (j = 0; j < ncol; j++)
       out[icell][j] += out_rvous[m++];
@@ -238,7 +239,7 @@ void Grid::collate_array_implicit(int nrow, int ncol, cellint *ids,
 ------------------------------------------------------------------------- */
 
 void Grid::owned_to_ghost_array(int nrequest, int ncol, cellint *ghostIDs,
-                                double **in, double **out)
+                                sfloat **in, sfloat **out)
 {
   int i,j,icell;
   cellint cellID;
@@ -251,14 +252,14 @@ void Grid::owned_to_ghost_array(int nrequest, int ncol, cellint *ghostIDs,
 
   // zero output values for ghost cells
 
-  if (out) memset(&out[nlocal][0],0,nghost*ncol*sizeof(double));
+  if (out) memset(&out[nlocal][0],0,nghost*ncol*sizeof(sfloat));
 
   // send ghost cell IDs to owning procs as request for data
   // datum = sending proc, ghost cell ID
 
   int *proclist;
   memory->create(proclist,nrequest,"grid:proclist");
-  double *in_rvous;
+  sfloat *in_rvous;
   memory->create(in_rvous,2*nrequest,"grid:in_rvous");
 
   int m = 0;
@@ -286,10 +287,10 @@ void Grid::owned_to_ghost_array(int nrequest, int ncol, cellint *ghostIDs,
 
   char *buf;
   int nout = comm->rendezvous(which,nsend,(char *) in_rvous,
-                              2*sizeof(double),
+                              2*sizeof(sfloat),
                               0,proclist,rendezvous_owned_to_ghost,
-                              0,buf,(ncol+1)*sizeof(double),(void *) this);
-  double *out_rvous = (double *) buf;
+                              0,buf,(ncol+1)*sizeof(sfloat),(void *) this);
+  sfloat *out_rvous = (sfloat *) buf;
 
   memory->destroy(proclist);
   memory->destroy(in_rvous);
@@ -298,7 +299,7 @@ void Grid::owned_to_ghost_array(int nrequest, int ncol, cellint *ghostIDs,
 
   m = 0;
   for (i = 0; i < nout; i++) {
-    cellID = (cellint) ubuf(out_rvous[m++]).u;
+    cellID = (cellint) ubuf(spval(out_rvous[m++])).u;
     icell = (*hash)[cellID];
     for (j = 0; j < ncol; j++)
       out[icell][j] += out_rvous[m++];
@@ -327,23 +328,23 @@ int Grid::rendezvous_owned_to_ghost(int n, char *inbuf,
   Memory *memory = gptr->memory;
   MyHash *hash = gptr->hash;
   int ncol = gptr->ncol_rvous;
-  double **owned_data = gptr->owned_data_rvous;
+  sfloat **owned_data = gptr->owned_data_rvous;
 
   // allocate proclist & outbuf based on size of inbuf
 
   memory->create(proclist,n,"grid:proclist");
-  double *out;
+  sfloat *out;
   memory->create(out,n*(ncol+1),"grid:out");
 
   // loop over (proc,cellID) datums in inbuf
   // copy data from corresponding owned cell ID into out
 
-  double *in = (double *) inbuf;
+  sfloat *in = (sfloat *) inbuf;
 
   m = k = 0;
   for (i = 0; i < n; i++) {
-    proc = (int) ubuf(in[m++]).i;
-    cellID = (cellint) ubuf(in[m++]).u;
+    proc = (int) ubuf(spval(in[m++])).i;
+    cellID = (cellint) ubuf(spval(in[m++])).u;
     int icell = (*hash)[cellID];
 
     proclist[i] = proc;

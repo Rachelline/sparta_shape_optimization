@@ -1,3 +1,4 @@
+/* AD-CONVERTED: double->sfloat by tools/ad_convert.py (see sfloat.h) */
 /* ----------------------------------------------------------------------
    SPARTA - Stochastic PArallel Rarefied-gas Time-accurate Analyzer
    http://sparta.github.io
@@ -17,7 +18,7 @@
 #ifdef SPARTA_MAP
 
   struct OnePoint2d {
-    double pt[2];
+    sfloat pt[2];
 
     bool operator <(const OnePoint2d& other) const {
       if (pt[0] < other.pt[0]) return 1;
@@ -29,7 +30,7 @@
   };
 
   struct OnePoint3d {
-    double pt[3];
+    sfloat pt[3];
 
     bool operator <(const OnePoint3d& other) const {
       if (pt[0] < other.pt[0]) return 1;
@@ -43,7 +44,7 @@
   };
 
   struct TwoPoint3d {
-    double pts[6];
+    sfloat pts[6];
 
     bool operator <(const TwoPoint3d& other) const {
       for (int i = 0; i < 6; i++) {
@@ -57,7 +58,7 @@
 #else
 
   struct OnePoint2d {
-    double pt[2];
+    sfloat pt[2];
 
     bool operator ==(const OnePoint2d &other) const {
       if (pt[0] != other.pt[0]) return 0;
@@ -68,12 +69,12 @@
 
   struct OnePoint2dHash {
     uint32_t operator ()(const OnePoint2d& one) const {
-      return hashlittle(one.pt,2*sizeof(double),0);
+      return hashlittle(one.pt,2*sizeof(sfloat),0);
     }
   };
 
   struct OnePoint3d {
-    double pt[3];
+    sfloat pt[3];
 
     bool operator ==(const OnePoint3d &other) const {
       if (pt[0] != other.pt[0]) return 0;
@@ -85,12 +86,12 @@
 
   struct OnePoint3dHash {
     uint32_t operator ()(const OnePoint3d& one) const {
-      return hashlittle(one.pt,3*sizeof(double),0);
+      return hashlittle(one.pt,3*sizeof(sfloat),0);
     }
   };
 
   struct TwoPoint3d {
-    double pts[6];
+    sfloat pts[6];
 
     bool operator ==(const TwoPoint3d &other) const {
       for (int i = 0; i < 6; i++)
@@ -101,7 +102,7 @@
 
   struct TwoPoint3dHash {
     uint32_t operator ()(const TwoPoint3d& two) const {
-      return hashlittle(two.pts,6*sizeof(double),0);
+      return hashlittle(two.pts,6*sizeof(sfloat),0);
     }
   };
 

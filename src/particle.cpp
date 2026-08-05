@@ -1,3 +1,4 @@
+/* AD-CONVERTED: double->sfloat by tools/ad_convert.py (see sfloat.h) */
 /* ----------------------------------------------------------------------
    SPARTA - Stochastic PArallel Rarefied-gas Time-accurate Analyzer
    http://sparta.github.io
@@ -160,8 +161,8 @@ void Particle::init()
 
   if (!wrandom) {
     wrandom = new RanKnuth(update->ranmaster->uniform());
-    double seed = update->ranmaster->uniform();
-    wrandom->reset(seed,me,100);
+    sfloat seed = update->ranmaster->uniform();
+    wrandom->reset(spval(seed),me,100);
   }
 
   // if vibstyle = DISCRETE,
@@ -503,7 +504,7 @@ void Particle::pre_weight()
 void Particle::post_weight()
 {
   int m,icell,nclone;
-  double ratio,fraction;
+  sfloat ratio,fraction;
 
   int nbytes = sizeof(OnePart);
   Grid::ChildInfo *cinfo = grid->cinfo;
@@ -544,7 +545,7 @@ void Particle::post_weight()
     // ratio > 1.0 is candidate for cloning
     // create Nclone new particles each with unique ID
 
-    nclone = static_cast<int> (ratio);
+    nclone = static_cast<int> (spval(ratio));
     fraction = ratio - nclone;
     nclone--;
     if (wrandom->uniform() < fraction) nclone++;
@@ -624,7 +625,7 @@ void Particle::grow_next()
 ------------------------------------------------------------------------- */
 
 int Particle::add_particle(int id, int ispecies, int icell,
-                           double *x, double *v, double erot, double evib)
+                           sfloat *x, sfloat *v, sfloat erot, sfloat evib)
 {
   int reallocflag = 0;
   if (nlocal == maxlocal) {
@@ -1032,9 +1033,9 @@ int Particle::find_mixture(char *id)
    only a function of species index and species properties
 ------------------------------------------------------------------------- */
 
-double Particle::erot(int isp, double temp_thermal, RanKnuth *erandom)
+sfloat Particle::erot(int isp, sfloat temp_thermal, RanKnuth *erandom)
 {
-  double eng,a,erm,b;
+  sfloat eng,a,erm,b;
   int rotstyle = NONE;
   if (collide) rotstyle = collide->rotstyle;
 
@@ -1042,8 +1043,8 @@ double Particle::erot(int isp, double temp_thermal, RanKnuth *erandom)
   if (species[isp].rotdof < 2) return 0.0;
 
   if (rotstyle == DISCRETE && species[isp].rotdof == 2) {
-    int irot = -log(erandom->uniform()) * temp_thermal /
-      particle->species[isp].rottemp[0];
+    int irot = spval(-log(erandom->uniform()) * temp_thermal /
+      particle->species[isp].rottemp[0]);
     eng = irot * update->boltz * particle->species[isp].rottemp[0];
   } else if (rotstyle == SMOOTH && species[isp].rotdof == 2) {
     eng = -log(erandom->uniform()) * update->boltz * temp_thermal;
@@ -1053,7 +1054,7 @@ double Particle::erot(int isp, double temp_thermal, RanKnuth *erandom)
     // candidate range must cover the high-energy tail: the mode is at
     // x = a, the mean is a+1, the std dev is sqrt(a+1); use mean + ~9 std
     // devs so the cut-off scales with rotdof rather than a fixed 10 kT
-    double xmax = a + 1.0 + 9.0*sqrt(a+1.0);
+    sfloat xmax = a + 1.0 + 9.0*sqrt(a+1.0);
     while (1) {
       erm = xmax*erandom->uniform();
       b = pow(erm/a,a) * exp(a-erm);
@@ -1072,9 +1073,9 @@ double Particle::erot(int isp, double temp_thermal, RanKnuth *erandom)
      -1 if not defined for this model
 ------------------------------------------------------------------------- */
 
-double Particle::evib(int isp, double temp_thermal, RanKnuth *erandom)
+sfloat Particle::evib(int isp, sfloat temp_thermal, RanKnuth *erandom)
 {
-  double eng,a,erm,b;
+  sfloat eng,a,erm,b;
 
   int vibstyle = NONE;
   if (collide) vibstyle = collide->vibstyle;
@@ -1086,8 +1087,8 @@ double Particle::evib(int isp, double temp_thermal, RanKnuth *erandom)
   eng = 0.0;
 
   if (vibstyle == DISCRETE && species[isp].vibdof == 2) {
-    int ivib = -log(erandom->uniform()) * temp_thermal /
-      particle->species[isp].vibtemp[0];
+    int ivib = spval(-log(erandom->uniform()) * temp_thermal /
+      particle->species[isp].vibtemp[0]);
     eng = ivib * update->boltz * particle->species[isp].vibtemp[0];
   } else if (vibstyle == SMOOTH || species[isp].vibdof >= 2) {
     if (species[isp].vibdof == 2)
@@ -1099,7 +1100,7 @@ double Particle::evib(int isp, double temp_thermal, RanKnuth *erandom)
       // x = a, the mean is a+1, the std dev is sqrt(a+1); use mean + ~9 std
       // devs so the cut-off scales with vibdof (a fixed 10 kT cut-off is
       // below the mean for molecules with many vibrational modes)
-      double xmax = a + 1.0 + 9.0*sqrt(a+1.0);
+      sfloat xmax = a + 1.0 + 9.0*sqrt(a+1.0);
       while (1) {
         erm = xmax*erandom->uniform();
         b = pow(erm/a,a) * exp(a-erm);
@@ -1642,8 +1643,8 @@ bigint Particle::memory_usage()
   for (int i = 0; i < ncustom_iarray; i++)
     bytes += (bigint) maxlocal*eicol[i] * sizeof(int);
   for (int i = 0; i < ncustom_dvec; i++)
-    bytes += (bigint) maxlocal * sizeof(double);
+    bytes += (bigint) maxlocal * sizeof(sfloat);
   for (int i = 0; i < ncustom_darray; i++)
-    bytes += (bigint) maxlocal*edcol[i] * sizeof(double);
+    bytes += (bigint) maxlocal*edcol[i] * sizeof(sfloat);
   return bytes;
 }

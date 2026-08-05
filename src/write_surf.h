@@ -1,3 +1,4 @@
+/* AD-CONVERTED: double->sfloat by tools/ad_convert.py (see sfloat.h) */
 /* ----------------------------------------------------------------------
    SPARTA - Stochastic PArallel Rarefied-gas Time-accurate Analyzer
    http://sparta.github.io
@@ -67,18 +68,18 @@ class WriteSurf : protected Pointers {
   void open(char *);
   void write_header(int);
 
-  void pack_custom(int, double **);
+  void pack_custom(int, sfloat **);
   void write_custom_all(int);
-  void write_custom_distributed(int, double **);
+  void write_custom_distributed(int, sfloat **);
 
-  // union data struct for packing 32-bit and 64-bit ints into double bufs
-  // this avoids aliasing issues by having 2 pointers (double,int)
+  // union data struct for packing 32-bit and 64-bit ints into sfloat bufs
+  // this avoids aliasing issues by having 2 pointers (sfloat,int)
   //   to same buf memory
   // constructor for 32-bit int prevents compiler
-  //   from possibly calling the double constructor when passed an int
-  // copy to a double *buf:
+  //   from possibly calling the sfloat constructor when passed an int
+  // copy to a sfloat *buf:
   //   buf[m++] = ubuf(foo).d, where foo is a 32-bit or 64-bit int
-  // copy from a double *buf:
+  // copy from a sfloat *buf:
   //   foo = (int) ubuf(buf[m++]).i;, where (int) or (tagint) match foo
   //   the cast prevents compiler warnings about possible truncation
 

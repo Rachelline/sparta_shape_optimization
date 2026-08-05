@@ -1,3 +1,4 @@
+/* AD-CONVERTED: double->sfloat by tools/ad_convert.py (see sfloat.h) */
 /* -*- c++ -*- ----------------------------------------------------------
    SPARTA - Stochastic PArallel Rarefied-gas Time-accurate Analyzer
    http://sparta.github.io
@@ -23,7 +24,7 @@ class PythonInterface {
  public:
   virtual ~PythonInterface() noexcept(false) {}
   virtual void command(int, char **) = 0;
-  virtual void invoke_function(int, char *, double *) = 0;
+  virtual void invoke_function(int, char *, sfloat *) = 0;
   virtual int find(const char *) = 0;
   virtual int function_match(const char *, const char *, int) = 0;
   virtual int wrapper_match(const char *, const char *, int, int *) = 0;
@@ -39,7 +40,7 @@ class Python : protected Pointers {
   ~Python() override;
 
   void command(int, char **);
-  void invoke_function(int, char *, double *);
+  void invoke_function(int, char *, sfloat *);
   int find(const char *);
   int function_match(const char *, const char *, int);
   int wrapper_match(const char *, const char *, int, int *);

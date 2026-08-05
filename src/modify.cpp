@@ -1,3 +1,4 @@
+/* AD-CONVERTED: double->sfloat by tools/ad_convert.py (see sfloat.h) */
 /* ----------------------------------------------------------------------
    SPARTA - Stochastic PArallel Rarefied-gas Time-accurate Analyzer
    http://sparta.github.io
@@ -264,8 +265,8 @@ void Modify::custom_surf_changed()
    invoke update_custom() method, only for relevant fixes
 ------------------------------------------------------------------------- */
 
-void Modify::update_custom(int index, double temp_thermal,
-			   double temp_rot, double temp_vib, double *vstream)
+void Modify::update_custom(int index, sfloat temp_thermal,
+			   sfloat temp_rot, sfloat temp_vib, sfloat *vstream)
 {
   for (int i = 0; i < n_update_custom; i++)
     fix[list_update_custom[i]]->update_custom(index,temp_thermal,temp_rot,
@@ -650,7 +651,7 @@ void Modify::list_init_computes()
 bigint Modify::memory_usage()
 {
   bigint bytes = 0;
-  for (int i = 0; i < nfix; i++) bytes += fix[i]->memory_usage();
+  for (int i = 0; i < nfix; i++) bytes += spval(fix[i]->memory_usage());
   for (int i = 0; i < ncompute; i++) bytes += compute[i]->memory_usage();
   return bytes;
 }

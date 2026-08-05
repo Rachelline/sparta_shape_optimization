@@ -1,3 +1,4 @@
+/* AD-CONVERTED: double->sfloat by tools/ad_convert.py (see sfloat.h) */
 /* ----------------------------------------------------------------------
    SPARTA - Stochastic PArallel Rarefied-gas Time-accurate Analyzer
    http://sparta.github.io
@@ -57,10 +58,10 @@ class WriteRestart : protected Pointers {
 
   void write_int(int, int);
   void write_bigint(int, bigint);
-  void write_double(int, double);
+  void write_double(int, sfloat);
   void write_string(int, char *);
   void write_int_vec(int, int, int *);
-  void write_double_vec(int, int, double *);
+  void write_double_vec(int, int, sfloat *);
   void write_char_vec(int, int, char *);
   void write_char_vec(int, bigint, int, char *);
   void write_char_vec(int, char *);

@@ -1,3 +1,4 @@
+/* AD-CONVERTED: double->sfloat by tools/ad_convert.py (see sfloat.h) */
 /* ----------------------------------------------------------------------
    SPARTA - Stochastic PArallel Rarefied-gas Time-accurate Analyzer
    http://sparta.github.io
@@ -44,7 +45,7 @@ enum{NCHILD,NPARENT,NUNKNOWN,NPBCHILD,NPBPARENT,NPBUNKNOWN,NBOUND};  // Grid
 /* ---------------------------------------------------------------------- */
 
 MarchingCubes::MarchingCubes(SPARTA *sparta, int ggroup_caller,
-                             double thresh_caller) :
+                             sfloat thresh_caller) :
   Pointers(sparta)
 {
   MPI_Comm_rank(world,&me);
@@ -70,7 +71,7 @@ MarchingCubes::MarchingCubes(SPARTA *sparta, int ggroup_caller,
      based on ave value at cell center
 ------------------------------------------------------------------------- */
 
-void MarchingCubes::invoke(double **cvalues, double ***mvalues, int *svalues, int **mcflags)
+void MarchingCubes::invoke(sfloat **cvalues, sfloat ***mvalues, int *svalues, int **mcflags)
 {
   int i,j,ipt,isurf,nsurf,icase,which;
   surfint surfID;
@@ -106,14 +107,14 @@ void MarchingCubes::invoke(double **cvalues, double ***mvalues, int *svalues, in
     // Vzyx encodes this as 0/1 in each dim
 
     if (cvalues) {
-      v000 = cvalues[icell][0];
-      v001 = cvalues[icell][1];
-      v010 = cvalues[icell][2];
-      v011 = cvalues[icell][3];
-      v100 = cvalues[icell][4];
-      v101 = cvalues[icell][5];
-      v110 = cvalues[icell][6];
-      v111 = cvalues[icell][7];
+      v000 = spval(cvalues[icell][0]);
+      v001 = spval(cvalues[icell][1]);
+      v010 = spval(cvalues[icell][2]);
+      v011 = spval(cvalues[icell][3]);
+      v100 = spval(cvalues[icell][4]);
+      v101 = spval(cvalues[icell][5]);
+      v110 = spval(cvalues[icell][6]);
+      v111 = spval(cvalues[icell][7]);
 
       i0  = interpolate(v000,v001,lo[0],hi[0]);
       i1  = interpolate(v001,v011,lo[1],hi[1]);
@@ -143,14 +144,14 @@ void MarchingCubes::invoke(double **cvalues, double ***mvalues, int *svalues, in
       // manually change for consistency
 
       for (j = 0; j < 6; j++) {
-        v000 += inval[0][j];
-        v001 += inval[1][j];
-        v010 += inval[2][j];
-        v011 += inval[3][j];
-        v100 += inval[4][j];
-        v101 += inval[5][j];
-        v110 += inval[6][j];
-        v111 += inval[7][j];
+        v000 += spval(inval[0][j]);
+        v001 += spval(inval[1][j]);
+        v010 += spval(inval[2][j]);
+        v011 += spval(inval[3][j]);
+        v100 += spval(inval[4][j]);
+        v101 += spval(inval[5][j]);
+        v110 += spval(inval[6][j]);
+        v111 += spval(inval[7][j]);
       }
 
       v000 /= 6.0;
@@ -517,10 +518,10 @@ void MarchingCubes::invoke(double **cvalues, double ***mvalues, int *svalues, in
    value = interpolated coordinate for thresh value
 ------------------------------------------------------------------------- */
 
-double MarchingCubes::interpolate(double v0, double v1, double lo, double hi)
+sfloat MarchingCubes::interpolate(sfloat v0, sfloat v1, sfloat lo, sfloat hi)
 {
-  double value = lo + (hi-lo)*(thresh-v0)/(v1-v0);
-  double ibuffer = (hi-lo)*mindist;
+  sfloat value = lo + (hi-lo)*(thresh-v0)/(v1-v0);
+  sfloat ibuffer = (hi-lo)*mindist;
   value = MAX(value,lo+ibuffer);
   value = MIN(value,hi-ibuffer);
   return value;
@@ -561,8 +562,8 @@ void MarchingCubes::cleanup()
   int ntri_other,othercell,otherface,otherproc,otherlocal,othernsurf;
   surfint *oldcsurfs;
   surfint *ptr;
-  double *lo,*hi;
-  double *norm;
+  sfloat *lo,*hi;
+  sfloat *norm;
 
   Surf::Tri *tris = surf->tris;
   Grid::ChildCell *cells = grid->cells;
@@ -1139,9 +1140,9 @@ int MarchingCubes::add_triangle(int *trig, int n)
         pt[t][2] += i11;
       }
 
-      pt[t][0] /= static_cast<double> (u);
-      pt[t][1] /= static_cast<double> (u);
-      pt[t][2] /= static_cast<double> (u);
+      pt[t][0] /= static_cast<sfloat> (u);
+      pt[t][1] /= static_cast<sfloat> (u);
+      pt[t][2] /= static_cast<sfloat> (u);
       break;
     }
 
@@ -1160,7 +1161,7 @@ int MarchingCubes::add_triangle(int *trig, int n)
 
 bool MarchingCubes::test_face(int face)
 {
-  double A,B,C,D;
+  sfloat A,B,C,D;
 
   switch (face) {
   case -1:
@@ -1225,7 +1226,7 @@ bool MarchingCubes::test_face(int face)
 
 bool MarchingCubes::test_interior(int s, int icase)
 {
-  double t,a,b,At=0.0,Bt=0.0,Ct=0.0,Dt=0.0;
+  sfloat t,a,b,At=0.0,Bt=0.0,Ct=0.0,Dt=0.0;
   int test = 0;
   int edge = -1;   // reference edge of the triangulation
 
@@ -1509,8 +1510,8 @@ int MarchingCubes::interior_ambiguity(int amb_face, int s)
 
 int MarchingCubes::interior_ambiguity_verification(int edge)
 {
-  double t, At = 0.0, Bt = 0.0, Ct = 0.0, Dt = 0.0, a = 0.0, b = 0.0;
-  double verify;
+  sfloat t, At = 0.0, Bt = 0.0, Ct = 0.0, Dt = 0.0, a = 0.0, b = 0.0;
+  sfloat verify;
 
   switch (edge) {
 
@@ -1844,8 +1845,8 @@ int MarchingCubes::interior_ambiguity_verification(int edge)
 
 bool MarchingCubes::interior_test_case13()
 {
-  double t1, t2, At1 = 0.0, Bt1 = 0.0, Ct1 = 0.0, Dt1 = 0.0;
-  double At2 = 0.0, Bt2 = 0.0, Ct2 = 0.0, Dt2 = 0.0, a = 0.0, b = 0.0, c = 0.0;
+  sfloat t1, t2, At1 = 0.0, Bt1 = 0.0, Ct1 = 0.0, Dt1 = 0.0;
+  sfloat At2 = 0.0, Bt2 = 0.0, Ct2 = 0.0, Dt2 = 0.0, a = 0.0, b = 0.0, c = 0.0;
 
   a = (v000iso - v001iso) * (v110iso - v111iso)
     - (v100iso - v101iso) * (v010iso - v011iso);
@@ -1854,7 +1855,7 @@ bool MarchingCubes::interior_test_case13()
     - v101iso * (v010iso - v011iso);
   c = v001iso*v111iso - v101iso*v011iso;
 
-  double delta = b*b - 4*a*c;
+  sfloat delta = b*b - 4*a*c;
 
   t1 = (-b + sqrt(delta))/(2*a);
   t2 = (-b - sqrt(delta))/(2*a);
@@ -1868,16 +1869,16 @@ bool MarchingCubes::interior_test_case13()
     Ct1 = v111iso + (v110iso - v111iso) * t1;
     Dt1 = v011iso + (v010iso - v011iso) * t1;
 
-    double x1 = (At1 - Dt1)/(At1 + Ct1 - Bt1 - Dt1);
-    double y1 = (At1 - Bt1)/(At1 + Ct1 - Bt1 - Dt1);
+    sfloat x1 = (At1 - Dt1)/(At1 + Ct1 - Bt1 - Dt1);
+    sfloat y1 = (At1 - Bt1)/(At1 + Ct1 - Bt1 - Dt1);
 
     At2 = v001iso + (v000iso - v001iso) * t2;
     Bt2 = v101iso + (v100iso - v101iso) * t2;
     Ct2 = v111iso + (v110iso - v111iso) * t2;
     Dt2 = v011iso + (v010iso - v011iso) * t2;
 
-    double x2 = (At2 - Dt2)/(At2 + Ct2 - Bt2 - Dt2);
-    double y2 = (At2 - Bt2)/(At2 + Ct2 - Bt2 - Dt2);
+    sfloat x2 = (At2 - Dt2)/(At2 + Ct2 - Bt2 - Dt2);
+    sfloat y2 = (At2 - Bt2)/(At2 + Ct2 - Bt2 - Dt2);
 
     if ((x1 < 1)&&(x1>0) &&(x2 < 1)&&(x2 > 0) &&
         (y1 < 1)&&(y1>0) &&(y2 < 1)&&(y2 > 0)) return false;

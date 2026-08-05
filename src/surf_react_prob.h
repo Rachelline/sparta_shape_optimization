@@ -1,3 +1,4 @@
+/* AD-CONVERTED: double->sfloat by tools/ad_convert.py (see sfloat.h) */
 /* ----------------------------------------------------------------------
    SPARTA - Stochastic PArallel Rarefied-gas Time-accurate Analyzer
    http://sparta.github.io
@@ -31,9 +32,9 @@ class SurfReactProb : public SurfReact {
   SurfReactProb(class SPARTA *sparta) : SurfReact(sparta) {} // needed for Kokkos
   virtual ~SurfReactProb();
   virtual void init();
-  int react(Particle::OnePart *&, int, double *, Particle::OnePart *&, int &);
+  int react(Particle::OnePart *&, int, sfloat *, Particle::OnePart *&, int &);
   char *reactionID(int);
-  double reaction_coeff(int);
+  sfloat reaction_coeff(int);
   int match_reactant(char *, int);
   int match_product(char *, int);
 
@@ -47,7 +48,7 @@ class SurfReactProb : public SurfReact {
     int nreactant,nproduct;        // # of reactants and products
     char **id_reactants,**id_products;  // species IDs of reactants/products
     int *reactants,*products;      // species indices of reactants/products
-    double *coeff;                 // numerical coeffs for reaction
+    sfloat *coeff;                 // numerical coeffs for reaction
     char *id;                      // reaction ID (formula)
   };
 

@@ -1,3 +1,4 @@
+/* AD-CONVERTED: double->sfloat by tools/ad_convert.py (see sfloat.h) */
 /* ----------------------------------------------------------------------
    SPARTA - Stochastic PArallel Rarefied-gas Time-accurate Analyzer
    http://sparta.github.io
@@ -24,26 +25,26 @@ class Compute : protected Pointers {
  public:
   char *id,*style;
 
-  double scalar;            // computed global scalar
-  double *vector;           // computed global vector
-  double **array;           // computed global array
-  double *vector_particle;  // computed per-particle vector
-  double **array_particle;  // computed per-particle array
-  double *vector_grid;      // computed per-grid vector
-  double **array_grid;      // computed per-grid array
+  sfloat scalar;            // computed global scalar
+  sfloat *vector;           // computed global vector
+  sfloat **array;           // computed global array
+  sfloat *vector_particle;  // computed per-particle vector
+  sfloat **array_particle;  // computed per-particle array
+  sfloat *vector_grid;      // computed per-grid vector
+  sfloat **array_grid;      // computed per-grid array
 
   // vec/array surf are length = # of explicit surf elements owned
   // vec/array surf tally are length = # of surf elements tallied
 
-  double *vector_surf;        // computed per-surf vector
-  double **array_surf;        // computed per-surf array
-  double *vector_surf_tally;  // computed per-surf tally vector
-  double **array_surf_tally;  // computed per-surf tally array
+  sfloat *vector_surf;        // computed per-surf vector
+  sfloat **array_surf;        // computed per-surf array
+  sfloat *vector_surf_tally;  // computed per-surf tally vector
+  sfloat **array_surf_tally;  // computed per-surf tally array
 
   // vec/array tally are length = # of tallies
 
-  double *vector_tally;      // computed per-tally vector
-  double **array_tally;      // computed per-tally array
+  sfloat *vector_tally;      // computed per-tally vector
+  sfloat **array_tally;      // computed per-tally array
 
   // data flags and sizes
 
@@ -98,7 +99,7 @@ class Compute : protected Pointers {
   void set_init();
   virtual void post_constructor() {}
 
-  virtual double compute_scalar() {return 0.0;}
+  virtual sfloat compute_scalar() {return 0.0;}
   virtual void compute_vector() {}
   virtual void compute_array() {}
   virtual void compute_per_particle() {}
@@ -107,21 +108,21 @@ class Compute : protected Pointers {
   virtual void compute_per_tally() {}
   virtual void clear() {}
 
-  virtual void surf_tally(double, int, int, int, Particle::OnePart *,
+  virtual void surf_tally(sfloat, int, int, int, Particle::OnePart *,
                           Particle::OnePart *, Particle::OnePart *) {}
-  virtual void boundary_tally(double, int, int, int, Particle::OnePart *,
+  virtual void boundary_tally(sfloat, int, int, int, Particle::OnePart *,
                               Particle::OnePart *, Particle::OnePart *) {}
   virtual void gas_tally(int, int,
                          Particle::OnePart *, Particle::OnePart *,
                          Particle::OnePart *, Particle::OnePart *,
                          Particle::OnePart *) {}
 
-  virtual void post_process_grid(int, int, double **, int *, double *, int) {}
+  virtual void post_process_grid(int, int, sfloat **, int *, sfloat *, int) {}
   // NOTE: get rid of this method at some point
-  virtual void post_process_grid_old(void *, void *, int, int, double *, int) {}
+  virtual void post_process_grid_old(void *, void *, int, int, sfloat *, int) {}
   virtual void post_process_isurf_grid() {}
 
-  virtual int query_tally_grid(int, double **&, int *&) {return 0;}
+  virtual int query_tally_grid(int, sfloat **&, int *&) {return 0;}
   virtual void post_process_surf() {}
 
   virtual int tallyinfo(surfint *&) {return 0;}
@@ -144,14 +145,14 @@ class Compute : protected Pointers {
 
  protected:
 
-  // union data struct for packing 32-bit and 64-bit ints into double bufs
-  // this avoids aliasing issues by having 2 pointers (double,int)
+  // union data struct for packing 32-bit and 64-bit ints into sfloat bufs
+  // this avoids aliasing issues by having 2 pointers (sfloat,int)
   //   to same buf memory
   // constructor for 32-bit int prevents compiler
-  //   from possibly calling the double constructor when passed an int
-  // copy to a double *buf:
+  //   from possibly calling the sfloat constructor when passed an int
+  // copy to a sfloat *buf:
   //   buf[m++] = ubuf(foo).d where foo is a 32/64-bit int or unsigned int
-  // copy from a double *buf:
+  // copy from a sfloat *buf:
   //   foo = (int) ubuf(buf[m++]).i where (int cast) matches foo
   //   the cast prevents compiler warnings about possible truncation
 

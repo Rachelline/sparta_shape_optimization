@@ -1,3 +1,4 @@
+/* AD-CONVERTED: double->sfloat by tools/ad_convert.py (see sfloat.h) */
 /* ----------------------------------------------------------------------
    SPARTA - Stochastic PArallel Rarefied-gas Time-accurate Analyzer
    http://sparta.github.io
@@ -22,23 +23,23 @@ namespace SPARTA_NS {
 
 class MarchingCubes : protected Pointers {
  public:
-  MarchingCubes(class SPARTA *, int, double);
+  MarchingCubes(class SPARTA *, int, sfloat);
   ~MarchingCubes() {}
-  void invoke(double **, double ***, int *, int **);
+  void invoke(sfloat **, sfloat ***, int *, int **);
   void cleanup();
-  double mindist;
+  sfloat mindist;
 
  private:
   int me,ggroup;
-  double thresh;
+  sfloat thresh;
 
-  double *lo,*hi;
+  sfloat *lo,*hi;
   int v000,v001,v010,v011,v100,v101,v110,v111;
-  double v000iso,v001iso,v010iso,v011iso,v100iso,v101iso,v110iso,v111iso;
-  double inval[8][6];
-  double i0,i1,i2,i3,i4,i5,i6,i7,i8,i9,i10,i11;
+  sfloat v000iso,v001iso,v010iso,v011iso,v100iso,v101iso,v110iso,v111iso;
+  sfloat inval[8][6];
+  sfloat i0,i1,i2,i3,i4,i5,i6,i7,i8,i9,i10,i11;
   int bit0,bit1,bit2,bit3,bit4,bit5,bit6,bit7;
-  double pt[36][3];
+  sfloat pt[36][3];
 
   int config;     // configuration of the active cube
   int subconfig;  // subconfiguration of the active cube
@@ -52,7 +53,7 @@ class MarchingCubes : protected Pointers {
     Surf::Tri tri1,tri2;
   };
 
-  double interpolate(double, double, double, double);
+  sfloat interpolate(sfloat, sfloat, sfloat, sfloat);
   int add_triangle(int *, int);
   bool test_face(int);
   bool test_interior(int, int);

@@ -1,3 +1,4 @@
+/* AD-CONVERTED: double->sfloat by tools/ad_convert.py (see sfloat.h) */
 /* ----------------------------------------------------------------------
    SPARTA - Stochastic PArallel Rarefied-gas Time-accurate Analyzer
    http://sparta.github.io
@@ -103,7 +104,7 @@ SurfCollideImpulsive::SurfCollideImpulsive(SPARTA *sparta, int narg, char **arg)
       if (step_size < 0.0)
         error->all(FLERR,"Illegal surf_collide impulsive step size");
       iarg += 2;
-    } else if (strcmp(arg[iarg],"double") == 0) {
+    } else if (strcmp(arg[iarg],"sfloat") == 0) {
       if (iarg+2 > narg)
         error->all(FLERR,"Illegal surf_collide impulsive command");
       double_flag = 1;
@@ -135,8 +136,8 @@ SurfCollideImpulsive::SurfCollideImpulsive(SPARTA *sparta, int narg, char **arg)
   // initialize RNG
 
   random = new RanKnuth(update->ranmaster->uniform());
-  double seed = update->ranmaster->uniform();
-  random->reset(seed,comm->me,100);
+  sfloat seed = update->ranmaster->uniform();
+  random->reset(spval(seed),comm->me,100);
 }
 
 /* ---------------------------------------------------------------------- */
@@ -167,8 +168,8 @@ void SurfCollideImpulsive::init()
 ------------------------------------------------------------------------- */
 
 Particle::OnePart *SurfCollideImpulsive::
-collide(Particle::OnePart *&ip, double &,
-        int isurf, double *norm, int isr, int &reaction)
+collide(Particle::OnePart *&ip, sfloat &,
+        int isurf, sfloat *norm, int isr, int &reaction)
 {
   nsingle++;
 
@@ -245,18 +246,18 @@ collide(Particle::OnePart *&ip, double &,
    tangent12 are both unit vectors
 ------------------------------------------------------------------------- */
 
-void SurfCollideImpulsive::impulsive(Particle::OnePart *p, double *norm)
+void SurfCollideImpulsive::impulsive(Particle::OnePart *p, sfloat *norm)
 {
-  double tangent1[3],tangent2[3];
+  sfloat tangent1[3],tangent2[3];
   Particle::Species *species = particle->species;
   int ispecies = p->ispecies;
 
-  double vperp, vtan1, vtan2;
-  double mass = species[ispecies].mass;
-  //double vrm = sqrt(2.0*update->boltz * tsurf / mass);
+  sfloat vperp, vtan1, vtan2;
+  sfloat mass = species[ispecies].mass;
+  //sfloat vrm = sqrt(2.0*update->boltz * tsurf / mass);
 
-  double *v = p->v;
-  double dot = MathExtra::dot3(v,norm);
+  sfloat *v = p->v;
+  sfloat dot = MathExtra::dot3(v,norm);
 
   tangent1[0] = v[0] - dot*norm[0];
   tangent1[1] = v[1] - dot*norm[1];
@@ -274,17 +275,17 @@ void SurfCollideImpulsive::impulsive(Particle::OnePart *p, double *norm)
 
   // compute final polar (theta) and azimuthal (phi) angles
 
-  double tan1 = MathExtra::dot3(v,tangent1);
-  double tan2 = MathExtra::dot3(v,tangent2);
+  sfloat tan1 = MathExtra::dot3(v,tangent1);
+  sfloat tan2 = MathExtra::dot3(v,tangent2);
 
-  double v_i_mag_sq = MathExtra::lensq3(v);
-  double E_i = 0.5 * mass * v_i_mag_sq;
-  double theta_i = acos(-dot/sqrt(v_i_mag_sq));
-  double phi_i = atan2(tan2,tan1);
-  double phi_peak = MY_2PI - phi_i;
+  sfloat v_i_mag_sq = MathExtra::lensq3(v);
+  sfloat E_i = 0.5 * mass * v_i_mag_sq;
+  sfloat theta_i = acos(-dot/sqrt(v_i_mag_sq));
+  sfloat phi_i = atan2(tan2,tan1);
+  sfloat phi_peak = MY_2PI - phi_i;
 
-  double theta_f, phi_f;
-  double P = 0.0;
+  sfloat theta_f, phi_f;
+  sfloat P = 0.0;
 
   // theta_f calculation
 
@@ -297,9 +298,9 @@ void SurfCollideImpulsive::impulsive(Particle::OnePart *p, double *norm)
     }
 
     if (step_flag) {
-      double func_step = 0.0;
-      double tan_theta = tan(theta_f);
-      double cotangent = 1.0/tan_theta;
+      sfloat func_step = 0.0;
+      sfloat tan_theta = tan(theta_f);
+      sfloat cotangent = 1.0/tan_theta;
       if (cotangent > step_size) func_step = 1 - step_size*tan_theta;
       P *= func_step;
     }
@@ -318,10 +319,10 @@ void SurfCollideImpulsive::impulsive(Particle::OnePart *p, double *norm)
 
   v_f_avg = 0.0;
   if (softsphere_flag) {
-    double mu = species[ispecies].molwt/eff_mass;
-    double cos_khi = cos(MY_PI - theta_i - theta_f);
-    double sin_khi_sq = 1 - cos_khi*cos_khi;
-    double dE, E_f_avg;
+    sfloat mu = species[ispecies].molwt/eff_mass;
+    sfloat cos_khi = cos(MY_PI - theta_i - theta_f);
+    sfloat sin_khi_sq = 1 - cos_khi*cos_khi;
+    sfloat dE, E_f_avg;
 
     dE = 2*mu/((mu+1)*(mu+1)) *
       (1 + mu*sin_khi_sq + eng_ratio*(mu+1)/(2*mu) -
@@ -333,11 +334,11 @@ void SurfCollideImpulsive::impulsive(Particle::OnePart *p, double *norm)
     v_f_avg = u0_a*tsurf + u0_b;
   }
 
-  double v_f_max = 0.5 * (v_f_avg + sqrt(v_f_avg*v_f_avg + 6*var_alpha_sq));
-  double f_max = v_f_max*v_f_max*v_f_max *
+  sfloat v_f_max = 0.5 * (v_f_avg + sqrt(v_f_avg*v_f_avg + 6*var_alpha_sq));
+  sfloat f_max = v_f_max*v_f_max*v_f_max *
     exp(-(v_f_max - v_f_avg) * (v_f_max - v_f_avg)/(var_alpha_sq));
 
-  double v_f_mag;
+  sfloat v_f_mag;
   P = 0.0;
   while (random->uniform() > P) {
     v_f_mag = v_f_max + 3 * var_alpha * ( 2 * random->uniform() - 1 );
@@ -357,8 +358,8 @@ void SurfCollideImpulsive::impulsive(Particle::OnePart *p, double *norm)
   //p->evib = particle->evib(ispecies,tsurf,random);
 
   if (intenergy_flag) {
-    double E_f = 0.5 * mass * v_f_mag * v_f_mag;
-    double extra_energy = E_i - E_f;
+    sfloat E_f = 0.5 * mass * v_f_mag * v_f_mag;
+    sfloat extra_energy = E_i - E_f;
 
     // rotational component
 
@@ -373,26 +374,26 @@ void SurfCollideImpulsive::impulsive(Particle::OnePart *p, double *norm)
     if (!sparta->collide || sparta->collide->vibstyle == NONE || vibdof < 2) {
       p->evib = 0.0;
     } else {
-      double *vibtemp = species[ispecies].vibtemp;
-      double evib_val = p->evib + vib_frac*extra_energy;
+      sfloat *vibtemp = species[ispecies].vibtemp;
+      sfloat evib_val = p->evib + vib_frac*extra_energy;
 
       if (sparta->collide->vibstyle == SMOOTH) p->evib = evib_val;
       if (sparta->collide->vibstyle == DISCRETE && vibdof==2) {
-        int ivib =  evib_val / (update->boltz*vibtemp[0]);
+        int ivib =  spval(evib_val / (update->boltz*vibtemp[0]));
         p->evib = ivib * update->boltz * vibtemp[0];
       } else {
         // vibmode degeneracies are expanded into individual oscillators at
         // setup time (see Particle::add_species), so nvibmode already counts
         // every oscillator and each has an implicit degeneracy of 1
         int nvibmode = species[ispecies].nvibmode;
-        double tot_temp=0.0;
-        double evib_sum = 0.0;
+        sfloat tot_temp=0.0;
+        sfloat evib_sum = 0.0;
 
         for (int imode=0; imode<nvibmode; imode++)
           tot_temp += vibtemp[imode];
 
         for (int imode=0; imode<nvibmode; imode++) {
-          int ivib = evib_val / (update->boltz*tot_temp);
+          int ivib = spval(evib_val / (update->boltz*tot_temp));
           evib_sum += ivib * update->boltz * vibtemp[imode];
         }
 
@@ -409,8 +410,8 @@ void SurfCollideImpulsive::impulsive(Particle::OnePart *p, double *norm)
    called by SurfReactAdsorb
 ------------------------------------------------------------------------- */
 
-void SurfCollideImpulsive::wrapper(Particle::OnePart *p, double *norm,
-                                   int *flags, double *coeffs)
+void SurfCollideImpulsive::wrapper(Particle::OnePart *p, sfloat *norm,
+                                   int *flags, sfloat *coeffs)
 {
   if (flags) {
     tsurf = coeffs[0];
@@ -454,7 +455,7 @@ void SurfCollideImpulsive::wrapper(Particle::OnePart *p, double *norm,
    return flags and coeffs for this SurfCollide instance to caller
 ------------------------------------------------------------------------- */
 
-void SurfCollideImpulsive::flags_and_coeffs(int *flags, double *coeffs)
+void SurfCollideImpulsive::flags_and_coeffs(int *flags, sfloat *coeffs)
 {
   if (tmode != NUMERIC)
     error->all(FLERR,"Surf_collide impulsive with non-numeric Tsurf "

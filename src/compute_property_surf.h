@@ -1,3 +1,4 @@
+/* AD-CONVERTED: double->sfloat by tools/ad_convert.py (see sfloat.h) */
 /* ----------------------------------------------------------------------
    SPARTA - Stochastic PArallel Rarefied-gas Time-accurate Analyzer
    http://sparta.github.io
@@ -47,7 +48,7 @@ class ComputePropertySurf : public Compute {
   typedef void (ComputePropertySurf::*FnPtrPack)(int);
   FnPtrPack *pack_choice;              // ptrs to pack functions
 
-  double *buf;
+  sfloat *buf;
 
   void pack_id(int);
 

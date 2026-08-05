@@ -1,3 +1,4 @@
+/* AD-CONVERTED: double->sfloat by tools/ad_convert.py (see sfloat.h) */
 /* ----------------------------------------------------------------------
    SPARTA - Stochastic PArallel Rarefied-gas Time-accurate Analyzer
    http://sparta.github.io
@@ -22,7 +23,7 @@ usage:
   store/retrieve values from vec
   repeat, size of vec can vary each time
 inputs:
-  template T = one object, e.g. int, double, struct
+  template T = one object, e.g. int, sfloat, struct
 methods:
   vec[i] = inlined access to vector element for read/write
   void grow(int nnew) = resize vector to length nnew if needed

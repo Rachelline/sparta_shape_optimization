@@ -1,3 +1,4 @@
+/* AD-CONVERTED: double->sfloat by tools/ad_convert.py (see sfloat.h) */
 /* ----------------------------------------------------------------------
    SPARTA - Stochastic PArallel Rarefied-gas Time-accurate Analyzer
    http://sparta.github.io
@@ -29,8 +30,8 @@ class FixAblate : public Fix {
  public:
   int igroup,dim;
   int nx,ny,nz;
-  double cornerlo[3];
-  double xyzsize[3];
+  sfloat cornerlo[3];
+  sfloat xyzsize[3];
 
   FixAblate(class SPARTA *, int, char **);
   ~FixAblate();
@@ -44,18 +45,18 @@ class FixAblate : public Fix {
   void copy_grid_one(int, int);
   void reset_grid_count(int);
   void add_grid_one();
-  double compute_scalar();
-  double compute_vector(int);
-  double memory_usage();
+  sfloat compute_scalar();
+  sfloat compute_vector(int);
+  sfloat memory_usage();
 
-  void store_corners(int, int, int, double *, double *,
-                     double **, double ***, int *, double, char *, int);
-  double mindist;             // min fractional distance between any grid corner pt
+  void store_corners(int, int, int, sfloat *, sfloat *,
+                     sfloat **, sfloat ***, int *, sfloat, char *, int);
+  sfloat mindist;             // min fractional distance between any grid corner pt
                               //   and a generated tri vertex or line segment endpt
  protected:
   int me;
   int groupbit,which,argindex,icompute,ifix,ivariable,maxrandom;
-  double scale;
+  sfloat scale;
   char *idsource;
   int storeflag;
   int multi_val_flag;
@@ -66,32 +67,32 @@ class FixAblate : public Fix {
   int sgroupbit;
   int isc_default;        // default isc index for newly created implicit surfs
   int isr_default;        // default isr index for newly created implicit surfs
-  double thresh;
-  double sum_delta;
+  sfloat thresh;
+  sfloat sum_delta;
   int ndelete;
 
   int nglocal;            // # of owned grid cells
 
-  double **cvalues;       // corner point values
-  double ***mvalues;      // corner multi values
+  sfloat **cvalues;       // corner point values
+  sfloat ***mvalues;      // corner multi values
   int *tvalues;           // per-cell type value
   int tvalues_flag;       // 1 if tvalues is defined (by ReadIsurf)
 
-  double corner_inside_min;   // min allowed value for an inside corner point
-  double corner_outside_max;  // max allowed value for an outside corner point
+  sfloat corner_inside_min;   // min allowed value for an inside corner point
+  sfloat corner_outside_max;  // max allowed value for an outside corner point
 
   int **ixyz;             // ix,iy,iz indices (1 to Nxyz) of my cells
                           // in 2d/3d ablate grid (iz = 1 for 2d)
   // DEBUG
   int **mcflags;
 
-  double *celldelta;       // per-cell delta from compute or fix source
-  double **cdelta;         // per-corner point deltas
-  double **cdelta_ghost;   // ditto for my ghost cells communicated to me
-  double ***mdelta;        // cdelta for multivalues
-  double ***mdelta_ghost;  // ditto for my ghost cells (multivalues)
-  double **nvert;          // number of vertices around each corner
-  double **nvert_ghost;    // ditto for my ghost cells communicated to me
+  sfloat *celldelta;       // per-cell delta from compute or fix source
+  sfloat **cdelta;         // per-corner point deltas
+  sfloat **cdelta_ghost;   // ditto for my ghost cells communicated to me
+  sfloat ***mdelta;        // cdelta for multivalues
+  sfloat ***mdelta_ghost;  // ditto for my ghost cells (multivalues)
+  sfloat **nvert;          // number of vertices around each corner
+  sfloat **nvert_ghost;    // ditto for my ghost cells communicated to me
 
   int maxgrid;             // max size of per-cell vectors/arrays
   int maxghost;            // max size of cdelta_ghost
@@ -101,10 +102,10 @@ class FixAblate : public Fix {
   int *numsend;
   int maxsend;
 
-  double *sbuf;
+  sfloat *sbuf;
   int maxbuf;
 
-  double *vbuf;
+  sfloat *vbuf;
   int maxvar;
 
   // new ablate with distributed decrement

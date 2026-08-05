@@ -1,3 +1,4 @@
+/* AD-CONVERTED: double->sfloat by tools/ad_convert.py (see sfloat.h) */
 /* ----------------------------------------------------------------------
    SPARTA - Stochastic PArallel Rarefied-gas Time-accurate Analyzer
    http://sparta.github.io
@@ -57,11 +58,11 @@ void ReactQK::init()
 /* ---------------------------------------------------------------------- */
 
 int ReactQK::attempt(Particle::OnePart *ip, Particle::OnePart *jp,
-                     double pre_etrans, double pre_erot, double pre_evib,
-                     double &post_etotal, int &kspecies)
+                     sfloat pre_etrans, sfloat pre_erot, sfloat pre_evib,
+                     sfloat &post_etotal, int &kspecies)
 {
-  double pre_etotal,ecc,e_excess;
-  double prob,evib,inverse_kT;
+  sfloat pre_etotal,ecc,e_excess;
+  sfloat prob,evib,inverse_kT;
   int iv,ilevel,maxlev,limlev;
   int mspec,aspec;
   OneReaction *r;
@@ -70,9 +71,9 @@ int ReactQK::attempt(Particle::OnePart *ip, Particle::OnePart *jp,
   int isp = ip->ispecies;
   int jsp = jp->ispecies;
 
-  double pre_ave_rotdof = (species[isp].rotdof + species[jsp].rotdof)/2.0;
+  sfloat pre_ave_rotdof = (species[isp].rotdof + species[jsp].rotdof)/2.0;
 
-  double omega = collide->extract(isp,jsp,"omega");
+  sfloat omega = collide->extract(isp,jsp,"omega");
 
   int n = reactions[isp][jsp].n;
   if (n == 0) return 0;
@@ -80,8 +81,8 @@ int ReactQK::attempt(Particle::OnePart *ip, Particle::OnePart *jp,
 
   // probablity to compare to reaction probability
 
-  double react_prob = 0.0;
-  double random_prob = random->uniform();
+  sfloat react_prob = 0.0;
+  sfloat random_prob = random->uniform();
 
   // loop over possible reactions for these 2 species
 
@@ -106,8 +107,8 @@ int ReactQK::attempt(Particle::OnePart *ip, Particle::OnePart *jp,
     case DISSOCIATION:
       {
         ecc = pre_etrans + ip->evib;
-        maxlev = static_cast<int> (ecc * inverse_kT);
-        limlev = static_cast<int> (fabs(r->coeff[1]) * inverse_kT);
+        maxlev = static_cast<int> (spval(ecc * inverse_kT));
+        limlev = static_cast<int> (spval(fabs(r->coeff[1]) * inverse_kT));
 
         if (maxlev > limlev) react_prob = 1.0;
         break;
@@ -119,17 +120,17 @@ int ReactQK::attempt(Particle::OnePart *ip, Particle::OnePart *jp,
           // endothermic reaction
 
           ecc = pre_etrans + ip->evib;
-          maxlev = static_cast<int> (ecc * inverse_kT);
+          maxlev = static_cast<int> (spval(ecc * inverse_kT));
           if (ecc > r->coeff[1]) {
 
             prob = 0.0;
             do {
               iv =  static_cast<int> (random->uniform()*(maxlev+0.99999999));
-              evib = static_cast<double> (iv / inverse_kT);
+              evib = static_cast<sfloat> (iv / inverse_kT);
               if (evib < ecc) react_prob = pow(1.0-evib/ecc,1.5-omega);
             } while (random->uniform() < react_prob);
 
-            ilevel = static_cast<int> (fabs(r->coeff[4]) * inverse_kT);
+            ilevel = static_cast<int> (spval(fabs(r->coeff[4]) * inverse_kT));
             if (iv >= ilevel) react_prob = 1.0;
           }
 
@@ -151,16 +152,16 @@ int ReactQK::attempt(Particle::OnePart *ip, Particle::OnePart *jp,
           // post-collision energy
 
           ecc += r->coeff[4];
-          maxlev = static_cast<int> (ecc * inverse_kT);
+          maxlev = static_cast<int> (spval(ecc * inverse_kT));
           do {
             iv = random->uniform()*(maxlev+0.99999999);
-            evib = static_cast<double>
+            evib = static_cast<sfloat>
               (iv * update->boltz*species[mspec].vibtemp[0]);
             if (evib < ecc) prob = pow(1.0-evib/ecc,1.5 - r->coeff[6]);
           } while (random->uniform() < prob);
 
           ilevel = static_cast<int>
-            (fabs(r->coeff[4]/update->boltz/species[mspec].vibtemp[0]));
+            (spval(fabs(r->coeff[4]/update->boltz/species[mspec].vibtemp[0])));
           if (iv >= ilevel) react_prob = 1.0;
         }
 

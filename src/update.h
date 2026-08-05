@@ -1,3 +1,4 @@
+/* AD-CONVERTED: double->sfloat by tools/ad_convert.py (see sfloat.h) */
 /* ----------------------------------------------------------------------
    SPARTA - Stochastic PArallel Rarefied-gas Time-accurate Analyzer
    http://sparta.github.io
@@ -29,23 +30,23 @@ class Update : protected Pointers {
   bigint beginstep,endstep;       // 1st and last step of multiple runs
   int first_update;               // 0 before initial update, 1 after
 
-  double time;                    // simulation time at time_last_update
+  sfloat time;                    // simulation time at time_last_update
   bigint time_last_update;        // last timestep that time was updated
 
-  double dt;                      // timestep size
+  sfloat dt;                      // timestep size
 
   char *unit_style;      // style of units used throughout simulation
-  double boltz;          // Boltzmann constant (eng/degree K)
-  double mvv2e;          // conversion of mv^2 to energy
+  sfloat boltz;          // Boltzmann constant (eng/degree K)
+  sfloat mvv2e;          // conversion of mv^2 to energy
 
-  double fnum;           // ratio of real particles to simulation particles
-  double nrho;           // number density of background gas
-  double vstream[3];     // streaming velocity of background gas
-  double temp_thermal;   // thermal temperature of background gas
+  sfloat fnum;           // ratio of real particles to simulation particles
+  sfloat nrho;           // number density of background gas
+  sfloat vstream[3];     // streaming velocity of background gas
+  sfloat temp_thermal;   // thermal temperature of background gas
   int optmove_flag;      // global optmove option set
 
   int fstyle;            // external field: NOFIELD, CFIELD, PFIELD, GFIELD
-  double field[3];       // constant external field
+  sfloat field[3];       // constant external field
   char *fieldID;         // fix ID for PFIELD or GFIELD
   int ifieldfix;         // index of external field fix
   int *field_active;     // ptr to field_active flags in fix
@@ -90,7 +91,7 @@ class Update : protected Pointers {
 
   class RanMars *ranmaster;   // master random number generator
 
-  double rcblo[3],rcbhi[3];    // debug info from RCB for dump image
+  sfloat rcblo[3],rcbhi[3];    // debug info from RCB for dump image
 
   // hooks to computes doing on-surface collision/reaction tallying
   // public b/c accessed
@@ -117,8 +118,8 @@ class Update : protected Pointers {
   void global(int, char **);
   void reset_timestep(int, char **);
 
-  int split3d(int, double *);
-  int split2d(int, double *);
+  int split3d(int, sfloat *);
+  int split2d(int, sfloat *);
 
  protected:
   int me,nprocs;
@@ -165,15 +166,15 @@ class Update : protected Pointers {
   // change x[1] = sqrt(x[1]^2 + x[2]^2), x[2] = 0.0
   // change vy,vz by rotation into axisymmetric plane
 
-  inline void axi_remap(double *x, double *v) {
-    double ynew = x[1];
-    double znew = x[2];
+  inline void axi_remap(sfloat *x, sfloat *v) {
+    sfloat ynew = x[1];
+    sfloat znew = x[2];
     x[1] = sqrt(ynew*ynew + znew*znew);
     x[2] = 0.0;
-    double rn = ynew / x[1];
-    double wn = znew / x[1];
-    double vy = v[1];
-    double vz = v[2];
+    sfloat rn = ynew / x[1];
+    sfloat wn = znew / x[1];
+    sfloat vy = v[1];
+    sfloat vz = v[2];
     v[1] = vy*rn + vz*wn;
     v[2] = -vy*wn + vz*rn;
   };
@@ -183,22 +184,22 @@ class Update : protected Pointers {
   template < int, int, int > void move();
 
   int perturbflag;
-  typedef void (Update::*FnPtr2)(int, int, double, double *, double *);
+  typedef void (Update::*FnPtr2)(int, int, sfloat, sfloat *, sfloat *);
   FnPtr2 moveperturb;        // ptr to moveperturb method
 
   // variants of moveperturb method
   // adjust end-of-move x,v due to perturbation on straight-line advection
 
-  inline void field2d(int i, int icell, double dt, double *x, double *v) {
-    double dtsq = 0.5*dt*dt;
+  inline void field2d(int i, int icell, sfloat dt, sfloat *x, sfloat *v) {
+    sfloat dtsq = 0.5*dt*dt;
     x[0] += dtsq*field[0];
     x[1] += dtsq*field[1];
     v[0] += dt*field[0];
     v[1] += dt*field[1];
   };
 
-  inline void field3d(int i, int icell, double dt, double *x, double *v) {
-    double dtsq = 0.5*dt*dt;
+  inline void field3d(int i, int icell, sfloat dt, sfloat *x, sfloat *v) {
+    sfloat dtsq = 0.5*dt*dt;
     x[0] += dtsq*field[0];
     x[1] += dtsq*field[1];
     x[2] += dtsq*field[2];
@@ -210,8 +211,8 @@ class Update : protected Pointers {
   // NOTE: cannot be inline b/c ref to modify->fix[] is not supported
   //       unless possibly include modify.h and fix.h in this file
 
-  void field_per_particle(int, int, double, double *, double *);
-  void field_per_grid(int, int, double, double *, double *);
+  void field_per_particle(int, int, sfloat, sfloat *, sfloat *);
+  void field_per_grid(int, int, sfloat, sfloat *, sfloat *);
 };
 
 }

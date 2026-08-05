@@ -1,3 +1,4 @@
+/* AD-CONVERTED: double->sfloat by tools/ad_convert.py (see sfloat.h) */
 /* ----------------------------------------------------------------------
    SPARTA - Stochastic PArallel Rarefied-gas Time-accurate Analyzer
    http://sparta.github.io
@@ -95,7 +96,7 @@ void MoveSurf::command(int narg, char **arg)
   }
 
   MPI_Barrier(world);
-  double time1 = MPI_Wtime();
+  sfloat time1 = MPI_Wtime();
 
   dim = domain->dimension;
 
@@ -104,7 +105,7 @@ void MoveSurf::command(int narg, char **arg)
   if (particle->exist) particle->sort();
 
   MPI_Barrier(world);
-  double time2 = MPI_Wtime();
+  sfloat time2 = MPI_Wtime();
 
   // move line/tri points via chosen action by full amount
 
@@ -136,7 +137,7 @@ void MoveSurf::command(int narg, char **arg)
   else surf->check_watertight_3d();
 
   MPI_Barrier(world);
-  double time3 = MPI_Wtime();
+  sfloat time3 = MPI_Wtime();
 
   // re-setup owned and ghost cell info
 
@@ -146,7 +147,7 @@ void MoveSurf::command(int narg, char **arg)
   comm->reset_neighbors();
 
   MPI_Barrier(world);
-  double time4 = MPI_Wtime();
+  sfloat time4 = MPI_Wtime();
 
   // flag cells and corners as OUTSIDE or INSIDE
   // reallocate per grid cell arrays in per grid computes
@@ -159,7 +160,7 @@ void MoveSurf::command(int narg, char **arg)
   //grid->debug();
 
   MPI_Barrier(world);
-  double time5 = MPI_Wtime();
+  sfloat time5 = MPI_Wtime();
 
   // remove particles as needed due to surface move
 
@@ -167,15 +168,15 @@ void MoveSurf::command(int narg, char **arg)
   if (particle->exist) ndeleted = remove_particles();
 
   MPI_Barrier(world);
-  double time6 = MPI_Wtime();
+  sfloat time6 = MPI_Wtime();
 
-  double time_total = time6-time1;
+  sfloat time_total = time6-time1;
 
   if (comm->me == 0) {
     if (screen) {
       if (particle->exist)
         fprintf(screen,"  " BIGINT_FORMAT " deleted particles\n",ndeleted);
-      fprintf(screen,"  CPU time = %g secs\n",time_total);
+      fprintf(screen,"  CPU time = %g secs\n",spval(time_total));
       fprintf(screen,"  sort/surf2grid/ghost/inout/particle percent = "
               "%g %g %g %g %g\n",
               100.0*(time2-time1)/time_total,100.0*(time3-time2)/time_total,
@@ -185,7 +186,7 @@ void MoveSurf::command(int narg, char **arg)
     if (logfile) {
       if (particle->exist)
         fprintf(logfile,"  " BIGINT_FORMAT " deleted particles\n",ndeleted);
-      fprintf(logfile,"  CPU time = %g secs\n",time_total);
+      fprintf(logfile,"  CPU time = %g secs\n",spval(time_total));
       fprintf(logfile,"  sort/surf2grid/ghost/inout/particle percent = "
               "%g %g %g %g %g\n",
               100.0*(time2-time1)/time_total,100.0*(time3-time2)/time_total,
@@ -262,7 +263,7 @@ void MoveSurf::process_args(int narg, char **arg)
    fraction = portion of full distance points should move
 ------------------------------------------------------------------------- */
 
-void MoveSurf::move_lines(double fraction, Surf::Line *origlines)
+void MoveSurf::move_lines(sfloat fraction, Surf::Line *origlines)
 {
   if (connectflag && groupbit != 1) connect_2d_pre();
 
@@ -288,7 +289,7 @@ void MoveSurf::move_lines(double fraction, Surf::Line *origlines)
    fraction = portion of full distance points should move
 ------------------------------------------------------------------------- */
 
-void MoveSurf::move_tris(double fraction, Surf::Tri *origtris)
+void MoveSurf::move_tris(sfloat fraction, Surf::Tri *origtris)
 {
   if (connectflag && groupbit != 1) connect_3d_pre();
 
@@ -372,7 +373,7 @@ void MoveSurf::readfile()
 
   if (me == 0) {
     int id;
-    double x,y,z;
+    sfloat x,y,z;
 
     for (int i = 0; i < nread; i++) {
       eof = fgets(line,MAXLINE,fp);
@@ -398,8 +399,8 @@ void MoveSurf::readfile()
   // broadcast point info to all procs
 
   MPI_Bcast(readindex,nread,MPI_INT,0,world);
-  MPI_Bcast(&oldcoord[0][0],3*nread,MPI_DOUBLE,0,world);
-  MPI_Bcast(&newcoord[0][0],3*nread,MPI_DOUBLE,0,world);
+  MPI_Bcast(&oldcoord[0][0],3*nread,MPI_SFLOAT,0,world);
+  MPI_Bcast(&newcoord[0][0],3*nread,MPI_SFLOAT,0,world);
 
   // pselect[I] = index of Ith surf point in nread points (for now)
   // NOTE: check that same surf point does not appear twice in nread list?
@@ -454,7 +455,7 @@ void MoveSurf::readfile()
    update points using info from file
 ------------------------------------------------------------------------- */
 
-void MoveSurf::update_points(double fraction)
+void MoveSurf::update_points(sfloat fraction)
 {
   /*
   int i;
@@ -478,17 +479,17 @@ void MoveSurf::update_points(double fraction)
    translate surf points in 2d
 ------------------------------------------------------------------------- */
 
-void MoveSurf::translate_2d(double fraction, Surf::Line *origlines)
+void MoveSurf::translate_2d(sfloat fraction, Surf::Line *origlines)
 {
-  double *p1,*p2,*op1,*op2;
+  sfloat *p1,*p2,*op1,*op2;
 
   Surf::Line *lines = surf->lines;
   int nsurf = surf->nsurf;
 
   for (int i = 0; i < 2*nsurf; i++) pselect[i] = 0;
 
-  double dx = fraction * delta[0];
-  double dy = fraction * delta[1];
+  sfloat dx = fraction * delta[0];
+  sfloat dy = fraction * delta[1];
 
   for (int i = 0; i < nsurf; i++) {
     if (!(lines[i].mask & groupbit)) continue;
@@ -511,18 +512,18 @@ void MoveSurf::translate_2d(double fraction, Surf::Line *origlines)
    translate surf points in 3d
 ------------------------------------------------------------------------- */
 
-void MoveSurf::translate_3d(double fraction, Surf::Tri *origtris)
+void MoveSurf::translate_3d(sfloat fraction, Surf::Tri *origtris)
 {
-  double *p1,*p2,*p3,*op1,*op2,*op3;
+  sfloat *p1,*p2,*p3,*op1,*op2,*op3;
 
   Surf::Tri *tris = surf->tris;
   int nsurf = surf->nsurf;
 
   for (int i = 0; i < 3*nsurf; i++) pselect[i] = 0;
 
-  double dx = fraction * delta[0];
-  double dy = fraction * delta[1];
-  double dz = fraction * delta[2];
+  sfloat dx = fraction * delta[0];
+  sfloat dy = fraction * delta[1];
+  sfloat dz = fraction * delta[2];
 
   for (int i = 0; i < nsurf; i++) {
     if (!(tris[i].mask & groupbit)) continue;
@@ -554,18 +555,18 @@ void MoveSurf::translate_3d(double fraction, Surf::Tri *origtris)
    rotate surf points in 2d
 ------------------------------------------------------------------------- */
 
-void MoveSurf::rotate_2d(double fraction, Surf::Line *origlines)
+void MoveSurf::rotate_2d(sfloat fraction, Surf::Line *origlines)
 {
-  double *p1,*p2,*op1,*op2;
-  double q[4],d[3],dnew[3];
-  double rotmat[3][3];
+  sfloat *p1,*p2,*op1,*op2;
+  sfloat q[4],d[3],dnew[3];
+  sfloat rotmat[3][3];
 
   Surf::Line *lines = surf->lines;
   int nsurf = surf->nsurf;
 
   for (int i = 0; i < 2*nsurf; i++) pselect[i] = 0;
 
-  double angle = fraction * theta;
+  sfloat angle = fraction * theta;
   MathExtra::axisangle_to_quat(rvec,angle,q);
   MathExtra::quat_to_mat(q,rotmat);
 
@@ -598,18 +599,18 @@ void MoveSurf::rotate_2d(double fraction, Surf::Line *origlines)
    rotate surf points in 3d
 ------------------------------------------------------------------------- */
 
-void MoveSurf::rotate_3d(double fraction, Surf::Tri *origtris)
+void MoveSurf::rotate_3d(sfloat fraction, Surf::Tri *origtris)
 {
-  double *p1,*p2,*p3,*op1,*op2,*op3;
-  double q[4],d[3],dnew[3];
-  double rotmat[3][3];
+  sfloat *p1,*p2,*p3,*op1,*op2,*op3;
+  sfloat q[4],d[3],dnew[3];
+  sfloat rotmat[3][3];
 
   Surf::Tri *tris = surf->tris;
   int nsurf = surf->nsurf;
 
   for (int i = 0; i < 3*nsurf; i++) pselect[i] = 0;
 
-  double angle = fraction * theta;
+  sfloat angle = fraction * theta;
   MathExtra::axisangle_to_quat(rvec,angle,q);
   MathExtra::quat_to_mat(q,rotmat);
 
@@ -666,7 +667,7 @@ void MoveSurf::connect_2d_pre()
 
   // add moved points to hash
 
-  double *p1,*p2;
+  sfloat *p1,*p2;
   OnePoint3d key;
 
   Surf::Line *lines = surf->lines;
@@ -694,7 +695,7 @@ void MoveSurf::connect_2d_post()
   // set pselect for newly moved points so remove_particles() will work
 
   int m,value,j,jwhich;
-  double *p[2],*q;
+  sfloat *p[2],*q;
   OnePoint3d key;
 
   Surf::Line *lines = surf->lines;
@@ -741,7 +742,7 @@ void MoveSurf::connect_3d_pre()
 
   // add moved points to hash
 
-  double *p1,*p2,*p3;
+  sfloat *p1,*p2,*p3;
   OnePoint3d key;
 
   Surf::Tri *tris = surf->tris;
@@ -772,7 +773,7 @@ void MoveSurf::connect_3d_post()
   // set pselect for newly moved points so remove_particles() will work
 
   int m,value,j,jwhich;
-  double *p[3],*q;
+  sfloat *p[3],*q;
   OnePoint3d key;
 
   Surf::Tri *tris = surf->tris;

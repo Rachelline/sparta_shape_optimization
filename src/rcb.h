@@ -1,3 +1,4 @@
+/* AD-CONVERTED: double->sfloat by tools/ad_convert.py (see sfloat.h) */
 /* ----------------------------------------------------------------------
    SPARTA - Stochastic PArallel Rarefied-gas Time-accurate Analyzer
    http://sparta.github.io
@@ -31,7 +32,7 @@ class RCB : protected Pointers {
   int *recvproc;              // proc IDs of nfinal dots
   int *recvindex;             // index of nfinal dots on owning procs
                               // based on input list for compute()
-  double *lo,*hi;             // final bounding box of my RCB sub-domain
+  sfloat *lo,*hi;             // final bounding box of my RCB sub-domain
 
   // set by invert()
 
@@ -40,7 +41,7 @@ class RCB : protected Pointers {
 
   RCB(class SPARTA *);
   ~RCB();
-  void compute(int, double **, double *, char *, int flip=0);
+  void compute(int, sfloat **, sfloat *, char *, int flip=0);
   void invert();
   void check();
   void stats(int);
@@ -48,9 +49,9 @@ class RCB : protected Pointers {
   // RCB cut info
 
   struct Median {
-    double totallo,totalhi;   // weight in each half of active partition
-    double valuelo,valuehi;   // position of dot(s) nearest to cut
-    double wtlo,wthi;         // total weight of dot(s) at that position
+    sfloat totallo,totalhi;   // weight in each half of active partition
+    sfloat valuelo,valuehi;   // position of dot(s) nearest to cut
+    sfloat wtlo,wthi;         // total weight of dot(s) at that position
     int countlo,counthi;      // # of dots at that position
     int proclo,prochi;              // unique proc who owns a nearest dot
   };
@@ -58,8 +59,8 @@ class RCB : protected Pointers {
   // bounding box
 
   struct BBox {
-    double lo[3];
-    double hi[3];
+    sfloat lo[3];
+    sfloat hi[3];
   };
 
  private:
@@ -68,8 +69,8 @@ class RCB : protected Pointers {
   // point to balance on
 
   struct Dot {
-    double x[3];          // coord of point
-    double wt;            // weight of point
+    sfloat x[3];          // coord of point
+    sfloat wt;            // weight of point
     int proc;             // owning proc
     int index;            // index on owning proc
   };
@@ -77,7 +78,7 @@ class RCB : protected Pointers {
   // tree of RCB cuts
 
   struct Tree {
-    double cut;                // position of cut
+    sfloat cut;                // position of cut
     int dim;                // dimension = 0/1/2 of cut
   };
 

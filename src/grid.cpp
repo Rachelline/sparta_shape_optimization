@@ -1,3 +1,4 @@
+/* AD-CONVERTED: double->sfloat by tools/ad_convert.py (see sfloat.h) */
 /* ----------------------------------------------------------------------
    SPARTA - Stochastic PArallel Rarefied-gas Time-accurate Analyzer
    http://sparta.github.io
@@ -267,7 +268,7 @@ void Grid::init()
    neighs and nmask will be set later
 ------------------------------------------------------------------------- */
 
-void Grid::add_child_cell(cellint id, int level, double *lo, double *hi)
+void Grid::add_child_cell(cellint id, int level, sfloat *lo, sfloat *hi)
 {
   grow_cells(1,1);
 
@@ -429,7 +430,7 @@ void Grid::setup_owned()
 
   int dimension = domain->dimension;
 
-  double eps = BIG;
+  sfloat eps = BIG;
   for (int i = 0; i < nlocal; i++) {
     if (cells[i].nsplit <= 0) continue;
     eps = MIN(eps,cells[i].hi[0]-cells[i].lo[0]);
@@ -437,7 +438,7 @@ void Grid::setup_owned()
     if (dimension == 3) eps = MIN(eps,cells[i].hi[2]-cells[i].lo[2]);
   }
 
-  MPI_Allreduce(&eps,&cell_epsilon,1,MPI_DOUBLE,MPI_MIN,world);
+  MPI_Allreduce(&eps,&cell_epsilon,1,MPI_SFLOAT,MPI_MIN,world);
   cell_epsilon *= 0.5;
 }
 
@@ -555,8 +556,8 @@ void Grid::acquire_ghosts_near(int surfflag)
   // bb lo/hi = bounding box for my owned cells
 
   int i;
-  double bblo[3],bbhi[3];
-  double *lo,*hi;
+  sfloat bblo[3],bbhi[3];
+  sfloat *lo,*hi;
 
   for (i = 0; i < 3; i++) {
     bblo[i] = BIG;
@@ -579,11 +580,11 @@ void Grid::acquire_ghosts_near(int surfflag)
   //   add cell_epsilon to insure ghosts across periodic boundary acquired,
   //   else may be UNKNOWN to owned cell
 
-  double *boxlo = domain->boxlo;
-  double *boxhi = domain->boxhi;
+  sfloat *boxlo = domain->boxlo;
+  sfloat *boxhi = domain->boxhi;
   int *bflag = domain->bflag;
 
-  double ebblo[3],ebbhi[3];
+  sfloat ebblo[3],ebbhi[3];
   for (i = 0; i < 3; i++) {
     ebblo[i] = bblo[i] - cutoff;
     ebbhi[i] = bbhi[i] + cutoff;
@@ -771,8 +772,8 @@ void Grid::acquire_ghosts_near_less_memory(int surfflag)
   // bb lo/hi = bounding box for my owned cells
 
   int i;
-  double bblo[3],bbhi[3];
-  double *lo,*hi;
+  sfloat bblo[3],bbhi[3];
+  sfloat *lo,*hi;
 
   for (i = 0; i < 3; i++) {
     bblo[i] = BIG;
@@ -795,11 +796,11 @@ void Grid::acquire_ghosts_near_less_memory(int surfflag)
   //   add cell_epsilon to insure ghosts across periodic boundary acquired,
   //   else may be UNKNOWN to owned cell
 
-  double *boxlo = domain->boxlo;
-  double *boxhi = domain->boxhi;
+  sfloat *boxlo = domain->boxlo;
+  sfloat *boxhi = domain->boxhi;
   int *bflag = domain->bflag;
 
-  double ebblo[3],ebbhi[3];
+  sfloat ebblo[3],ebbhi[3];
   for (i = 0; i < 3; i++) {
     ebblo[i] = bblo[i] - cutoff;
     ebbhi[i] = bbhi[i] + cutoff;
@@ -1010,8 +1011,8 @@ void Grid::acquire_ghosts_near_less_memory(int surfflag)
    works for 2d and 3d, since in 2d both boxes have zhi > zlo
 ------------------------------------------------------------------------- */
 
-void Grid::box_intersect(double *alo, double *ahi, double *blo, double *bhi,
-                         double *lo, double *hi)
+void Grid::box_intersect(sfloat *alo, sfloat *ahi, sfloat *blo, sfloat *bhi,
+                         sfloat *lo, sfloat *hi)
 {
   lo[0] = MAX(alo[0],blo[0]);
   hi[0] = MIN(ahi[0],bhi[0]);
@@ -1029,9 +1030,9 @@ void Grid::box_intersect(double *alo, double *ahi, double *blo, double *bhi,
    works for 2d and 3d, since in 2d both boxes have zhi > zlo
 ------------------------------------------------------------------------- */
 
-int Grid::box_overlap(double *alo, double *ahi, double *blo, double *bhi)
+int Grid::box_overlap(sfloat *alo, sfloat *ahi, sfloat *blo, sfloat *bhi)
 {
-  double lo[3],hi[3];
+  sfloat lo[3],hi[3];
   box_intersect(alo,ahi,blo,bhi,lo,hi);
 
   if (lo[0] > hi[0]) return 0;
@@ -1050,7 +1051,7 @@ int Grid::box_overlap(double *alo, double *ahi, double *blo, double *bhi)
    return # of split boxes and list of new boxes in box
 ------------------------------------------------------------------------- */
 
-int Grid::box_periodic(double *lo, double *hi, Box *box)
+int Grid::box_periodic(sfloat *lo, sfloat *hi, Box *box)
 {
   int ilo,ihi,jlo,jhi,klo,khi;
   ilo = ihi = jlo = jhi = klo = khi = 0;
@@ -1066,11 +1067,11 @@ int Grid::box_periodic(double *lo, double *hi, Box *box)
     klo = -1; khi = 1;
   }
 
-  double *boxlo = domain->boxlo;
-  double *boxhi = domain->boxhi;
-  double *prd = domain->prd;
+  sfloat *boxlo = domain->boxlo;
+  sfloat *boxhi = domain->boxhi;
+  sfloat *prd = domain->prd;
 
-  double plo[3],phi[3],olo[3],ohi[3];
+  sfloat plo[3],phi[3],olo[3],ohi[3];
 
   int n = 0;
 
@@ -1132,14 +1133,14 @@ void Grid::find_neighbors()
   int found,face_touching,unknownflag;
   cellint id,neighID,refineID,coarsenID;
   cellint *neigh;
-  double *lo,*hi;
+  sfloat *lo,*hi;
 
   if (!exist_ghost) return;
 
   int dimension = domain->dimension;
   int *bflag = domain->bflag;
-  double *boxlo = domain->boxlo;
-  double *boxhi = domain->boxhi;
+  sfloat *boxlo = domain->boxlo;
+  sfloat *boxhi = domain->boxhi;
 
   // insure cell IDs (owned + ghost) are hashed
 
@@ -1363,8 +1364,8 @@ void Grid::reset_neighbors()
   // hash lookup can reset nmask to CHILD or UNKNOWN
   // no change in neigh[] or nmask needed if nflag = NBOUND
 
-  double *boxlo = domain->boxlo;
-  double *boxhi = domain->boxhi;
+  sfloat *boxlo = domain->boxlo;
+  sfloat *boxhi = domain->boxhi;
 
   int i,level,nmask,nflag;
   cellint *neigh;
@@ -1434,7 +1435,7 @@ void Grid::set_inout()
   int *set,*setnew,*jcorner;
   int *cflags;
   int *proclist;
-  double xcorner[3];
+  sfloat xcorner[3];
   ParentCell *pcell;
   Connect *sbuf,*rbuf;
 
@@ -1564,8 +1565,8 @@ void Grid::set_inout()
                   jcorner[icorner] = marktype;
                 if (marktype == INSIDE) cinfo[jcell].volume = 0.0;
                 else if (marktype == OUTSIDE) {
-                  double *lo = cells[jcell].lo;
-                  double *hi = cells[jcell].hi;
+                  sfloat *lo = cells[jcell].lo;
+                  sfloat *hi = cells[jcell].hi;
                   if (dimension == 3)
                     cinfo[jcell].volume =
                       (hi[0]-lo[0]) * (hi[1]-lo[1]) * (hi[2]-lo[2]);
@@ -1646,8 +1647,8 @@ void Grid::set_inout()
                     jcorner[icorner] = marktype;
                   if (marktype == INSIDE) cinfo[jcell].volume = 0.0;
                   else if (marktype == OUTSIDE) {
-                    double *lo = cells[jcell].lo;
-                    double *hi = cells[jcell].hi;
+                    sfloat *lo = cells[jcell].lo;
+                    sfloat *hi = cells[jcell].hi;
                     if (dimension == 3)
                       cinfo[jcell].volume =
                         (hi[0]-lo[0]) * (hi[1]-lo[1]) * (hi[2]-lo[2]);
@@ -1744,8 +1745,8 @@ void Grid::set_inout()
           jcorner[icorner] = marktype;
         if (marktype == INSIDE) cinfo[jcell].volume = 0.0;
         else if (marktype == OUTSIDE) {
-          double *lo = cells[jcell].lo;
-          double *hi = cells[jcell].hi;
+          sfloat *lo = cells[jcell].lo;
+          sfloat *hi = cells[jcell].hi;
           if (dimension == 3)
             cinfo[jcell].volume =
               (hi[0]-lo[0]) * (hi[1]-lo[1]) * (hi[2]-lo[2]);
@@ -1893,14 +1894,14 @@ void Grid::type_check(int outflag)
   // warn if any interior corner flags are not set
   // error if any corner flags on global boundaries are unset
 
-  double *boxlo = domain->boxlo;
-  double *boxhi = domain->boxhi;
+  sfloat *boxlo = domain->boxlo;
+  sfloat *boxhi = domain->boxhi;
   int dimension = domain->dimension;
 
   int ncorner = 4;
   if (dimension == 3) ncorner = 8;
 
-  double x[3];
+  sfloat x[3];
   int inside = 0;
   int outside = 0;
 
@@ -1921,7 +1922,7 @@ void Grid::type_check(int outflag)
       if (Geometry::point_on_hex(x,boxlo,boxhi)) {
         printf("BAD CORNER icell %d id " CELLINT_FORMAT"  type %d "
                "icorner %d x %g %g %g cflags %d %d %d %d\n",
-               icell,cells[icell].id,cinfo[icell].type,i,x[0],x[1],x[2],
+               icell,cells[icell].id,cinfo[icell].type,i,spval(x[0]),spval(x[1]),spval(x[2]),
                cinfo[icell].corner[0],
                cinfo[icell].corner[1],
                cinfo[icell].corner[2],
@@ -2006,7 +2007,7 @@ void Grid::weight(int narg, char **arg)
 
 void Grid::weight_one(int icell)
 {
-  double *lo,*hi;
+  sfloat *lo,*hi;
 
   int dimension = domain->dimension;
   int axisymmetric = domain->axisymmetric;
@@ -2098,7 +2099,7 @@ void Grid::group(int narg, char **arg)
 {
   int i,flag;
   bigint nme,nall;
-  double x[3];
+  sfloat x[3];
 
   if (narg < 3) error->all(FLERR,"Illegal group command");
 
@@ -2389,9 +2390,9 @@ int Grid::find_group(const char *id)
 ------------------------------------------------------------------------- */
 
 int Grid::check_uniform_group(int igroup, int *nxyz,
-                              double *corner, double *xyzsize)
+                              sfloat *corner, sfloat *xyzsize)
 {
-  double lo[3],hi[3];
+  sfloat lo[3],hi[3];
 
   int sflag = 0;
   int minlev = maxlevel;
@@ -2456,17 +2457,17 @@ int Grid::check_uniform_group(int igroup, int *nxyz,
     xyzsize[2] /= plevels[ilevel].nz;
   }
 
-  double alllo[3],allhi[3];
-  MPI_Allreduce(lo,&alllo,3,MPI_DOUBLE,MPI_MIN,world);
-  MPI_Allreduce(hi,&allhi,3,MPI_DOUBLE,MPI_MAX,world);
+  sfloat alllo[3],allhi[3];
+  MPI_Allreduce(lo,&alllo,3,MPI_SFLOAT,MPI_MIN,world);
+  MPI_Allreduce(hi,&allhi,3,MPI_SFLOAT,MPI_MAX,world);
 
   corner[0] = alllo[0];
   corner[1] = alllo[1];
   corner[2] = alllo[2];
 
-  nxyz[0] = static_cast<int> ((allhi[0]-alllo[0])/xyzsize[0] + 0.5);
-  nxyz[1] = static_cast<int> ((allhi[1]-alllo[1])/xyzsize[1] + 0.5);
-  nxyz[2] = static_cast<int> ((allhi[2]-alllo[2])/xyzsize[2] + 0.5);
+  nxyz[0] = static_cast<int> (spval((allhi[0]-alllo[0])/xyzsize[0] + 0.5));
+  nxyz[1] = static_cast<int> (spval((allhi[1]-alllo[1])/xyzsize[1] + 0.5));
+  nxyz[2] = static_cast<int> (spval((allhi[2]-alllo[2])/xyzsize[2] + 0.5));
 
   bigint allbcount;
   bigint bcount = count;
@@ -2718,8 +2719,8 @@ void Grid::debug()
            cells[i].neigh[0],cells[i].neigh[1],cells[i].neigh[2],
            cells[i].neigh[3],cells[i].neigh[4],cells[i].neigh[5]);
     printf("  lohi %g %g %g: %g %g %g\n",
-           cells[i].lo[0],cells[i].lo[1],cells[i].lo[2],
-           cells[i].hi[0],cells[i].hi[1],cells[i].hi[2]);
+           spval(cells[i].lo[0]),spval(cells[i].lo[1]),spval(cells[i].lo[2]),
+           spval(cells[i].hi[0]),spval(cells[i].hi[1]),spval(cells[i].hi[2]));
     printf("  nsurf %d:",cells[i].nsurf);
     for (int j = 0; j < cells[i].nsurf; j++)
       printf(" " SURFINT_FORMAT,cells[i].csurfs[j]);
@@ -2730,6 +2731,6 @@ void Grid::debug()
            cinfo[i].corner[0],cinfo[i].corner[1],cinfo[i].corner[2],
            cinfo[i].corner[3],cinfo[i].corner[4],cinfo[i].corner[5],
            cinfo[i].corner[6],cinfo[i].corner[7]);
-    printf("  volume %g\n",cinfo[i].volume);
+    printf("  volume %g\n",spval(cinfo[i].volume));
   }
 }

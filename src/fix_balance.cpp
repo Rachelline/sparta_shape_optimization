@@ -1,3 +1,4 @@
+/* AD-CONVERTED: double->sfloat by tools/ad_convert.py (see sfloat.h) */
 /* ----------------------------------------------------------------------
    SPARTA - Stochastic PArallel Rarefied-gas Time-accurate Analyzer
    http://sparta.github.io
@@ -230,10 +231,10 @@ void FixBalance::end_of_step()
     }
 
   } else if (bstyle == BISECTION) {
-    double **x;
+    sfloat **x;
     memory->create(x,nglocal,3,"balance:x");
 
-    double *lo,*hi;
+    sfloat *lo,*hi;
 
     int nbalance = 0;
     for (int icell = 0; icell < nglocal; icell++) {
@@ -246,7 +247,7 @@ void FixBalance::end_of_step()
       nbalance++;
     }
 
-    double *wt = NULL;
+    sfloat *wt = NULL;
     if (rcbwt == PARTICLE) {
       if (!particle->sorted) particle->sort();
       memory->create(wt,nglocal,"balance:wt");
@@ -330,20 +331,20 @@ void FixBalance::end_of_step()
    return imbalance factor = max per proc / ave per proc
 ------------------------------------------------------------------------- */
 
-double FixBalance::imbalance_factor(double &maxcost)
+sfloat FixBalance::imbalance_factor(sfloat &maxcost)
 {
-  double mycost,totalcost;
+  sfloat mycost,totalcost;
 
   if (bstyle == BISECTION && rcbwt == TIME) {
     timer_cost();
     mycost = my_timer_cost;
   } else mycost = particle->nlocal;
 
-  MPI_Allreduce(&mycost,&totalcost,1,MPI_DOUBLE,MPI_SUM,world);
-  MPI_Allreduce(&mycost,&maxcost,1,MPI_DOUBLE,MPI_MAX,world);
+  MPI_Allreduce(&mycost,&totalcost,1,MPI_SFLOAT,MPI_SUM,world);
+  MPI_Allreduce(&mycost,&maxcost,1,MPI_SFLOAT,MPI_MAX,world);
 
-  double imbalance = 1.0;
-  if (maxcost) imbalance = maxcost / (totalcost / nprocs);
+  sfloat imbalance = 1.0;
+  if (maxcost != 0.0) imbalance = maxcost / (totalcost / nprocs);
   return imbalance;
 }
 
@@ -351,7 +352,7 @@ double FixBalance::imbalance_factor(double &maxcost)
    return imbalance factor after last rebalance
 ------------------------------------------------------------------------- */
 
-double FixBalance::compute_scalar()
+sfloat FixBalance::compute_scalar()
 {
   return imbfinal;
 }
@@ -360,11 +361,11 @@ double FixBalance::compute_scalar()
    return stats for last rebalance or cummulative count of rebalances
 ------------------------------------------------------------------------- */
 
-double FixBalance::compute_vector(int i)
+sfloat FixBalance::compute_vector(int i)
 {
   if (i == 0) return maxperproc;
   if (i == 1) return imbprev;
-  return (double) nbalance;
+  return (sfloat) nbalance;
 }
 
 /* -------------------------------------------------------------------- */
@@ -386,13 +387,13 @@ void FixBalance::timer_cost()
 
 /* -------------------------------------------------------------------- */
 
-void FixBalance::timer_cell_weights(double* &weight)
+void FixBalance::timer_cell_weights(sfloat* &weight)
 {
   // localwt = weight assigned to each owned grid cell
   // just return if no time yet tallied
 
-  double maxcost;
-  MPI_Allreduce(&my_timer_cost,&maxcost,1,MPI_DOUBLE,MPI_MAX,world);
+  sfloat maxcost;
+  MPI_Allreduce(&my_timer_cost,&maxcost,1,MPI_SFLOAT,MPI_MAX,world);
   if (maxcost <= 0.0) {
     memory->destroy(weight);
     weight = NULL;
@@ -407,14 +408,14 @@ void FixBalance::timer_cell_weights(double* &weight)
   Grid::ChildInfo *cinfo = grid->cinfo;
   int nglocal = grid->nlocal;
 
-  double localwt_total = 0.0;
+  sfloat localwt_total = 0.0;
   if (nglocal) localwt_total = my_timer_cost/nglocal;
   if (nglocal && localwt_total <= 0.0) error->one(FLERR,"Balance weight <= 0.0");
 
   if (!particle->sorted) particle->sort();
-  double wttotal = 0;
+  sfloat wttotal = 0;
   int nbalance = 0;
-  double* localwt;
+  sfloat* localwt;
   memory->create(localwt,nglocal,"imbalance_time:localwt");
   for (int icell = 0; icell < nglocal; icell++) {
     localwt[icell] = 0.0;
@@ -435,9 +436,9 @@ void FixBalance::timer_cell_weights(double* &weight)
    return # of bytes of allocated memory
 ------------------------------------------------------------------------- */
 
-double FixBalance::memory_usage()
+sfloat FixBalance::memory_usage()
 {
-  double bytes = 0.0;
+  sfloat bytes = 0.0;
   // tally wt vector?
   return bytes;
 }

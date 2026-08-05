@@ -1,3 +1,4 @@
+/* AD-CONVERTED: double->sfloat by tools/ad_convert.py (see sfloat.h) */
 /* ----------------------------------------------------------------------
    SPARTA - Stochastic PArallel Rarefied-gas Time-accurate Analyzer
    http://sparta.github.io
@@ -287,7 +288,7 @@ ComputeLambdaGrid::ComputeLambdaGrid(SPARTA *sparta, int narg, char **arg) :
     if (nrhowhich[m] != COMPUTE) continue;
     n = modify->find_compute(ids_nrho[m]);
     if (!modify->compute[n]->post_process_grid_flag) continue;
-    double **array;
+    sfloat **array;
     int *cmap;
     int ncount = modify->compute[n]->query_tally_grid(j,array,cmap);
     tmax = MAX(tmax,ncount);
@@ -327,7 +328,7 @@ ComputeLambdaGrid::ComputeLambdaGrid(SPARTA *sparta, int narg, char **arg) :
     // and only unique compute tallies to numap/umap/uomap
 
     } else {
-      double **array;
+      sfloat **array;
       int *cmap;
       int ncount = modify->compute[n]->query_tally_grid(j,array,cmap);
       nmap[m] = numap[m] = 0;
@@ -461,7 +462,7 @@ void ComputeLambdaGrid::compute_per_grid()
   int i,j,k,n,itally;
   int ntally_col,kk;
   int *itmp;
-  double **ctally;
+  sfloat **ctally;
 
   int nspecies = ntotal;
 
@@ -522,12 +523,12 @@ void ComputeLambdaGrid::compute_per_grid()
       } else {
         k = umap[m][0];
         if (j == 0) {
-          double *compute_vector = compute->vector_grid;
+          sfloat *compute_vector = compute->vector_grid;
           for (i = 0; i < nglocal; i++)
             nrho[i][k] = compute_vector[i];
         } else {
           int jm1 = j - 1;
-          double **compute_array = compute->array_grid;
+          sfloat **compute_array = compute->array_grid;
           for (i = 0; i < nglocal; i++)
             nrho[i][k] = compute_array[i][jm1];
         }
@@ -538,12 +539,12 @@ void ComputeLambdaGrid::compute_per_grid()
     } else if (nrhowhich[m] == FIX) {
       k = umap[m][0];
       if (j == 0) {
-        double *fix_vector = modify->fix[n]->vector_grid;
+        sfloat *fix_vector = modify->fix[n]->vector_grid;
         for (i = 0; i < nglocal; i++)
           nrho[i][k] = fix_vector[i];
       } else {
         int jm1 = j - 1;
-        double **fix_array = modify->fix[n]->array_grid;
+        sfloat **fix_array = modify->fix[n]->array_grid;
         for (i = 0; i < nglocal; i++) {
           nrho[i][k] = fix_array[i][jm1];
         }
@@ -561,19 +562,19 @@ void ComputeLambdaGrid::compute_per_grid()
       ctemp->post_process_grid(tempindex,1,NULL,NULL,NULL,1);
 
     if (tempindex == 0 || ctemp->post_process_grid_flag)
-      memcpy(temp,ctemp->vector_grid,nglocal*sizeof(double));
+      memcpy(temp,ctemp->vector_grid,nglocal*sizeof(sfloat));
     else {
       int index = tempindex-1;
-      double **array = ctemp->array_grid;
+      sfloat **array = ctemp->array_grid;
       for (int i = 0; i < nglocal; i++)
         temp[i] = array[i][index];
     }
 
   } else if (tempwhich == FIX) {
     if (tempindex == 0)
-      memcpy(temp,ftemp->vector_grid,nglocal*sizeof(double));
+      memcpy(temp,ftemp->vector_grid,nglocal*sizeof(sfloat));
     else {
-      double **array = ftemp->array_grid;
+      sfloat **array = ftemp->array_grid;
       int index = tempindex-1;
       for (int i = 0; i < nglocal; i++)
         temp[i] = array[i][index];
@@ -583,8 +584,8 @@ void ComputeLambdaGrid::compute_per_grid()
   // compute mean free path for each grid cell
   // formula from Bird, eq 4.77
 
-  double nrhosum,lambda,tau;
-  double dref,tref,omega,mj,mk,mr;
+  sfloat nrhosum,lambda,tau;
+  sfloat dref,tref,omega,mj,mk,mr;
 
   for (int i = 0; i < nglocal; i++) {
     nrhosum = lambda = tau = 0.0;
@@ -642,10 +643,10 @@ void ComputeLambdaGrid::compute_per_grid()
 
   Grid::ChildCell *cells = grid->cells;
   int dimension = domain->dimension;
-  double sizeall,sizex,sizey,sizez;
+  sfloat sizeall,sizex,sizey,sizez;
 
   for (int i = 0; i < nglocal; i++) {
-    double lambda = lambda_grid[i];
+    sfloat lambda = lambda_grid[i];
 
     if (knxflag || knallflag)
       sizex = (cells[i].hi[0] - cells[i].lo[0]);
@@ -737,13 +738,13 @@ void ComputeLambdaGrid::reallocate()
 bigint ComputeLambdaGrid::memory_usage()
 {
   bigint bytes;
-  bytes = nglocal * sizeof(double);                            // vector_grid
+  bytes = nglocal * sizeof(sfloat);                            // vector_grid
   if (nrho_values > 1)
-    bytes = nglocal * nrho_values * sizeof(double);            // array_grid1
-  bytes += nglocal * noutputs * sizeof(double);                // array_grid
-  bytes += nglocal * sizeof(double);                           // lambda_grid
-  bytes += 2 * nglocal * ntotal * sizeof(double);              // lambdainv + tauinv
-  bytes += nglocal * ntotal * sizeof(double);                  // nrho
-  if (tempwhich != NONE) bytes += nglocal * sizeof(double);    // temp
+    bytes = nglocal * nrho_values * sizeof(sfloat);            // array_grid1
+  bytes += nglocal * noutputs * sizeof(sfloat);                // array_grid
+  bytes += nglocal * sizeof(sfloat);                           // lambda_grid
+  bytes += 2 * nglocal * ntotal * sizeof(sfloat);              // lambdainv + tauinv
+  bytes += nglocal * ntotal * sizeof(sfloat);                  // nrho
+  if (tempwhich != NONE) bytes += nglocal * sizeof(sfloat);    // temp
   return bytes;
 }

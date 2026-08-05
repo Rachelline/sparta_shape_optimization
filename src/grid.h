@@ -1,3 +1,4 @@
+/* AD-CONVERTED: double->sfloat by tools/ad_convert.py (see sfloat.h) */
 /* ----------------------------------------------------------------------
    SPARTA - Stochastic PArallel Rarefied-gas Time-accurate Analyzer
    http://sparta.github.io
@@ -40,8 +41,8 @@ class Grid : protected Pointers {
 
   int uniform;          // 1 if all child cells are at same level, else 0
   int unx,uny,unz;      // if uniform, effective global Nx,Ny,Nz of finest grid
-  double cutoff;        // cutoff for ghost cells, -1.0 = infinite
-  double cell_epsilon;  // half of smallest cellside of any cell in any dim
+  sfloat cutoff;        // cutoff for ghost cells, -1.0 = infinite
+  sfloat cell_epsilon;  // half of smallest cellside of any cell in any dim
   int cellweightflag;   // 0/1+ for no/yes usage of cellwise fnum weighting
 
   int surfgrid_algorithm;  // algorithm for overlap of surfs & grid cells
@@ -53,8 +54,8 @@ class Grid : protected Pointers {
   int *bitmask;         // one-bit mask for each group
   int *inversemask;     // inverse mask for each group
 
-  double tmap,tsplit;   // timing breakdowns of both grid2surf() algs
-  double tcomm1,tcomm2,tcomm3,tcomm4;
+  sfloat tmap,tsplit;   // timing breakdowns of both grid2surf() algs
+  sfloat tcomm1,tcomm2,tcomm3,tcomm4;
 
   int copy,uncopy,copymode; // used by Kokkos, prevent deallocation of
                             //  base class when child copy is destroyed
@@ -74,8 +75,8 @@ class Grid : protected Pointers {
 
   int **eivec;              // pointer to each integer vector
   int ***eiarray;           // pointer to each integer array
-  double **edvec;           // pointer to each double vector
-  double ***edarray;        // pointer to each double array
+  sfloat **edvec;           // pointer to each sfloat vector
+  sfloat ***edarray;        // pointer to each sfloat array
 
   // cell ID hash (owned + ghost, no sub-cells)
 
@@ -128,7 +129,7 @@ class Grid : protected Pointers {
                               // 5 = unknown PBC child neighbor
                               // 6 = non-PBC boundary or ZLO/ZHI in 2d
 
-    double lo[3],hi[3];       // opposite corner pts of cell
+    sfloat lo[3],hi[3];       // opposite corner pts of cell
 
     int nsurf;                // # of surf elements in cell
                               // -1 = empty ghost cell
@@ -159,9 +160,9 @@ class Grid : protected Pointers {
                               // for sub cells, type/corner
                               //   are same as in split cell containing them
 
-    double volume;            // flow volume of cell or sub cell
+    sfloat volume;            // flow volume of cell or sub cell
                               // entire cell volume for split cell
-    double weight;            // fnum weighting for this cell
+    sfloat weight;            // fnum weighting for this cell
   };
 
   // additional info for owned or ghost split cell or sub cell
@@ -170,7 +171,7 @@ class Grid : protected Pointers {
   struct SplitInfo {
     int icell;                // index of split cell this sub cell belongs to
     int xsub;                 // which sub cell (0 to Nsplit-1) xsplit is in
-    double xsplit[3];         // coords of point in split cell
+    sfloat xsplit[3];         // coords of point in split cell
     int *csplits;             // sub cell (0 to Nsplit-1) each Nsurf belongs to
     int *csubs;               // indices in cells of Nsplit sub cells
   };
@@ -184,7 +185,7 @@ class Grid : protected Pointers {
 
   struct ParentCell {
     cellint id;               // ID of parent cell
-    double lo[3],hi[3];       // opposite corner pts of cell
+    sfloat lo[3],hi[3];       // opposite corner pts of cell
   };
 
   int nlocal;                 // # of child cells I own (all 3 kinds)
@@ -222,7 +223,7 @@ class Grid : protected Pointers {
   ~Grid();
   void remove();
   void init();
-  void add_child_cell(cellint, int, double *, double *);
+  void add_child_cell(cellint, int, sfloat *, sfloat *);
   void add_split_cell(int);
   void add_sub_cell(int, int);
   void notify_changed();
@@ -242,14 +243,14 @@ class Grid : protected Pointers {
   void weight_one(int);
 
   void refine_cell(int, int *, class Cut2d *, class Cut3d *);
-  void coarsen_cell(cellint, int, double *, double *,
+  void coarsen_cell(cellint, int, sfloat *, sfloat *,
                     int, int *, int *, int *, void **, char **,
                     class Cut2d *, class Cut3d *);
 
   void group(int, char **);
   int add_group(const char *);
   int find_group(const char *);
-  int check_uniform_group(int, int *, double *, double *);
+  int check_uniform_group(int, int *, sfloat *, sfloat *);
 
   void write_restart(FILE *);
   void read_restart(FILE *);
@@ -265,14 +266,14 @@ class Grid : protected Pointers {
   // grid_collate.cpp
   // including callback function and callback data
 
-  void collate_vector_implicit(int, cellint *, double *, double *);
-  void collate_array_implicit(int, int, cellint *, double **, double **);
-  void owned_to_ghost_array(int, int, cellint *, double **, double **);
+  void collate_vector_implicit(int, cellint *, sfloat *, sfloat *);
+  void collate_array_implicit(int, int, cellint *, sfloat **, sfloat **);
+  void owned_to_ghost_array(int, int, cellint *, sfloat **, sfloat **);
 
   static int rendezvous_owned_to_ghost(int, char *, int &, int *&,
                                        char *&, void *);
   int ncol_rvous;
-  double **owned_data_rvous;
+  sfloat **owned_data_rvous;
 
   // grid_comm.cpp
 
@@ -309,19 +310,19 @@ class Grid : protected Pointers {
   void clear_surf_restart();
   void combine_split_cell_particles(int, int);
   void assign_split_cell_particles(int);
-  int point_outside_surfs(int, double *);
-  int outside_surfs(int, double *, double *);
+  int point_outside_surfs(int, sfloat *);
+  int outside_surfs(int, sfloat *, sfloat *);
   void allocate_surf_arrays();
   int *csubs_request(int);
 
   // grid_id.cpp
 
-  void id_point_child(double *, double *, double *, int, int, int,
+  void id_point_child(sfloat *, sfloat *, sfloat *, int, int, int,
                       int &, int &, int &);
   cellint id_parent_of_child(cellint, int);
-  int id_find_child(cellint, int, double *, double *, double *);
+  int id_find_child(cellint, int, sfloat *, sfloat *, sfloat *);
   cellint id_uniform_level(int, int, int, int);
-  void id_find_child_uniform_level(int, int, double *, double *, double *,
+  void id_find_child_uniform_level(int, int, sfloat *, sfloat *, sfloat *,
                                    int &, int &, int &);
   cellint id_neigh_same_parent(cellint, int, int);
   cellint id_neigh_same_level(cellint, int, int);
@@ -329,8 +330,8 @@ class Grid : protected Pointers {
   cellint id_coarsen(cellint, int);
   cellint id_ichild(cellint, cellint, int);
   int id_level(cellint);
-  void id_child_lohi(int, double *, double *, cellint, double *, double *);
-  void id_lohi(cellint, int, double *, double *, double *, double *);
+  void id_child_lohi(int, sfloat *, sfloat *, cellint, sfloat *, sfloat *);
+  void id_lohi(cellint, int, sfloat *, sfloat *, sfloat *, sfloat *);
   int id_bits(int, int, int);
   void id_num2str(cellint, char *);
 
@@ -380,11 +381,11 @@ class Grid : protected Pointers {
   int *icustom_iarray;      // index into ncustom for each integer array
   int *eicol;               // # of columns in each integer array (esize)
 
-  int ncustom_dvec;         // # of double vector attributes
-  int ncustom_darray;       // # of double array attributes
-  int *icustom_dvec;        // index into ncustom for each double vector
-  int *icustom_darray;      // index into ncustom for each double array
-  int *edcol;               // # of columns in each double array (esize)
+  int ncustom_dvec;         // # of sfloat vector attributes
+  int ncustom_darray;       // # of sfloat array attributes
+  int *icustom_dvec;        // index into ncustom for each sfloat vector
+  int *icustom_darray;      // index into ncustom for each sfloat array
+  int *edcol;               // # of columns in each sfloat array (esize)
 
   // connection between one of my cells and a neighbor cell on another proc
 
@@ -397,7 +398,7 @@ class Grid : protected Pointers {
   // bounding box for a clump of grid cells
 
   struct Box {
-    double lo[3],hi[3];    // opposite corners of extended bbox
+    sfloat lo[3],hi[3];    // opposite corners of extended bbox
     int proc;              // proc that owns it
   };
 
@@ -422,14 +423,14 @@ class Grid : protected Pointers {
     Surf::Tri tri;
   };
 
-  // union data struct for packing 32-bit and 64-bit ints into double bufs
-  // this avoids aliasing issues by having 3 pointers (double,int,uint)
+  // union data struct for packing 32-bit and 64-bit ints into sfloat bufs
+  // this avoids aliasing issues by having 3 pointers (sfloat,int,uint)
   //   to same buf memory
   // constructor for 32-bit int or uint prevents compiler
-  //   from possibly calling the double constructor when passed an int/uint
-  // copy to a double *buf:
+  //   from possibly calling the sfloat constructor when passed an int/uint
+  // copy to a sfloat *buf:
   //   buf[m++] = ubuf(foo).d, where foo is a 32-bit or 64-bit int or uint
-  // copy from a double *buf:
+  // copy from a sfloat *buf:
   //   foo = (int) ubuf(buf[m++]).i or foo = (cellint) ubuf(buf[m++]).u
   //         where (int) or (surfint) or (cellint) matches foo
   //   the cast prevents compiler warnings about possible truncation
@@ -463,11 +464,11 @@ class Grid : protected Pointers {
   void surf2grid_cell_algorithm(int);
   void surf2grid_surf_algorithm(int);
   void surf2grid_split(int, int);
-  void recurse2d(cellint, int, double *, double *,
-                 int, Surf::Line *, double *, double *,
+  void recurse2d(cellint, int, sfloat *, sfloat *,
+                 int, Surf::Line *, sfloat *, sfloat *,
                  int &, int &, int **&, MyHash *, MyHash *);
-  void recurse3d(cellint, int, double *, double *,
-                 int, Surf::Tri *, double *, double *,
+  void recurse3d(cellint, int, sfloat *, sfloat *,
+                 int, Surf::Tri *, sfloat *, sfloat *,
                  int &, int &, int **&, MyHash *, MyHash *);
   void partition_grid(int, int, int, int, int, int, int, int, GridTree *);
   void mybox(int, int, int, int &, int &, int &, int &, int &, int &,
@@ -478,21 +479,21 @@ class Grid : protected Pointers {
   void acquire_ghosts_near(int);
   void acquire_ghosts_near_less_memory(int);
 
-  void box_intersect(double *, double *, double *, double *,
-                     double *, double *);
-  int box_overlap(double *, double *, double *, double *);
-  int box_periodic(double *, double *, Box *);
+  void box_intersect(sfloat *, sfloat *, sfloat *, sfloat *,
+                     sfloat *, sfloat *);
+  int box_overlap(sfloat *, sfloat *, sfloat *, sfloat *);
+  int box_periodic(sfloat *, sfloat *, Box *);
 
   virtual void grow_cells(int, int);
   virtual void grow_pcells();
   virtual void grow_sinfo(int);
 
-  int point_outside_surfs_implicit(int, double *);
-  int point_outside_surfs_explicit(int, double *);
+  int point_outside_surfs_implicit(int, sfloat *);
+  int point_outside_surfs_explicit(int, sfloat *);
 
   void surf2grid_stats();
   void flow_stats();
-  double flow_volume();
+  sfloat flow_volume();
 
   // callback function for ring communication and class variable to access
 

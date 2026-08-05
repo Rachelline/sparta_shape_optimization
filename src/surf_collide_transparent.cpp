@@ -1,3 +1,4 @@
+/* AD-CONVERTED: double->sfloat by tools/ad_convert.py (see sfloat.h) */
 /* ----------------------------------------------------------------------
    SPARTA - Stochastic PArallel Rarefied-gas Time-accurate Analyzer
    http://sparta.github.io
@@ -39,7 +40,7 @@ SurfCollideTransparent(SPARTA *sparta, int narg, char **arg) :
 ------------------------------------------------------------------------- */
 
 Particle::OnePart *SurfCollideTransparent::
-collide(Particle::OnePart *&ip, double &, int, double *, int, int &)
+collide(Particle::OnePart *&ip, sfloat &, int, sfloat *, int, int &)
 {
   nsingle++;
 

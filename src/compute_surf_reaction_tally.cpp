@@ -1,3 +1,4 @@
+/* AD-CONVERTED: double->sfloat by tools/ad_convert.py (see sfloat.h) */
 /* ----------------------------------------------------------------------
    SPARTA - Stochastic PArallel Rarefied-gas Time-accurate Analyzer
    http://sparta.sandia.gov
@@ -145,7 +146,7 @@ void ComputeSurfReactionTally::clear()
    jp != NULL means two particles after collision
 ------------------------------------------------------------------------- */
 
-void ComputeSurfReactionTally::surf_tally(double dtremain, int isurf,
+void ComputeSurfReactionTally::surf_tally(sfloat dtremain, int isurf,
                                           int icell, int reaction,
                                           Particle::OnePart *iorig,
                                           Particle::OnePart *ip,
@@ -178,7 +179,7 @@ void ComputeSurfReactionTally::surf_tally(double dtremain, int isurf,
   // tally all values associated with group into array
   // particle iorig,ip have same collision point but before/after velocities
 
-  double *vec = array_tally[ntally++];
+  sfloat *vec = array_tally[ntally++];
 
   for (int m = 0; m < nvalue; m++) {
     switch (which[m]) {
@@ -310,6 +311,6 @@ void ComputeSurfReactionTally::grow_tally()
 bigint ComputeSurfReactionTally::memory_usage()
 {
   bigint bytes = 0;
-  bytes += nvalue*maxtally * sizeof(double);    // array_tally
+  bytes += nvalue*maxtally * sizeof(sfloat);    // array_tally
   return bytes;
 }

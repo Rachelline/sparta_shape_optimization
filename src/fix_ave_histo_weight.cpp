@@ -1,3 +1,4 @@
+/* AD-CONVERTED: double->sfloat by tools/ad_convert.py (see sfloat.h) */
 /* ----------------------------------------------------------------------
    SPARTA - Stochastic PArallel Rarefied-gas Time-accurate Analyzer
    http://sparta.github.io
@@ -261,7 +262,7 @@ void FixAveHistoWeight::calculate_weights()
    bin a single value with weight
 ------------------------------------------------------------------------- */
 
-void FixAveHistoWeight::bin_one_weight(double value, double wt)
+void FixAveHistoWeight::bin_one_weight(sfloat value, sfloat wt)
 {
   stats[2] = MIN(stats[2],value);
   stats[3] = MAX(stats[3],value);
@@ -277,7 +278,7 @@ void FixAveHistoWeight::bin_one_weight(double value, double wt)
       return;
     } else bin[nbins-1] += wt;
   } else {
-    int ibin = static_cast<int> ((value-lo)*bininv);
+    int ibin = static_cast<int> (spval((value-lo)*bininv));
     ibin = MIN(ibin,nbins-1);
     if (beyond == EXTRA) ibin++;
     bin[ibin] += wt;
@@ -290,7 +291,7 @@ void FixAveHistoWeight::bin_one_weight(double value, double wt)
    bin a single value with weight
 ------------------------------------------------------------------------- */
 
-void FixAveHistoWeight::bin_one(double value)
+void FixAveHistoWeight::bin_one(sfloat value)
 {
   bin_one_weight(value,weight);
 }
@@ -300,7 +301,7 @@ void FixAveHistoWeight::bin_one(double value)
    values and weights each have a stride
 ------------------------------------------------------------------------- */
 
-void FixAveHistoWeight::bin_vector(int n, double *values, int stride)
+void FixAveHistoWeight::bin_vector(int n, sfloat *values, int stride)
 {
   int m = 0;
   int mwt = 0;
@@ -389,7 +390,7 @@ void FixAveHistoWeight::bin_particles(int attribute, int index)
    values and weights each have a stride
 ------------------------------------------------------------------------- */
 
-void FixAveHistoWeight::bin_particles(double *values, int stride)
+void FixAveHistoWeight::bin_particles(sfloat *values, int stride)
 {
   Particle::OnePart *particles = particle->particles;
   int *s2g = particle->mixture[imix]->species2group;
@@ -436,7 +437,7 @@ void FixAveHistoWeight::bin_particles(double *values, int stride)
    bin a per-grid vector of values with weights
 ------------------------------------------------------------------------- */
 
-void FixAveHistoWeight::bin_grid_cells(double *values, int stride)
+void FixAveHistoWeight::bin_grid_cells(sfloat *values, int stride)
 {
   Grid::ChildInfo *cinfo = grid->cinfo;
   int nglocal = grid->nlocal;

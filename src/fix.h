@@ -1,3 +1,4 @@
+/* AD-CONVERTED: double->sfloat by tools/ad_convert.py (see sfloat.h) */
 /* ----------------------------------------------------------------------
    SPARTA - Stochastic PArallel Rarefied-gas Time-accurate Analyzer
    http://sparta.github.io
@@ -52,12 +53,12 @@ class Fix : protected Pointers {
   int size_per_surf_cols;        // 0 = vector, N = cols in per-surf array
   int per_surf_freq;             // frequency per-surf data is available at
 
-  double *vector_particle;       // computed per-particle vector
-  double **array_particle;       // computed per-particle array
-  double *vector_grid;           // computed per-grid vector
-  double **array_grid;           // computed per-grid array
-  double *vector_surf;           // computed per-surf vector
-  double **array_surf;           // computed per-surf array
+  sfloat *vector_particle;       // computed per-particle vector
+  sfloat **array_particle;       // computed per-particle array
+  sfloat *vector_grid;           // computed per-grid vector
+  sfloat **array_grid;           // computed per-grid array
+  sfloat *vector_surf;           // computed per-surf vector
+  sfloat **array_surf;           // computed per-surf array
 
   int per_particle_field;        // 0/1 if produces per-particle external field
   int per_grid_field;            // 0/1 if produces per-grid external field
@@ -83,7 +84,7 @@ class Fix : protected Pointers {
   virtual void start_of_step() {}
   virtual void end_of_step() {}
   virtual void post_run() {}
-  virtual void update_custom(int, double, double, double, double *) {}
+  virtual void update_custom(int, sfloat, sfloat, sfloat, sfloat *) {}
   virtual void gas_react(int) {}
   virtual void surf_react(Particle::OnePart *, int &, int &) {}
   virtual void compute_field() {}
@@ -96,20 +97,20 @@ class Fix : protected Pointers {
   virtual void grid_changed() {}
   virtual void custom_surf_changed() {}
 
-  virtual double compute_scalar() {return 0.0;}
-  virtual double compute_vector(int) {return 0.0;}
-  virtual double compute_array(int,int) {return 0.0;}
+  virtual sfloat compute_scalar() {return 0.0;}
+  virtual sfloat compute_vector(int) {return 0.0;}
+  virtual sfloat compute_array(int,int) {return 0.0;}
 
-  virtual double memory_usage() {return 0.0;}
+  virtual sfloat memory_usage() {return 0.0;}
 
-  // union data struct for packing 32-bit and 64-bit ints into double bufs
-  // this avoids aliasing issues by having 3 pointers (double,int,uint)
+  // union data struct for packing 32-bit and 64-bit ints into sfloat bufs
+  // this avoids aliasing issues by having 3 pointers (sfloat,int,uint)
   //   to same buf memory
   // constructor for 32-bit int or uint prevents compiler
-  //   from possibly calling the double constructor when passed an int/uint
-  // copy to a double *buf:
+  //   from possibly calling the sfloat constructor when passed an int/uint
+  // copy to a sfloat *buf:
   //   buf[m++] = ubuf(foo).d, where foo is a 32-bit or 64-bit int or uint
-  // copy from a double *buf:
+  // copy from a sfloat *buf:
   //   foo = (int) ubuf(buf[m++]).i or foo = (cellint) ubuf(buf[m++]).u
   //         where (int) or (surfint) or (cellint) matches foo
   //   the cast prevents compiler warnings about possible truncation

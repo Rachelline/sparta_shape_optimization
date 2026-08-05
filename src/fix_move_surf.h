@@ -1,3 +1,4 @@
+/* AD-CONVERTED: double->sfloat by tools/ad_convert.py (see sfloat.h) */
 /* ----------------------------------------------------------------------
    SPARTA - Stochastic PArallel Rarefied-gas Time-accurate Analyzer
    http://sparta.github.io
@@ -33,7 +34,7 @@ class FixMoveSurf : public Fix {
   int setmask();
   void init();
   void end_of_step();
-  double compute_scalar();
+  sfloat compute_scalar();
 
  private:
   int me,nprocs;

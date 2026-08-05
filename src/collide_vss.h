@@ -1,3 +1,4 @@
+/* AD-CONVERTED: double->sfloat by tools/ad_convert.py (see sfloat.h) */
 /* ----------------------------------------------------------------------
    SPARTA - Stochastic PArallel Rarefied-gas Time-accurate Analyzer
    http://sparta.github.io
@@ -32,51 +33,51 @@ class CollideVSS : public Collide {
   virtual ~CollideVSS();
   virtual void init();
 
-  double vremax_init(int, int);
-  virtual double attempt_collision(int, int, double);
-  double attempt_collision(int, int, int, double);
+  sfloat vremax_init(int, int);
+  virtual sfloat attempt_collision(int, int, sfloat);
+  sfloat attempt_collision(int, int, int, sfloat);
   virtual int test_collision(int, int, int, Particle::OnePart *,
                              Particle::OnePart *);
   virtual void setup_collision(Particle::OnePart *, Particle::OnePart *);
   virtual int perform_collision(Particle::OnePart *&, Particle::OnePart *&,
                                 Particle::OnePart *&);
-  double extract(int, int, const char *);
+  sfloat extract(int, int, const char *);
 
   struct State {      // two-particle state
-    double vr2;
-    double vr;
-    double imass,jmass;
-    double ave_rotdof;
-    double ave_vibdof;
-    double ave_dof;
-    double etrans;
-    double erot;
-    double evib;
-    double eexchange;
-    double eint;
-    double etotal;
-    double ucmf;
-    double vcmf;
-    double wcmf;
+    sfloat vr2;
+    sfloat vr;
+    sfloat imass,jmass;
+    sfloat ave_rotdof;
+    sfloat ave_vibdof;
+    sfloat ave_dof;
+    sfloat etrans;
+    sfloat erot;
+    sfloat evib;
+    sfloat eexchange;
+    sfloat eint;
+    sfloat etotal;
+    sfloat ucmf;
+    sfloat vcmf;
+    sfloat wcmf;
   };
 
   struct Params {             // VSS model parameters
-    double diam;
-    double omega;
-    double tref;
-    double alpha;
-    double rotc1;
-    double rotc2;
-    double rotc3;
-    double vibc1;
-    double vibc2;
-    double mr;
+    sfloat diam;
+    sfloat omega;
+    sfloat tref;
+    sfloat alpha;
+    sfloat rotc1;
+    sfloat rotc2;
+    sfloat rotc3;
+    sfloat vibc1;
+    sfloat vibc2;
+    sfloat mr;
   };
 
  protected:
   int relaxflag,eng_exchange;
-  double vr_indice;
-  double **prefactor; // static portion of collision attempt frequency
+  sfloat vr_indice;
+  sfloat **prefactor; // static portion of collision attempt frequency
 
   struct State precoln;       // state before collision
   struct State postcoln;      // state after collision
@@ -95,9 +96,9 @@ class CollideVSS : public Collide {
                                    Particle::OnePart *,
                                    Particle::OnePart *);
 
-  double sample_bl(RanKnuth *, double, double);
-  double rotrel (int, double);
-  double vibrel (int, double);
+  sfloat sample_bl(RanKnuth *, sfloat, sfloat);
+  sfloat rotrel (int, sfloat);
+  sfloat vibrel (int, sfloat);
 
   void read_param_file(char *);
   int wordparse(int, char *, char **);

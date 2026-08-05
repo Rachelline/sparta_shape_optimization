@@ -1,3 +1,4 @@
+/* AD-CONVERTED: double->sfloat by tools/ad_convert.py (see sfloat.h) */
 /* ----------------------------------------------------------------------
    SPARTA - Stochastic PArallel Rarefied-gas Time-accurate Analyzer
    http://sparta.github.io
@@ -88,7 +89,7 @@ void WriteGrid::command(int narg, char **arg)
   // write file
 
   MPI_Barrier(world);
-  double time1 = MPI_Wtime();
+  sfloat time1 = MPI_Wtime();
 
   if (me == 0) header();
   write();
@@ -108,19 +109,19 @@ void WriteGrid::command(int narg, char **arg)
   // stats
 
   MPI_Barrier(world);
-  double time2 = MPI_Wtime();
+  sfloat time2 = MPI_Wtime();
 
-  double time_total = time2-time1;
+  sfloat time_total = time2-time1;
 
   if (comm->me == 0 && !silent) {
     if (screen) {
       fprintf(screen,"  grid cells = " BIGINT_FORMAT "\n",grid->ncell);
-      fprintf(screen,"  CPU time = %g secs\n",time_total);
+      fprintf(screen,"  CPU time = %g secs\n",spval(time_total));
     }
 
     if (logfile) {
       fprintf(logfile,"  grid cells = " BIGINT_FORMAT "\n",grid->ncell);
-      fprintf(logfile,"  CPU time = %g secs\n",time_total);
+      fprintf(logfile,"  CPU time = %g secs\n",spval(time_total));
     }
   }
 }
@@ -170,7 +171,7 @@ void WriteGrid::write()
   memory->create(idbuf,nmax,"write_grid:idbuf");
 
   nvalues_custom = 0;
-  double **cbuf = NULL;
+  sfloat **cbuf = NULL;
 
   if (ncustom) {
     for (ic = 0; ic < ncustom; ic++)
@@ -207,7 +208,7 @@ void WriteGrid::write()
     for (int iproc = 0; iproc < nprocs; iproc++) {
       if (iproc) {
         MPI_Irecv(idbuf,nmax,MPI_SPARTA_BIGINT,iproc,0,world,&request);
-	if (ncustom) MPI_Irecv(&cbuf[0][0],nmax*nvalues_custom,MPI_DOUBLE,
+	if (ncustom) MPI_Irecv(&cbuf[0][0],nmax*nvalues_custom,MPI_SFLOAT,
 			       iproc,0,world,&crequest);
         MPI_Send(&tmp,0,MPI_INT,iproc,0,world);
         MPI_Wait(&request,&status);
@@ -226,8 +227,8 @@ void WriteGrid::write()
     MPI_Recv(&tmp,0,MPI_INT,0,0,world,&status);
     MPI_Rsend(idbuf,nme,MPI_SPARTA_BIGINT,0,0,world);
     if (ncustom) {
-      if (nme) MPI_Rsend(&cbuf[0][0],nme*nvalues_custom,MPI_DOUBLE,0,0,world);
-      else MPI_Rsend(NULL,nme,MPI_DOUBLE,0,0,world);
+      if (nme) MPI_Rsend(&cbuf[0][0],nme*nvalues_custom,MPI_SFLOAT,0,0,world);
+      else MPI_Rsend(NULL,nme,MPI_SFLOAT,0,0,world);
     }
   }
 
@@ -241,7 +242,7 @@ void WriteGrid::write()
    pack user-specified custom values for Ith grid cell into vec
 ---------------------------------------------------------------------- */
 
-void WriteGrid::pack_custom(int i, double *vec)
+void WriteGrid::pack_custom(int i, sfloat *vec)
 {
   int m = 0;
 
@@ -257,10 +258,10 @@ void WriteGrid::pack_custom(int i, double *vec)
       }
     } else {
       if (size_custom[ic] == 0) {
-	double *dvector = grid->edvec[grid->ewhich[index_custom[ic]]];
+	sfloat *dvector = grid->edvec[grid->ewhich[index_custom[ic]]];
 	vec[m++] = dvector[i];
       } else {
-	double **darray = grid->edarray[grid->ewhich[index_custom[ic]]];
+	sfloat **darray = grid->edarray[grid->ewhich[index_custom[ic]]];
 	for (int j = 0; j < size_custom[ic]; j++)
 	  vec[m++] = darray[i][j];
       }
@@ -273,24 +274,24 @@ void WriteGrid::pack_custom(int i, double *vec)
    vec has ncustom_values for a single grid cell
 ---------------------------------------------------------------------- */
 
-void WriteGrid::write_custom(double *vec)
+void WriteGrid::write_custom(sfloat *vec)
 {
   int m = 0;
 
   for (int ic = 0; ic < ncustom; ic++) {
     if (type_custom[ic] == 0) {
       if (size_custom[ic] == 0) {
-	fprintf(fp," %d",(int) vec[m++]);
+	fprintf(fp," %d",(int) spval(vec[m++]));
       } else {
 	for (int j = 0; j < size_custom[ic]; j++)
-	  fprintf(fp," %d",(int) vec[m++]);
+	  fprintf(fp," %d",(int) spval(vec[m++]));
       }
     } else {
       if (size_custom[ic] == 0) {
-	fprintf(fp," %g",vec[m++]);
+	fprintf(fp," %g",spval(vec[m++]));
       } else {
 	for (int j = 0; j < size_custom[ic]; j++)
-	  fprintf(fp," %g",vec[m++]);
+	  fprintf(fp," %g",spval(vec[m++]));
       }
     }
   }

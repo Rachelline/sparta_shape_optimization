@@ -1,3 +1,4 @@
+/* AD-CONVERTED: double->sfloat by tools/ad_convert.py (see sfloat.h) */
 /* ----------------------------------------------------------------------
    SPARTA - Stochastic PArallel Rarefied-gas Time-accurate Analyzer
    http://sparta.github.io
@@ -134,7 +135,7 @@ void ReadRestart::command(int narg, char **arg)
   // start timer
 
   MPI_Barrier(world);
-  double time1 = MPI_Wtime();
+  sfloat time1 = MPI_Wtime();
 
   // read magic string, endian flag, numeric version
 
@@ -271,7 +272,7 @@ void ReadRestart::command(int narg, char **arg)
   // compute normals of lines or triangles
 
   MPI_Barrier(world);
-  double time2 = MPI_Wtime();
+  sfloat time2 = MPI_Wtime();
 
   if (surf->exist) {
     surf->setup_owned();
@@ -282,7 +283,7 @@ void ReadRestart::command(int narg, char **arg)
   }
 
   MPI_Barrier(world);
-  double time3 = MPI_Wtime();
+  sfloat time3 = MPI_Wtime();
 
   // if read restart file on different number of procs, clumped will be off
   // if grid cutoff is set, will not be able to acquire ghosts
@@ -301,7 +302,7 @@ void ReadRestart::command(int narg, char **arg)
   }
 
   MPI_Barrier(world);
-  double time4 = MPI_Wtime();
+  sfloat time4 = MPI_Wtime();
 
   grid->acquire_ghosts();
   grid->find_neighbors();
@@ -309,7 +310,7 @@ void ReadRestart::command(int narg, char **arg)
   comm->reset_neighbors();
 
   MPI_Barrier(world);
-  double time5 = MPI_Wtime();
+  sfloat time5 = MPI_Wtime();
 
   if (surf->exist) {
     grid->set_inout();
@@ -317,9 +318,9 @@ void ReadRestart::command(int narg, char **arg)
   }
 
   MPI_Barrier(world);
-  double time6 = MPI_Wtime();
+  sfloat time6 = MPI_Wtime();
 
-  double time_total = time6-time1;
+  sfloat time_total = time6-time1;
 
   // output custom attribute info and timing stats
 
@@ -370,7 +371,7 @@ void ReadRestart::command(int narg, char **arg)
 
   if (me == 0) {
     if (screen) {
-      fprintf(screen,"  CPU time = %g secs\n",time_total);
+      fprintf(screen,"  CPU time = %g secs\n",spval(time_total));
       fprintf(screen,"  read/surf2grid/rebalance/ghost/inout "
               "percent = %g %g %g %g %g\n",
               100.0*(time2-time1)/time_total,100.0*(time3-time2)/time_total,
@@ -378,7 +379,7 @@ void ReadRestart::command(int narg, char **arg)
               100.0*(time6-time5)/time_total);
     }
     if (logfile) {
-      fprintf(logfile,"  CPU time = %g secs\n",time_total);
+      fprintf(logfile,"  CPU time = %g secs\n",spval(time_total));
       fprintf(logfile,"  read/surf2grid/rebalance/ghost/inout "
               "percent = %g %g %g %g %g\n",
               100.0*(time2-time1)/time_total,100.0*(time3-time2)/time_total,
@@ -1153,7 +1154,7 @@ void ReadRestart::read_gp_multi_file_less_procs_memlimit(char *file)
       // extra pass for grid
 
       if (particle_nlocal == 0) npasses = 2;
-      else npasses = ceil((double)particle_nlocal/step_size)+1;
+      else npasses = spval(ceil((sfloat)particle_nlocal/step_size)+1);
 
       int nlocal_restart = 0;
       bigint total_read_part = 0;
@@ -1313,7 +1314,7 @@ void ReadRestart::read_gp_multi_file_more_procs_memlimit(char *file)
       // extra pass for grid
 
       if (particle_nlocal == 0) npasses = 2;
-      else npasses = ceil((double)particle_nlocal/step_size)+1;
+      else npasses = spval(ceil((sfloat)particle_nlocal/step_size)+1);
 
       if (i % nclusterprocs) {
         iproc = me + (i % nclusterprocs);
@@ -1397,13 +1398,13 @@ void ReadRestart::create_child_cells(int skipflag)
 {
   int nprocs = comm->nprocs;
 
-  double *boxlo = domain->boxlo;
-  double *boxhi = domain->boxhi;
+  sfloat *boxlo = domain->boxlo;
+  sfloat *boxhi = domain->boxhi;
 
   int icell,isplit,index;
   int level,nsplit,mask;
   cellint id;
-  double lo[3],hi[3];
+  sfloat lo[3],hi[3];
 
   // for skipflag = 0, add all child cells in Grid restart to my Grid::cells
   // for skipflag = 1, only add every Pth cell in list
@@ -1819,10 +1820,10 @@ void ReadRestart::unpack_surfs(int keepflag, char *buf)
 {
   int type,mask,transparent;
   surfint id;
-  double p1[3],p2[3],p3[3];
+  sfloat p1[3],p2[3],p3[3];
 
   int dim = domain->dimension;
-  double *custom = new double[1+nvalues_custom_surf];
+  sfloat *custom = new sfloat[1+nvalues_custom_surf];
 
   char *ptr = buf;
 
@@ -1855,11 +1856,11 @@ void ReadRestart::unpack_surfs(int keepflag, char *buf)
     ptr += 3*sizeof(int);
     ptr = ROUNDUP(ptr);
 
-    double *dbuf = (double *) ptr;
-    memcpy(p1,&dbuf[0],3*sizeof(double));
-    memcpy(p2,&dbuf[3],3*sizeof(double));
-    if (dim == 3) memcpy(p3,&dbuf[6],3*sizeof(double));
-    ptr += dim * 3*sizeof(double);
+    sfloat *dbuf = (sfloat *) ptr;
+    memcpy(p1,&dbuf[0],3*sizeof(sfloat));
+    memcpy(p2,&dbuf[3],3*sizeof(sfloat));
+    if (dim == 3) memcpy(p3,&dbuf[6],3*sizeof(sfloat));
+    ptr += dim * 3*sizeof(sfloat);
     ptr = ROUNDUP(ptr);
 
     if (ncustom_surf) ptr += surf->unpack_custom(ptr,custom);
@@ -1883,7 +1884,7 @@ void ReadRestart::unpack_surfs(int keepflag, char *buf)
 ------------------------------------------------------------------------- */
 
 void ReadRestart::add_line(surfint id, int type, int mask, int transparent,
-                           double *p1, double *p2)
+                           sfloat *p1, sfloat *p2)
 {
   if (nsurf == maxsurf) {
     if ((bigint) maxsurf + DELTA > MAXSMALLINT)
@@ -1915,7 +1916,7 @@ void ReadRestart::add_line(surfint id, int type, int mask, int transparent,
 ------------------------------------------------------------------------- */
 
 void ReadRestart::add_tri(surfint id, int type, int mask, int transparent,
-                       double *p1, double *p2, double *p3)
+                       sfloat *p1, sfloat *p2, sfloat *p3)
 {
   if (nsurf == maxsurf) {
     if ((bigint) maxsurf + DELTA > MAXSMALLINT)
@@ -1949,7 +1950,7 @@ void ReadRestart::add_tri(surfint id, int type, int mask, int transparent,
    add custom values for one line or one triangle to cvalues array
 ------------------------------------------------------------------------- */
 
-void ReadRestart::add_custom(surfint id, double *custom)
+void ReadRestart::add_custom(surfint id, sfloat *custom)
 {
   cvalues[nsurf][0] = ubuf(id).d;
   for (int ivalue = 0; ivalue < nvalues_custom_surf; ivalue++)
@@ -2029,14 +2030,14 @@ bigint ReadRestart::read_bigint()
 }
 
 /* ----------------------------------------------------------------------
-   read a double from restart file and bcast it
+   read a sfloat from restart file and bcast it
 ------------------------------------------------------------------------- */
 
-double ReadRestart::read_double()
+sfloat ReadRestart::read_double()
 {
-  double value;
-  if (me == 0) int tmp = fread(&value,sizeof(double),1,fp);
-  MPI_Bcast(&value,1,MPI_DOUBLE,0,world);
+  sfloat value;
+  if (me == 0) int tmp = fread(&value,sizeof(sfloat),1,fp);
+  MPI_Bcast(&value,1,MPI_SFLOAT,0,world);
   return value;
 }
 
@@ -2070,10 +2071,10 @@ void ReadRestart::read_int_vec(int n, int *vec)
    read vector of N doubles from restart file and bcast them
 ------------------------------------------------------------------------- */
 
-void ReadRestart::read_double_vec(int n, double *vec)
+void ReadRestart::read_double_vec(int n, sfloat *vec)
 {
-  if (me == 0) int tmp = fread(vec,sizeof(double),n,fp);
-  MPI_Bcast(vec,n,MPI_DOUBLE,0,world);
+  if (me == 0) int tmp = fread(vec,sizeof(sfloat),n,fp);
+  MPI_Bcast(vec,n,MPI_SFLOAT,0,world);
 }
 
 /* ----------------------------------------------------------------------

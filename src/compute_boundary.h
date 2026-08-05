@@ -1,3 +1,4 @@
+/* AD-CONVERTED: double->sfloat by tools/ad_convert.py (see sfloat.h) */
 /* ----------------------------------------------------------------------
    SPARTA - Stochastic PArallel Rarefied-gas Time-accurate Analyzer
    http://sparta.github.io
@@ -34,7 +35,7 @@ class ComputeBoundary : public Compute {
   virtual void init();
   virtual void compute_array();
   virtual void clear();
-  virtual void boundary_tally(double, int, int, int, Particle::OnePart *,
+  virtual void boundary_tally(sfloat, int, int, int, Particle::OnePart *,
                               Particle::OnePart *, Particle::OnePart *);
 
  protected:
@@ -42,10 +43,10 @@ class ComputeBoundary : public Compute {
   int *which;
 
   int weightflag;                // 1 if cell weighting is enabled
-  double weight;                 // particle weight, based on initial cell
+  sfloat weight;                 // particle weight, based on initial cell
 
-  double normflux[6];            // per face normalization factors
-  double **myarray;              // local accumulator array
+  sfloat normflux[6];            // per face normalization factors
+  sfloat **myarray;              // local accumulator array
 };
 
 }

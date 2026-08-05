@@ -1,3 +1,4 @@
+/* AD-CONVERTED: double->sfloat by tools/ad_convert.py (see sfloat.h) */
 /* ----------------------------------------------------------------------
    SPARTA - Stochastic PArallel Rarefied-gas Time-accurate Analyzer
    http://sparta.github.io
@@ -115,7 +116,7 @@ ComputeTvibGrid::ComputeTvibGrid(SPARTA *sparta, int narg, char **arg) :
     nmap = new int[ngroup];
     memory->create(map,ngroup,2*nmax,"tvib/grid:map");
 
-    tspecies = new double[nspecies];
+    tspecies = new sfloat[nspecies];
     s2t = new int[nspecies];
 
     for (int isp = 0; isp < nspecies; isp++) s2t[isp] = -1;
@@ -266,7 +267,7 @@ void ComputeTvibGrid::compute_per_grid()
   Particle::OnePart *particles = particle->particles;
   Particle::Species *species = particle->species;
   int *s2g = particle->mixture[imix]->species2group;
-  double boltz = update->boltz;
+  sfloat boltz = update->boltz;
   int nlocal = particle->nlocal;
 
   int i,j,ispecies,igroup,icell,imode,nmode;
@@ -329,7 +330,7 @@ void ComputeTvibGrid::compute_per_grid()
    also return cols = ptr to list of columns in tally for this index
 ------------------------------------------------------------------------- */
 
-int ComputeTvibGrid::query_tally_grid(int index, double **&array, int *&cols)
+int ComputeTvibGrid::query_tally_grid(int index, sfloat **&array, int *&cols)
 {
   index--;
   array = tally;
@@ -353,8 +354,8 @@ int ComputeTvibGrid::query_tally_grid(int index, double **&array, int *&cols)
 ------------------------------------------------------------------------- */
 
 void ComputeTvibGrid::post_process_grid(int index, int /*nsample*/,
-                                        double **etally, int *emap,
-                                        double *vec, int nstride)
+                                        sfloat **etally, int *emap,
+                                        sfloat *vec, int nstride)
 {
   index--;
 
@@ -378,8 +379,8 @@ void ComputeTvibGrid::post_process_grid(int index, int /*nsample*/,
   int **groupspecies = particle->mixture[imix]->groupspecies;
 
   int isp,evib,count,ispecies,imode;
-  double theta,ibar,numer,denom;
-  double boltz = update->boltz;
+  sfloat theta,ibar,numer,denom;
+  sfloat boltz = update->boltz;
 
   // modeflag = 0, no vib modes exist
   // nsp = # of species in the group
@@ -562,7 +563,7 @@ void ComputeTvibGrid::reallocate()
 bigint ComputeTvibGrid::memory_usage()
 {
   bigint bytes;
-  bytes = nglocal * sizeof(double);
-  bytes = ntally*nglocal * sizeof(double);
+  bytes = nglocal * sizeof(sfloat);
+  bytes = ntally*nglocal * sizeof(sfloat);
   return bytes;
 }

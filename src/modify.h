@@ -1,3 +1,4 @@
+/* AD-CONVERTED: double->sfloat by tools/ad_convert.py (see sfloat.h) */
 /* ----------------------------------------------------------------------
    SPARTA - Stochastic PArallel Rarefied-gas Time-accurate Analyzer
    http://sparta.github.io
@@ -63,7 +64,7 @@ class Modify : protected Pointers {
   void list_init_fixes();
   void list_init_computes();
 
-  virtual void update_custom(int, double, double, double, double *);
+  virtual void update_custom(int, sfloat, sfloat, sfloat, sfloat *);
   virtual void gas_react(int);
   virtual void surf_react(Particle::OnePart *, int &, int &);
 

@@ -1,3 +1,4 @@
+/* AD-CONVERTED: double->sfloat by tools/ad_convert.py (see sfloat.h) */
 /* ----------------------------------------------------------------------
    SPARTA - Stochastic PArallel Rarefied-gas Time-accurate Analyzer
    http://sparta.github.io
@@ -21,16 +22,16 @@ namespace SPARTA_NS {
 
 class MarchingSquares : protected Pointers {
  public:
-  MarchingSquares(class SPARTA *, int, double);
+  MarchingSquares(class SPARTA *, int, sfloat);
   ~MarchingSquares() {}
-  void invoke(double **, double ***, int *);
-  double mindist;
+  void invoke(sfloat **, sfloat ***, int *);
+  sfloat mindist;
 
  private:
   int ggroup;
-  double thresh;
+  sfloat thresh;
 
-  double interpolate(double, double, double, double);
+  sfloat interpolate(sfloat, sfloat, sfloat, sfloat);
 };
 
 }

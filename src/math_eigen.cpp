@@ -1,3 +1,4 @@
+/* AD-CONVERTED: double->sfloat by tools/ad_convert.py (see sfloat.h) */
 /* ----------------------------------------------------------------------
    SPARTA - Stochastic PArallel Rarefied-gas Time-accurate Analyzer
    http://sparta.github.io
@@ -29,17 +30,17 @@ using namespace MathEigen;
 
 // Special case: 3x3 matrices
 
-typedef Jacobi<double, double *, double (*)[3], double const (*)[3]> Jacobi_v1;
-typedef Jacobi<double, double *, double **, double const *const *> Jacobi_v2;
+typedef Jacobi<sfloat, sfloat *, sfloat (*)[3], sfloat const (*)[3]> Jacobi_v1;
+typedef Jacobi<sfloat, sfloat *, sfloat **, sfloat const *const *> Jacobi_v2;
 
-int MathEigen::jacobi3(double const mat[3][3], double *eval, double evec[3][3])
+int MathEigen::jacobi3(sfloat const mat[3][3], sfloat *eval, sfloat evec[3][3])
 {
   // make copy of const matrix
 
-  double mat_cpy[3][3] = {{mat[0][0], mat[0][1], mat[0][2]},
+  sfloat mat_cpy[3][3] = {{mat[0][0], mat[0][1], mat[0][2]},
                           {mat[1][0], mat[1][1], mat[1][2]},
                           {mat[2][0], mat[2][1], mat[2][2]}};
-  double *M[3] = {&(mat_cpy[0][0]), &(mat_cpy[1][0]), &(mat_cpy[2][0])};
+  sfloat *M[3] = {&(mat_cpy[0][0]), &(mat_cpy[1][0]), &(mat_cpy[2][0])};
   int midx[3];
 
   // create instance of generic Jacobi class and get eigenvalues and -vectors
@@ -55,14 +56,14 @@ int MathEigen::jacobi3(double const mat[3][3], double *eval, double evec[3][3])
   return ierror;
 }
 
-int MathEigen::jacobi3(double const *const *mat, double *eval, double **evec)
+int MathEigen::jacobi3(sfloat const *const *mat, sfloat *eval, sfloat **evec)
 {
   // make copy of const matrix
 
-  double mat_cpy[3][3] = {{mat[0][0], mat[0][1], mat[0][2]},
+  sfloat mat_cpy[3][3] = {{mat[0][0], mat[0][1], mat[0][2]},
                           {mat[1][0], mat[1][1], mat[1][2]},
                           {mat[2][0], mat[2][1], mat[2][2]}};
-  double *M[3] = {&(mat_cpy[0][0]), &(mat_cpy[1][0]), &(mat_cpy[2][0])};
+  sfloat *M[3] = {&(mat_cpy[0][0]), &(mat_cpy[1][0]), &(mat_cpy[2][0])};
   int midx[3];
 
   // create instance of generic Jacobi class and get eigenvalues and -vectors

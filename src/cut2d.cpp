@@ -1,3 +1,4 @@
+/* AD-CONVERTED: double->sfloat by tools/ad_convert.py (see sfloat.h) */
 /* ----------------------------------------------------------------------
    SPARTA - Stochastic PArallel Rarefied-gas Time-accurate Analyzer
    http://sparta.github.io
@@ -51,7 +52,7 @@ Cut2d::Cut2d(SPARTA *sparta, int caller_axisymmetric) : Pointers(sparta)
    called by Grid::surf2grid_cell_algorithm
 ------------------------------------------------------------------------- */
 
-int Cut2d::surf2grid(cellint id_caller, double *lo_caller, double *hi_caller,
+int Cut2d::surf2grid(cellint id_caller, sfloat *lo_caller, sfloat *hi_caller,
                      surfint *surfs_caller, int max)
 {
   id = id_caller;
@@ -62,7 +63,7 @@ int Cut2d::surf2grid(cellint id_caller, double *lo_caller, double *hi_caller,
   Surf::Line *lines = surf->lines;
   int ntotal = surf->nsurf;
 
-  double *x1,*x2;
+  sfloat *x1,*x2;
 
   nsurf = 0;
   for (int m = 0; m < ntotal; m++) {
@@ -93,7 +94,7 @@ int Cut2d::surf2grid(cellint id_caller, double *lo_caller, double *hi_caller,
 ------------------------------------------------------------------------- */
 
 int Cut2d::surf2grid_list(cellint id_caller,
-                          double *lo_caller, double *hi_caller,
+                          sfloat *lo_caller, sfloat *hi_caller,
                           int nlist, surfint *list,
                           surfint *surfs_caller, int max)
 {
@@ -105,7 +106,7 @@ int Cut2d::surf2grid_list(cellint id_caller,
   Surf::Line *lines = surf->lines;
 
   int m;
-  double *x1,*x2;
+  sfloat *x1,*x2;
 
   nsurf = 0;
   for (int i = 0; i < nlist; i++) {
@@ -135,8 +136,8 @@ int Cut2d::surf2grid_list(cellint id_caller,
    called by Grid::surf2grid_surf_algorithm
 ------------------------------------------------------------------------- */
 
-int Cut2d::surf2grid_one(double *p, double *q,
-                         double *lo_caller, double *hi_caller)
+int Cut2d::surf2grid_one(sfloat *p, sfloat *q,
+                         sfloat *lo_caller, sfloat *hi_caller)
 {
   lo = lo_caller;
   hi = hi_caller;
@@ -158,10 +159,10 @@ int Cut2d::surf2grid_one(double *p, double *q,
      xsub = which sub-cell (0 to Nsplit-1) xsplit is in
 ------------------------------------------------------------------------- */
 
-int Cut2d::split(cellint id_caller, double *lo_caller, double *hi_caller,
+int Cut2d::split(cellint id_caller, sfloat *lo_caller, sfloat *hi_caller,
                  int nsurf_caller, surfint *surfs_caller,
-                 double *&areas_caller, int *surfmap,
-                 int *corners, int &xsub, double *xsplit)
+                 sfloat *&areas_caller, int *surfmap,
+                 int *corners, int &xsub, sfloat *xsplit)
 {
   id = id_caller;
   lo = lo_caller;
@@ -196,7 +197,7 @@ int Cut2d::split(cellint id_caller, double *lo_caller, double *hi_caller,
       else if (touchmark == OUTSIDE) mark = OUTSIDE;
       corners[0] = corners[1] = corners[2] = corners[3] = mark;
 
-      double area = 0.0;
+      sfloat area = 0.0;
       if (mark == OUTSIDE) {
         if (axisymmetric)
           area = MY_PI * (hi[1]*hi[1] - lo[1]*lo[1]) * (hi[0]-lo[0]);
@@ -222,7 +223,7 @@ int Cut2d::split(cellint id_caller, double *lo_caller, double *hi_caller,
 
     if (errflag == 4) {
       corners[0] = corners[1] = corners[2] = corners[3] = INSIDE;
-      double area = 0.0;
+      sfloat area = 0.0;
       areas.grow(1);
       areas[0] = area;
       areas_caller = &areas[0];
@@ -308,7 +309,7 @@ int Cut2d::split(cellint id_caller, double *lo_caller, double *hi_caller,
    incremented by 20 so Cut3d can distinguish from its own error messages
 ------------------------------------------------------------------------- */
 
-int Cut2d::split_face(int id_caller, int iface, double *onelo, double *onehi)
+int Cut2d::split_face(int id_caller, int iface, sfloat *onelo, sfloat *onehi)
 {
   id = id_caller;
   lo = onelo;
@@ -356,10 +357,10 @@ int Cut2d::split_face(int id_caller, int iface, double *onelo, double *onehi)
    duplicate points in cpath are deleted
 ------------------------------------------------------------------------- */
 
-int Cut2d::clip_external(double *p, double *q, double *clo, double *chi,
-                         double *cpath)
+int Cut2d::clip_external(sfloat *p, sfloat *q, sfloat *clo, sfloat *chi,
+                         sfloat *cpath)
 {
-  double x,y;
+  sfloat x,y;
 
   // PQ is interior to cell
 
@@ -374,7 +375,7 @@ int Cut2d::clip_external(double *p, double *q, double *clo, double *chi,
     return 2;
   }
 
-  double a[2],b[2];
+  sfloat a[2],b[2];
   a[0] = p[0]; a[1] = p[1];
   b[0] = q[0]; b[1] = q[1];
 
@@ -431,7 +432,7 @@ int Cut2d::clip_external(double *p, double *q, double *clo, double *chi,
    called externally, depends on no class variables
 ------------------------------------------------------------------------- */
 
-int Cut2d::sameedge_external(double *a, double *b, double *clo, double *chi)
+int Cut2d::sameedge_external(sfloat *a, sfloat *b, sfloat *clo, sfloat *chi)
 {
   if (a[0] == clo[0] and b[0] == clo[0]) return 1;
   if (a[0] == chi[0] and b[0] == chi[0]) return 2;
@@ -446,7 +447,7 @@ int Cut2d::sameedge_external(double *a, double *b, double *clo, double *chi)
    return 0 if not, including inside
 ------------------------------------------------------------------------- */
 
-int Cut2d::sameedge(double *a, double *b)
+int Cut2d::sameedge(sfloat *a, sfloat *b)
 {
   if (a[0] == lo[0] and b[0] == lo[0]) return 1;
   if (a[0] == hi[0] and b[0] == hi[0]) return 2;
@@ -472,8 +473,8 @@ int Cut2d::sameedge(double *a, double *b)
 void Cut2d::build_clines()
 {
   int m;
-  double p1[2],p2[2],cbox[3],cmid[3],l2b[3];
-  double *x,*y,*norm,*pp1,*pp2;
+  sfloat p1[2],p2[2],cbox[3],cmid[3],l2b[3];
+  sfloat *x,*y,*norm,*pp1,*pp2;
   Surf::Line *line;
   Cline *cline;
 
@@ -493,8 +494,8 @@ void Cut2d::build_clines()
     m = surfs[i];
     line = &lines[m];
     if (line->transparent) continue;
-    memcpy(p1,line->p1,2*sizeof(double));
-    memcpy(p2,line->p2,2*sizeof(double));
+    memcpy(p1,line->p1,2*sizeof(sfloat));
+    memcpy(p2,line->p2,2*sizeof(sfloat));
 
     cline = &clines[n];
     cline->line = i;
@@ -527,7 +528,7 @@ void Cut2d::build_clines()
       cmid[1] = 0.5*(pp1[1]+pp2[1]);
       cmid[2] = 0.0;
       MathExtra::sub3(cbox,cmid,l2b);
-      double dot = MathExtra::dot3(line->norm,l2b);
+      sfloat dot = MathExtra::dot3(line->norm,l2b);
       if (dot > 0.0) noutside++;
       if (dot < 0.0) ninside++;
       continue;
@@ -583,7 +584,7 @@ int Cut2d::weiler_build()
 {
   int i,j;
   int firstpt,lastpt,nextpt;
-  double *pt;
+  sfloat *pt;
 
   // insure space in points for 2 pts per cline + 4 corner pts
 
@@ -668,7 +669,7 @@ int Cut2d::weiler_build()
   // value = x-coord for lower/upper sides, y-coord for left,right sides
   // NOTE: could use hash to find existing pts in O(1) time
 
-  double cpt[2];
+  sfloat cpt[2];
   int ipt1,ipt2,ipt3,ipt4;
 
   for (i = 0; i < npt; i++) points[i].corner = -1;
@@ -749,7 +750,7 @@ int Cut2d::weiler_build()
   // value = coord of pt along the side it is on
 
   int ipt,iprev,side;
-  double value;
+  sfloat value;
 
   for (i = 0; i < npt; i++) {
     if (points[i].type == TWO || points[i].type == CORNER) continue;
@@ -832,8 +833,8 @@ void Cut2d::weiler_loops()
   //   discard loop, just traversed non-loop corner pts
 
   int ipt,iflag,cflag,ncount,firstpt,nextpt;
-  double area;
-  double *x,*y;
+  sfloat area;
+  sfloat *x,*y;
 
   int nloop = 0;
 
@@ -924,7 +925,7 @@ int Cut2d::loop2pg()
   pgs.grow(positive);
 
   if (positive == 1) {
-    double area = 0.0;
+    sfloat area = 0.0;
     int prev = -1;
     int count = 0;
     int first;
@@ -1002,11 +1003,11 @@ void Cut2d::create_surfmap(int *surfmap)
    return xsub = sub-cell index the chosen surf is in
 ------------------------------------------------------------------------- */
 
-int Cut2d::split_point_explicit(int *surfmap, double *xsplit, int &xsub)
+int Cut2d::split_point_explicit(int *surfmap, sfloat *xsplit, int &xsub)
 {
   int iline;
-  double *x1,*x2;
-  double a[2],b[2];
+  sfloat *x1,*x2;
+  sfloat a[2],b[2];
 
   Surf::Line *lines = surf->lines;
 
@@ -1055,7 +1056,7 @@ int Cut2d::split_point_explicit(int *surfmap, double *xsplit, int &xsub)
    return xsub = sub-cell index the chosen surf is in
 ------------------------------------------------------------------------- */
 
-int Cut2d::split_point_implicit(int *surfmap, double *xsplit, int &xsub)
+int Cut2d::split_point_implicit(int *surfmap, sfloat *xsplit, int &xsub)
 {
   Surf::Line *lines = surf->lines;
 
@@ -1081,16 +1082,16 @@ int Cut2d::split_point_implicit(int *surfmap, double *xsplit, int &xsub)
    return 1 if intersects, 0 if not
 ------------------------------------------------------------------------- */
 
-int Cut2d::cliptest(double *p, double *q)
+int Cut2d::cliptest(sfloat *p, sfloat *q)
 {
-  double x,y;
+  sfloat x,y;
 
   if (p[0] >= lo[0] && p[0] <= hi[0] &&
       p[1] >= lo[1] && p[1] <= hi[1]) return 1;
   if (q[0] >= lo[0] && q[0] <= hi[0] &&
       q[1] >= lo[1] && q[1] <= hi[1]) return 1;
 
-  double a[2],b[2];
+  sfloat a[2],b[2];
   a[0] = p[0]; a[1] = p[1];
   b[0] = q[0]; b[1] = q[1];
 
@@ -1142,9 +1143,9 @@ int Cut2d::cliptest(double *p, double *q)
    return AB = clipped segment
 ------------------------------------------------------------------------- */
 
-void Cut2d::clip(double *p, double *q, double *a, double *b)
+void Cut2d::clip(sfloat *p, sfloat *q, sfloat *a, sfloat *b)
 {
-  double x,y;
+  sfloat x,y;
 
   a[0] = p[0]; a[1] = p[1];
   b[0] = q[0]; b[1] = q[1];
@@ -1193,10 +1194,10 @@ void Cut2d::clip(double *p, double *q, double *a, double *b)
    return EXTERIOR,BORDER,INTERIOR
 ------------------------------------------------------------------------- */
 
-int Cut2d::ptflag(double *pt)
+int Cut2d::ptflag(sfloat *pt)
 {
-  double x = pt[0];
-  double y = pt[1];
+  sfloat x = pt[0];
+  sfloat y = pt[1];
   if (x < lo[0] || x > hi[0] || y < lo[1] || y > hi[1]) return EXTERIOR;
   if (x > lo[0] && x < hi[0] && y > lo[1] && y < hi[1]) return INTERIOR;
   return BORDER;
@@ -1209,7 +1210,7 @@ int Cut2d::ptflag(double *pt)
    return -1 if not on border
 ------------------------------------------------------------------------- */
 
-int Cut2d::whichside(double *pt)
+int Cut2d::whichside(sfloat *pt)
 {
   if (pt[0] == lo[0]) return 3;
   if (pt[0] == hi[0]) return 1;
@@ -1225,8 +1226,8 @@ int Cut2d::whichside(double *pt)
 void Cut2d::failed_cell()
 {
   printf("Cut2d failed on proc %d in cell ID: " CELLINT_FORMAT "\n",comm->me,id);
-  printf("  lo corner %20.16g %20.16g\n",lo[0],lo[1]);
-  printf("  hi corner %20.16g %20.16g\n",hi[0],hi[1]);
+  printf("  lo corner %20.16g %20.16g\n",spval(lo[0]),spval(lo[1]));
+  printf("  hi corner %20.16g %20.16g\n",spval(hi[0]),spval(hi[1]));
   printf("  # of surfs = %d out of " BIGINT_FORMAT "\n",nsurf,surf->nsurf);
   printf("  # of surfs = %d\n",nsurf);
   printf("  surfs:");
@@ -1245,8 +1246,8 @@ void Cut2d::print_clines()
 
   for (int i = 0; i < clines.n; i++) {
     printf("  line %d\n",i);
-    printf("    xpoint: %20.16g %20.16g\n",clines[i].x[0],clines[i].x[1]);
-    printf("    ypoint: %20.16g %20.16g\n",clines[i].y[0],clines[i].y[1]);
+    printf("    xpoint: %20.16g %20.16g\n",spval(clines[i].x[0]),spval(clines[i].x[1]));
+    printf("    ypoint: %20.16g %20.16g\n",spval(clines[i].y[0]),spval(clines[i].y[1]));
     printf("    line %d\n",clines[i].line);
   }
 }
@@ -1262,7 +1263,7 @@ void Cut2d::print_points()
 
   for (int i = 0; i < points.n; i++) {
     printf("  point %d\n",i);
-    printf("    coord: %g %g\n",points[i].x[0],points[i].x[1]);
+    printf("    coord: %g %g\n",spval(points[i].x[0]),spval(points[i].x[1]));
     printf("    type %d, next %d\n",points[i].type,points[i].next);
     if (points[i].type == ENTRY || points[i].type == TWO)
       printf("    line %d\n",points[i].line);
@@ -1270,7 +1271,7 @@ void Cut2d::print_points()
     printf("    corner %d\n",points[i].corner);
     if (points[i].type != TWO) {
       printf("    cprev %d, cnext %d\n",points[i].cprev,points[i].cnext);
-      printf("    side/value: %d %g\n",points[i].side,points[i].value);
+      printf("    side/value: %d %g\n",points[i].side,spval(points[i].value));
     }
   }
 }
@@ -1288,12 +1289,12 @@ void Cut2d::print_loops()
     printf("  loop %d\n",i);
     printf("    active %d\n",loops[i].active);
     printf("    flag %d\n",loops[i].flag);
-    printf("    area %g\n",loops[i].area);
+    printf("    area %g\n",spval(loops[i].area));
     printf("    npoints %d\n",loops[i].n);
     printf("    points:\n");
     int ipt = loops[i].first;
     for (int j = 0; j < loops[i].n; j++) {
-      printf("      %d %g %g\n",ipt,points[ipt].x[0],points[ipt].x[1]);
+      printf("      %d %g %g\n",ipt,spval(points[ipt].x[0]),spval(points[ipt].x[1]));
       ipt = points[ipt].next;
     }
   }

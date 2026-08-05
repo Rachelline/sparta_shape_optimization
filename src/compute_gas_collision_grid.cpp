@@ -1,3 +1,4 @@
+/* AD-CONVERTED: double->sfloat by tools/ad_convert.py (see sfloat.h) */
 /* ----------------------------------------------------------------------
    SPARTA - Stochastic PArallel Rarefied-gas Time-accurate Analyzer
    http://sparta.sandia.gov
@@ -83,7 +84,7 @@ void ComputeGasCollisionGrid::compute_per_grid()
 void ComputeGasCollisionGrid::clear()
 {
   cinfo = grid->cinfo;
-  memset(vector_grid,0,nglocal*sizeof(double));
+  memset(vector_grid,0,nglocal*sizeof(sfloat));
 }
 
 /* ----------------------------------------------------------------------
@@ -143,7 +144,7 @@ void ComputeGasCollisionGrid::reallocate()
   // also note if load-balancing is done, tallies will be lost
   //   would need to implement (un)pack_grid_one() to avoid this
 
-  memset(vector_grid,0,nglocal*sizeof(double));
+  memset(vector_grid,0,nglocal*sizeof(sfloat));
 }
 
 /* ----------------------------------------------------------------------
@@ -153,6 +154,6 @@ void ComputeGasCollisionGrid::reallocate()
 bigint ComputeGasCollisionGrid::memory_usage()
 {
   bigint bytes = 0;
-  bytes += nglocal * sizeof(double);    // vector_grid
+  bytes += nglocal * sizeof(sfloat);    // vector_grid
   return bytes;
 }

@@ -1,3 +1,4 @@
+/* AD-CONVERTED: double->sfloat by tools/ad_convert.py (see sfloat.h) */
 /* ----------------------------------------------------------------------
    SPARTA - Stochastic PArallel Rarefied-gas Time-accurate Analyzer
    http://sparta.github.io
@@ -170,8 +171,8 @@ void Image::buffers()
    called before every render if view is DYNAMIC
 ------------------------------------------------------------------------- */
 
-void Image::view_params(double boxxlo, double boxxhi, double boxylo,
-                        double boxyhi, double boxzlo, double boxzhi)
+void Image::view_params(sfloat boxxlo, sfloat boxxhi, sfloat boxylo,
+                        sfloat boxyhi, sfloat boxzlo, sfloat boxzhi)
 {
   // camDir points at the camera, view direction = -camDir
 
@@ -190,7 +191,7 @@ void Image::view_params(double boxxlo, double boxxhi, double boxylo,
   // try to insure continuous images as changing view passes thru up
   // sufficient to handle common cases where theta = 0 or 180 is degenerate?
 
-  double dot = MathExtra::dot3(up,camDir);
+  sfloat dot = MathExtra::dot3(up,camDir);
   if (fabs(dot) > 1.0-EPSILON) {
     if (theta == 0.0) {
       camDir[0] = sin(EPSILON)*cos(phi);
@@ -219,10 +220,10 @@ void Image::view_params(double boxxlo, double boxxhi, double boxylo,
   // zdist = camera distance = function of zoom & bounding box
   // camPos = camera position = function of camDir and zdist
 
-  double delx = 2.0*(boxxhi-boxxlo);
-  double dely = 2.0*(boxyhi-boxylo);
-  double delz = 2.0*(boxzhi-boxzlo);
-  double maxdel = MAX(delx,dely);
+  sfloat delx = 2.0*(boxxhi-boxxlo);
+  sfloat dely = 2.0*(boxyhi-boxylo);
+  sfloat delz = 2.0*(boxzhi-boxzlo);
+  sfloat maxdel = MAX(delx,dely);
   maxdel = MAX(maxdel,delz);
 
   zdist = maxdel;
@@ -263,11 +264,11 @@ void Image::view_params(double boxxlo, double boxxhi, double boxylo,
   if (ssao) {
     if (!random) {
       random = new RanKnuth(update->ranmaster->uniform());
-      double seed = update->ranmaster->uniform();
-      random->reset(seed,me,100);
+      sfloat seed = update->ranmaster->uniform();
+      random->reset(spval(seed),me,100);
     }
     SSAORadius = maxdel * 0.05 * ssaoint;
-    SSAOSamples = static_cast<int> (8.0 + 32.0*ssaoint);
+    SSAOSamples = static_cast<int> (spval(8.0 + 32.0*ssaoint));
     SSAOJitter = MY_PI / 12;
     ambientColor[0] = 0.5;
     ambientColor[1] = 0.5;
@@ -276,7 +277,7 @@ void Image::view_params(double boxxlo, double boxxhi, double boxylo,
 
   // param for rasterizing spheres
 
-  tanPerPixel = -(maxdel / (double) height);
+  tanPerPixel = -(maxdel / (sfloat) height);
 }
 
 /* ----------------------------------------------------------------------
@@ -318,9 +319,9 @@ void Image::merge()
   while (nhalf) {
     if (me < nhalf && me+nhalf < nprocs) {
       MPI_Irecv(rgbcopy,npixels*3,MPI_BYTE,me+nhalf,0,world,&requests[0]);
-      MPI_Irecv(depthcopy,npixels,MPI_DOUBLE,me+nhalf,0,world,&requests[1]);
+      MPI_Irecv(depthcopy,npixels,MPI_SFLOAT,me+nhalf,0,world,&requests[1]);
       if (ssao)
-        MPI_Irecv(surfacecopy,npixels*2,MPI_DOUBLE,
+        MPI_Irecv(surfacecopy,npixels*2,MPI_SFLOAT,
                   me+nhalf,0,world,&requests[2]);
       if (ssao) MPI_Waitall(3,requests,statuses);
       else MPI_Waitall(2,requests,statuses);
@@ -341,8 +342,8 @@ void Image::merge()
 
     } else if (me >= nhalf && me < 2*nhalf) {
       MPI_Send(imageBuffer,npixels*3,MPI_BYTE,me-nhalf,0,world);
-      MPI_Send(depthBuffer,npixels,MPI_DOUBLE,me-nhalf,0,world);
-      if (ssao) MPI_Send(surfaceBuffer,npixels*2,MPI_DOUBLE,me-nhalf,0,world);
+      MPI_Send(depthBuffer,npixels,MPI_SFLOAT,me-nhalf,0,world);
+      if (ssao) MPI_Send(surfaceBuffer,npixels*2,MPI_SFLOAT,me-nhalf,0,world);
     }
 
     nhalf /= 2;
@@ -356,8 +357,8 @@ void Image::merge()
 
   if (ssao) {
     MPI_Bcast(imageBuffer,npixels*3,MPI_BYTE,0,world);
-    MPI_Bcast(surfaceBuffer,npixels*2,MPI_DOUBLE,0,world);
-    MPI_Bcast(depthBuffer,npixels,MPI_DOUBLE,0,world);
+    MPI_Bcast(surfaceBuffer,npixels*2,MPI_SFLOAT,0,world);
+    MPI_Bcast(depthBuffer,npixels,MPI_SFLOAT,0,world);
     compute_SSAO();
 
     int pixelstart = 3 * static_cast<int> (1.0*me/nprocs * npixels);
@@ -392,7 +393,7 @@ void Image::merge()
    draw a line as a cylinder
 ------------------------------------------------------------------------- */
 
-void Image::draw_line(double *x1, double *x2, double *color, double diameter)
+void Image::draw_line(sfloat *x1, sfloat *x2, sfloat *color, sfloat diameter)
 {
   draw_cylinder(x1,x2,color,diameter,3);
 }
@@ -401,7 +402,7 @@ void Image::draw_line(double *x1, double *x2, double *color, double diameter)
    draw outline of a 3d box as 12 cylinders
 ------------------------------------------------------------------------- */
 
-void Image::draw_box(double (*corners)[3], double *color, double diameter)
+void Image::draw_box(sfloat (*corners)[3], sfloat *color, sfloat diameter)
 {
   draw_cylinder(corners[0],corners[1],color,diameter,3);
   draw_cylinder(corners[2],corners[3],color,diameter,3);
@@ -421,7 +422,7 @@ void Image::draw_box(double (*corners)[3], double *color, double diameter)
    draw outline of a 2d rectangle as 4 cylinders
 ------------------------------------------------------------------------- */
 
-void Image::draw_box2d(double (*corners)[3], double *color, double diameter)
+void Image::draw_box2d(sfloat (*corners)[3], sfloat *color, sfloat diameter)
 {
   draw_cylinder(corners[0],corners[1],color,diameter,3);
   draw_cylinder(corners[2],corners[3],color,diameter,3);
@@ -434,7 +435,7 @@ void Image::draw_box2d(double (*corners)[3], double *color, double diameter)
    axes = 4 end points
 ------------------------------------------------------------------------- */
 
-void Image::draw_axes(double (*axes)[3], double diameter)
+void Image::draw_axes(sfloat (*axes)[3], sfloat diameter)
 {
   draw_cylinder(axes[0],axes[1],color2rgb("red"),diameter,3);
   draw_cylinder(axes[0],axes[2],color2rgb("green"),diameter,3);
@@ -446,34 +447,34 @@ void Image::draw_axes(double (*axes)[3], double diameter)
    render pixel by pixel onto image plane with depth buffering
 ------------------------------------------------------------------------- */
 
-void Image::draw_sphere(double *x, double *surfaceColor, double diameter)
+void Image::draw_sphere(sfloat *x, sfloat *surfaceColor, sfloat diameter)
 {
   int ix,iy;
-  double projRad;
-  double xlocal[3],surface[3];
-  double depth;
+  sfloat projRad;
+  sfloat xlocal[3],surface[3];
+  sfloat depth;
 
   xlocal[0] = x[0] - xctr;
   xlocal[1] = x[1] - yctr;
   xlocal[2] = x[2] - zctr;
 
-  double xmap = MathExtra::dot3(camRight,xlocal);
-  double ymap = MathExtra::dot3(camUp,xlocal);
-  double dist = MathExtra::dot3(camPos,camDir) - MathExtra::dot3(xlocal,camDir);
+  sfloat xmap = MathExtra::dot3(camRight,xlocal);
+  sfloat ymap = MathExtra::dot3(camUp,xlocal);
+  sfloat dist = MathExtra::dot3(camPos,camDir) - MathExtra::dot3(xlocal,camDir);
 
-  double radius = 0.5*diameter;
-  double radsq = radius*radius;
-  double pixelWidth = (tanPerPixel > 0) ? tanPerPixel * dist :
-    -tanPerPixel / zoom;
-  double pixelRadiusFull = radius / pixelWidth;
-  int pixelRadius = static_cast<int> (pixelRadiusFull + 0.5) + 1;
+  sfloat radius = 0.5*diameter;
+  sfloat radsq = radius*radius;
+  sfloat pixelWidth = (tanPerPixel > 0) ? sfloat(tanPerPixel * dist) :
+    sfloat(-tanPerPixel / zoom);
+  sfloat pixelRadiusFull = radius / pixelWidth;
+  int pixelRadius = static_cast<int> (spval(pixelRadiusFull + 0.5)) + 1;
 
-  double xf = xmap / pixelWidth;
-  double yf = ymap / pixelWidth;
-  int xc = static_cast<int> (xf);
-  int yc = static_cast<int> (yf);
-  double width_error = xf - xc;
-  double height_error = yf - yc;
+  sfloat xf = xmap / pixelWidth;
+  sfloat yf = ymap / pixelWidth;
+  int xc = static_cast<int> (spval(xf));
+  int yc = static_cast<int> (spval(yf));
+  sfloat width_error = xf - xc;
+  sfloat height_error = yf - yc;
 
   // shift 0,0 to screen center (vs lower left)
 
@@ -508,39 +509,39 @@ void Image::draw_sphere(double *x, double *surfaceColor, double diameter)
    render pixel by pixel onto image plane with depth buffering
 ------------------------------------------------------------------------- */
 
-void Image::draw_brick(double *x, double *surfaceColor, double *diameter)
+void Image::draw_brick(sfloat *x, sfloat *surfaceColor, sfloat *diameter)
 {
-  double xlocal[3],surface[3],normal[3];
-  double t,tdir[3];
-  double depth;
+  sfloat xlocal[3],surface[3],normal[3];
+  sfloat t,tdir[3];
+  sfloat depth;
 
   xlocal[0] = x[0] - xctr;
   xlocal[1] = x[1] - yctr;
   xlocal[2] = x[2] - zctr;
 
-  double xmap = MathExtra::dot3(camRight,xlocal);
-  double ymap = MathExtra::dot3(camUp,xlocal);
-  double dist = MathExtra::dot3(camPos,camDir) - MathExtra::dot3(xlocal,camDir);
+  sfloat xmap = MathExtra::dot3(camRight,xlocal);
+  sfloat ymap = MathExtra::dot3(camUp,xlocal);
+  sfloat dist = MathExtra::dot3(camPos,camDir) - MathExtra::dot3(xlocal,camDir);
 
-  double radius[3];
+  sfloat radius[3];
   radius[0] = 0.5*diameter[0];
   radius[1] = 0.5*diameter[1];
   radius[2] = 0.5*diameter[2];
 
-  double pixelWidth = (tanPerPixel > 0) ? tanPerPixel * dist :
-    -tanPerPixel / zoom;
+  sfloat pixelWidth = (tanPerPixel > 0) ? sfloat(tanPerPixel * dist) :
+    sfloat(-tanPerPixel / zoom);
 
-  double halfWidth = MAX(diameter[0],diameter[1]);
+  sfloat halfWidth = MAX(diameter[0],diameter[1]);
   halfWidth = MAX(halfWidth,diameter[2]);
-  double pixelHalfWidthFull = halfWidth / pixelWidth;
-  int pixelHalfWidth = static_cast<int> (pixelHalfWidthFull + 0.5);
+  sfloat pixelHalfWidthFull = halfWidth / pixelWidth;
+  int pixelHalfWidth = static_cast<int> (spval(pixelHalfWidthFull + 0.5));
 
-  double xf = xmap / pixelWidth;
-  double yf = ymap / pixelWidth;
-  int xc = static_cast<int> (xf);
-  int yc = static_cast<int> (yf);
-  double width_error = xf - xc;
-  double height_error = yf - yc;
+  sfloat xf = xmap / pixelWidth;
+  sfloat yf = ymap / pixelWidth;
+  int xc = static_cast<int> (spval(xf));
+  int yc = static_cast<int> (spval(yf));
+  sfloat width_error = xf - xc;
+  sfloat height_error = yf - yc;
 
   // shift 0,0 to screen center (vs lower left)
 
@@ -551,8 +552,8 @@ void Image::draw_brick(double *x, double *surfaceColor, double *diameter)
     for (int ix = xc - pixelHalfWidth; ix <= xc + pixelHalfWidth; ix ++) {
       if (iy < 0 || iy >= height || ix < 0 || ix >= width) continue;
 
-      double sy = ((iy - yc) - height_error) * pixelWidth;
-      double sx = ((ix - xc) - width_error) * pixelWidth;
+      sfloat sy = ((iy - yc) - height_error) * pixelWidth;
+      sfloat sx = ((ix - xc) - width_error) * pixelWidth;
       surface[0] = camRight[0] * sx + camUp[0] * sy;
       surface[1] = camRight[1] * sx + camUp[1] * sy;
       surface[2] = camRight[2] * sx + camUp[2] * sy;
@@ -620,60 +621,60 @@ void Image::draw_brick(double *x, double *surfaceColor, double *diameter)
    if sflag = 3, draw both end spheres
 ------------------------------------------------------------------------- */
 
-void Image::draw_cylinder(double *x, double *y,
-                          double *surfaceColor, double diameter, int sflag)
+void Image::draw_cylinder(sfloat *x, sfloat *y,
+                          sfloat *surfaceColor, sfloat diameter, int sflag)
 {
-  double surface[3], normal[3];
-  double mid[3],xaxis[3],yaxis[3],zaxis[3];
-  double camLDir[3], camLRight[3], camLUp[3];
-  double zmin, zmax;
+  sfloat surface[3], normal[3];
+  sfloat mid[3],xaxis[3],yaxis[3],zaxis[3];
+  sfloat camLDir[3], camLRight[3], camLUp[3];
+  sfloat zmin, zmax;
 
   if (sflag % 2) draw_sphere(x,surfaceColor,diameter);
   if (sflag/2) draw_sphere(y,surfaceColor,diameter);
 
-  double radius = 0.5*diameter;
-  double radsq = radius*radius;
+  sfloat radius = 0.5*diameter;
+  sfloat radsq = radius*radius;
 
   zaxis[0] = y[0] - x[0];
   zaxis[1] = y[1] - x[1];
   zaxis[2] = y[2] - x[2];
 
-  double rasterWidth = fabs(MathExtra::dot3(zaxis, camRight)) + diameter;
-  double rasterHeight = fabs(MathExtra::dot3(zaxis, camUp)) + diameter;
+  sfloat rasterWidth = fabs(MathExtra::dot3(zaxis, camRight)) + diameter;
+  sfloat rasterHeight = fabs(MathExtra::dot3(zaxis, camUp)) + diameter;
 
   mid[0] = (y[0] + x[0]) * 0.5 - xctr;
   mid[1] = (y[1] + x[1]) * 0.5 - yctr;
   mid[2] = (y[2] + x[2]) * 0.5 - zctr;
 
-  double len = MathExtra::len3(zaxis);
+  sfloat len = MathExtra::len3(zaxis);
   MathExtra::scale3(1.0/len,zaxis);
   len *= 0.5;
   zmax = len;
   zmin = -len;
 
-  double xmap = MathExtra::dot3(camRight,mid);
-  double ymap = MathExtra::dot3(camUp,mid);
-  double dist = MathExtra::dot3(camPos,camDir) - MathExtra::dot3(mid,camDir);
+  sfloat xmap = MathExtra::dot3(camRight,mid);
+  sfloat ymap = MathExtra::dot3(camUp,mid);
+  sfloat dist = MathExtra::dot3(camPos,camDir) - MathExtra::dot3(mid,camDir);
 
-  double pixelWidth = (tanPerPixel > 0) ? tanPerPixel * dist :
-    -tanPerPixel / zoom;
+  sfloat pixelWidth = (tanPerPixel > 0) ? sfloat(tanPerPixel * dist) :
+    sfloat(-tanPerPixel / zoom);
 
-  double xf = xmap / pixelWidth;
-  double yf = ymap / pixelWidth;
-  int xc = static_cast<int> (xf);
-  int yc = static_cast<int> (yf);
-  double width_error = xf - xc;
-  double height_error = yf - yc;
+  sfloat xf = xmap / pixelWidth;
+  sfloat yf = ymap / pixelWidth;
+  int xc = static_cast<int> (spval(xf));
+  int yc = static_cast<int> (spval(yf));
+  sfloat width_error = xf - xc;
+  sfloat height_error = yf - yc;
 
   // shift 0,0 to screen center (vs lower left)
 
   xc += width / 2;
   yc += height / 2;
 
-  double pixelHalfWidthFull = (rasterWidth * 0.5) / pixelWidth;
-  double pixelHalfHeightFull = (rasterHeight * 0.5) / pixelWidth;
-  int pixelHalfWidth = static_cast<int> (pixelHalfWidthFull + 0.5);
-  int pixelHalfHeight = static_cast<int> (pixelHalfHeightFull + 0.5);
+  sfloat pixelHalfWidthFull = (rasterWidth * 0.5) / pixelWidth;
+  sfloat pixelHalfHeightFull = (rasterHeight * 0.5) / pixelWidth;
+  int pixelHalfWidth = static_cast<int> (spval(pixelHalfWidthFull + 0.5));
+  int pixelHalfHeight = static_cast<int> (spval(pixelHalfHeightFull + 0.5));
 
   if (zaxis[0] == camDir[0] && zaxis[1] == camDir[1] && zaxis[2] == camDir[2])
     return;
@@ -699,27 +700,27 @@ void Image::draw_cylinder(double *x, double *y,
   camLUp[2] = MathExtra::dot3(camUp,zaxis);
   MathExtra::norm3(camLUp);
 
-  double a = camLDir[0] * camLDir[0];
+  sfloat a = camLDir[0] * camLDir[0];
 
   for (int iy = yc - pixelHalfHeight; iy <= yc + pixelHalfHeight; iy ++) {
     for (int ix = xc - pixelHalfWidth; ix <= xc + pixelHalfWidth; ix ++) {
       if (iy < 0 || iy >= height || ix < 0 || ix >= width) continue;
 
-      double sy = ((iy - yc) - height_error) * pixelWidth;
-      double sx = ((ix - xc) - width_error) * pixelWidth;
+      sfloat sy = ((iy - yc) - height_error) * pixelWidth;
+      sfloat sx = ((ix - xc) - width_error) * pixelWidth;
       surface[0] = camLRight[0] * sx + camLUp[0] * sy;
       surface[1] = camLRight[1] * sx + camLUp[1] * sy;
       surface[2] = camLRight[2] * sx + camLUp[2] * sy;
 
-      double b = 2 * camLDir[0] * surface[0];
-      double c = surface[0] * surface[0] + surface[1] * surface[1] - radsq;
+      sfloat b = 2 * camLDir[0] * surface[0];
+      sfloat c = surface[0] * surface[0] + surface[1] * surface[1] - radsq;
 
-      double partial = b*b - 4*a*c;
+      sfloat partial = b*b - 4*a*c;
       if (partial < 0) continue;
       partial = sqrt (partial);
 
-      double t = (-b + partial) / (2*a);
-      double t2 = (-b - partial) / (2*a);
+      sfloat t = (-b + partial) / (2*a);
+      sfloat t2 = (-b - partial) / (2*a);
       if (t2 > t) { t = t2; }
 
       surface[0] += t * camLDir[0];
@@ -740,7 +741,7 @@ void Image::draw_cylinder(double *x, double *y,
       surface[1] = MathExtra::dot3 (normal, camLUp);
       surface[2] = MathExtra::dot3 (normal, camLDir);
 
-      double depth = dist - t;
+      sfloat depth = dist - t;
       draw_pixel (ix, iy, depth, surface, surfaceColor);
     }
   }
@@ -750,12 +751,12 @@ void Image::draw_cylinder(double *x, double *y,
    draw triangle with 3 corner points x,y,z and surfaceColor
 ------------------------------------------------------------------------- */
 
-void Image::draw_triangle(double *x, double *y, double *z, double *surfaceColor)
+void Image::draw_triangle(sfloat *x, sfloat *y, sfloat *z, sfloat *surfaceColor)
 {
-  double d1[3], d1len, d2[3], d2len, normal[3], invndotd;
-  double xlocal[3], ylocal[3], zlocal[3];
-  double surface[3];
-  double depth;
+  sfloat d1[3], d1len, d2[3], d2len, normal[3], invndotd;
+  sfloat xlocal[3], ylocal[3], zlocal[3];
+  sfloat surface[3];
+  sfloat depth;
 
   xlocal[0] = x[0] - xctr;
   xlocal[1] = x[1] - yctr;
@@ -789,13 +790,13 @@ void Image::draw_triangle(double *x, double *y, double *z, double *surfaceColor)
   // ----------------
   // new code
 
-  double ndotd = MathExtra::dot3(normal,camDir);
+  sfloat ndotd = MathExtra::dot3(normal,camDir);
   if (ndotd >= 0.0) return;
   invndotd = 1.0 / ndotd;
 
   // ----------------
 
-  double r[3],u[3];
+  sfloat r[3],u[3];
 
   r[0] = MathExtra::dot3(camRight,xlocal);
   r[1] = MathExtra::dot3(camRight,ylocal);
@@ -805,34 +806,34 @@ void Image::draw_triangle(double *x, double *y, double *z, double *surfaceColor)
   u[1] = MathExtra::dot3(camUp,ylocal);
   u[2] = MathExtra::dot3(camUp,zlocal);
 
-  double rasterLeft = r[0] - MIN(r[0],MIN(r[1],r[2]));
-  double rasterRight = MAX(r[0],MAX(r[1],r[2])) - r[0];
-  double rasterDown = u[0] - MIN(u[0],MIN(u[1],u[2]));
-  double rasterUp = MAX(u[0],MAX(u[1],u[2])) - u[0];
+  sfloat rasterLeft = r[0] - MIN(r[0],MIN(r[1],r[2]));
+  sfloat rasterRight = MAX(r[0],MAX(r[1],r[2])) - r[0];
+  sfloat rasterDown = u[0] - MIN(u[0],MIN(u[1],u[2]));
+  sfloat rasterUp = MAX(u[0],MAX(u[1],u[2])) - u[0];
 
-  double xmap = MathExtra::dot3(camRight,xlocal);
-  double ymap = MathExtra::dot3(camUp,xlocal);
-  double dist = MathExtra::dot3(camPos,camDir) - MathExtra::dot3(xlocal,camDir);
+  sfloat xmap = MathExtra::dot3(camRight,xlocal);
+  sfloat ymap = MathExtra::dot3(camUp,xlocal);
+  sfloat dist = MathExtra::dot3(camPos,camDir) - MathExtra::dot3(xlocal,camDir);
 
-  double pixelWidth = (tanPerPixel > 0) ? tanPerPixel * dist :
-    -tanPerPixel / zoom;
+  sfloat pixelWidth = (tanPerPixel > 0) ? sfloat(tanPerPixel * dist) :
+    sfloat(-tanPerPixel / zoom);
 
-  double xf = xmap / pixelWidth;
-  double yf = ymap / pixelWidth;
-  int xc = static_cast<int> (xf);
-  int yc = static_cast<int> (yf);
-  double width_error = xf - xc;
-  double height_error = yf - yc;
+  sfloat xf = xmap / pixelWidth;
+  sfloat yf = ymap / pixelWidth;
+  int xc = static_cast<int> (spval(xf));
+  int yc = static_cast<int> (spval(yf));
+  sfloat width_error = xf - xc;
+  sfloat height_error = yf - yc;
 
   // shift 0,0 to screen center (vs lower left)
 
   xc += width / 2;
   yc += height / 2;
 
-  double pixelLeftFull = rasterLeft / pixelWidth;
-  double pixelRightFull = rasterRight / pixelWidth;
-  double pixelDownFull = rasterDown / pixelWidth;
-  double pixelUpFull = rasterUp / pixelWidth;
+  sfloat pixelLeftFull = rasterLeft / pixelWidth;
+  sfloat pixelRightFull = rasterRight / pixelWidth;
+  sfloat pixelDownFull = rasterDown / pixelWidth;
+  sfloat pixelUpFull = rasterUp / pixelWidth;
 
   //old
   //int pixelLeft = static_cast<int> (pixelLeftFull + 0.5);
@@ -841,32 +842,32 @@ void Image::draw_triangle(double *x, double *y, double *z, double *surfaceColor)
   //int pixelUp = static_cast<int> (pixelUpFull + 0.5);
 
   // new
-  int pixelLeft = static_cast<int> (pixelLeftFull + 1.0);
-  int pixelRight = static_cast<int> (pixelRightFull + 1.0);
-  int pixelDown = static_cast<int> (pixelDownFull + 1.0);
-  int pixelUp = static_cast<int> (pixelUpFull + 1.0);
+  int pixelLeft = static_cast<int> (spval(pixelLeftFull + 1.0));
+  int pixelRight = static_cast<int> (spval(pixelRightFull + 1.0));
+  int pixelDown = static_cast<int> (spval(pixelDownFull + 1.0));
+  int pixelUp = static_cast<int> (spval(pixelUpFull + 1.0));
 
   for (int iy = yc - pixelDown; iy <= yc + pixelUp; iy ++) {
     for (int ix = xc - pixelLeft; ix <= xc + pixelRight; ix ++) {
       if (iy < 0 || iy >= height || ix < 0 || ix >= width) continue;
 
-      double sy = ((iy - yc) - height_error) * pixelWidth;
-      double sx = ((ix - xc) - width_error) * pixelWidth;
+      sfloat sy = ((iy - yc) - height_error) * pixelWidth;
+      sfloat sx = ((ix - xc) - width_error) * pixelWidth;
       surface[0] = camRight[0] * sx + camUp[0] * sy;
       surface[1] = camRight[1] * sx + camUp[1] * sy;
       surface[2] = camRight[2] * sx + camUp[2] * sy;
 
-      double t = -MathExtra::dot3(normal,surface) * invndotd;
+      sfloat t = -MathExtra::dot3(normal,surface) * invndotd;
 
       // test inside the triangle
 
-      double p[3];
+      sfloat p[3];
       p[0] = xlocal[0] + surface[0] + camDir[0] * t;
       p[1] = xlocal[1] + surface[1] + camDir[1] * t;
       p[2] = xlocal[2] + surface[2] + camDir[2] * t;
 
-      double s1[3], s2[3], s3[3];
-      double c1[3], c2[3];
+      sfloat s1[3], s2[3], s3[3];
+      sfloat c1[3], c2[3];
 
       MathExtra::sub3 (zlocal, xlocal, s1);
       MathExtra::sub3 (ylocal, xlocal, s2);
@@ -889,7 +890,7 @@ void Image::draw_triangle(double *x, double *y, double *z, double *surfaceColor)
       MathExtra::cross3 (s1, s3, c2);
       if (MathExtra::dot3 (c1, c2) <= 0) continue;
 
-      double cNormal[3];
+      sfloat cNormal[3];
       cNormal[0] = MathExtra::dot3(camRight, normal);
       cNormal[1] = MathExtra::dot3(camUp, normal);
       cNormal[2] = MathExtra::dot3(camDir, normal);
@@ -902,10 +903,10 @@ void Image::draw_triangle(double *x, double *y, double *z, double *surfaceColor)
 
 /* ---------------------------------------------------------------------- */
 
-void Image::draw_pixel(int ix, int iy, double depth,
-                           double *surface, double *surfaceColor)
+void Image::draw_pixel(int ix, int iy, sfloat depth,
+                           sfloat *surface, sfloat *surfaceColor)
 {
-  double diffuseKey,diffuseFill,diffuseBack,specularKey;
+  sfloat diffuseKey,diffuseFill,diffuseBack,specularKey;
   if (depth < 0 || (depthBuffer[ix + iy*width] >= 0 &&
                     depth >= depthBuffer[ix + iy*width])) return;
   depthBuffer[ix + iy*width] = depth;
@@ -921,7 +922,7 @@ void Image::draw_pixel(int ix, int iy, double depth,
   specularKey = pow(saturate(MathExtra::dot3(surface, keyHalfDir)),
                     specularHardness) * specularIntensity;
 
-  double c[3];
+  sfloat c[3];
   c[0] = surfaceColor[0] * ambientColor[0];
   c[1] = surfaceColor[1] * ambientColor[1];
   c[2] = surfaceColor[2] * ambientColor[2];
@@ -946,9 +947,9 @@ void Image::draw_pixel(int ix, int iy, double depth,
   c[1] = saturate(c[1]);
   c[2] = saturate(c[2]);
 
-  imageBuffer[0 + ix*3 + iy*width*3] = static_cast<int>(c[0] * 255.0);
-  imageBuffer[1 + ix*3 + iy*width*3] = static_cast<int>(c[1] * 255.0);
-  imageBuffer[2 + ix*3 + iy*width*3] = static_cast<int>(c[2] * 255.0);
+  imageBuffer[0 + ix*3 + iy*width*3] = static_cast<int>(spval(c[0] * 255.0));
+  imageBuffer[1 + ix*3 + iy*width*3] = static_cast<int>(spval(c[1] * 255.0));
+  imageBuffer[2 + ix*3 + iy*width*3] = static_cast<int>(spval(c[2] * 255.0));
 }
 
 /* ---------------------------------------------------------------------- */
@@ -957,13 +958,13 @@ void Image::compute_SSAO()
 {
   // used for rasterizing the spheres
 
-  double delTheta = 2.0*MY_PI / SSAOSamples;
+  sfloat delTheta = 2.0*MY_PI / SSAOSamples;
 
   // typical neighborhood value for shading
 
-  double pixelWidth = (tanPerPixel > 0) ? tanPerPixel :
-        -tanPerPixel / zoom;
-  int pixelRadius = (int) trunc (SSAORadius / pixelWidth + 0.5);
+  sfloat pixelWidth = (tanPerPixel > 0) ? sfloat(tanPerPixel) :
+        sfloat(-tanPerPixel / zoom);
+  int pixelRadius = (int) spval(trunc(SSAORadius / pixelWidth + 0.5));
 
   // each proc is assigned a subset of contiguous pixels from the full image
   // pixels are contiguous in x (columns within a row), then by row
@@ -978,39 +979,39 @@ void Image::compute_SSAO()
     int x = index % width;
     int y = index / width;
 
-    double cdepth = depthBuffer[index];
+    sfloat cdepth = depthBuffer[index];
     if (cdepth < 0) { continue; }
 
-    double sx = surfaceBuffer[index * 2 + 0];
-    double sy = surfaceBuffer[index * 2 + 1];
-    double sin_t = -sqrt(sx*sx + sy*sy);
+    sfloat sx = surfaceBuffer[index * 2 + 0];
+    sfloat sy = surfaceBuffer[index * 2 + 1];
+    sfloat sin_t = -sqrt(sx*sx + sy*sy);
 
     // DEBUG - remove randomness so image is same on any proc count
-    //double mytheta = 0.5 * SSAOJitter;
-    double mytheta = random->uniform() * SSAOJitter;
-    double ao = 0.0;
+    //sfloat mytheta = 0.5 * SSAOJitter;
+    sfloat mytheta = random->uniform() * SSAOJitter;
+    sfloat ao = 0.0;
 
     for (int s = 0; s < SSAOSamples; s ++) {
-      double hx = cos(mytheta);
-      double hy = sin(mytheta);
+      sfloat hx = cos(mytheta);
+      sfloat hy = sin(mytheta);
       mytheta += delTheta;
 
       // multiply by z cross surface tangent
       // so that dot (aka cos) works here
 
-      double scaled_sin_t = sin_t * (hx*sy + hy*sx);
+      sfloat scaled_sin_t = sin_t * (hx*sy + hy*sx);
 
       // Bresenham's line algorithm to march over depthBuffer
 
-      int dx = static_cast<int> (hx * pixelRadius);
-      int dy = static_cast<int> (hy * pixelRadius);
+      int dx = static_cast<int> (spval(hx * pixelRadius));
+      int dy = static_cast<int> (spval(hy * pixelRadius));
       int ex = x + dx;
       if (ex < 0) { ex = 0; } if (ex >= width) { ex = width - 1; }
       int ey = y + dy;
       if (ey < 0) { ey = 0; } if (ey >= height) { ey = height - 1; }
-      double delta;
+      sfloat delta;
       int small, large;
-      double lenIncr;
+      sfloat lenIncr;
       if (fabs(hx) > fabs(hy)) {
         small = (hx > 0) ? 1 : -1;
         large = (hy > 0) ? width : -width;
@@ -1027,15 +1028,15 @@ void Image::compute_SSAO()
 
       int end = ex + ey * width;
       int ind = index + small;
-      double len = lenIncr;
-      double err = delta;
+      sfloat len = lenIncr;
+      sfloat err = delta;
       if (err >= 1.0) {
         ind += large;
         err -= 1.0;
       }
 
-      double minPeak = -1;
-      double peakLen = 0.0;
+      sfloat minPeak = -1;
+      sfloat peakLen = 0.0;
       int stepsTaken = 1;
       while ((small > 0 && ind <= end) || (small < 0 && ind >= end)) {
         if (ind < 0 || ind >= (width*height)) {
@@ -1060,24 +1061,24 @@ void Image::compute_SSAO()
       }
 
       if (peakLen > 0) {
-        double h = atan ((cdepth - minPeak) / peakLen);
+        sfloat h = atan ((cdepth - minPeak) / peakLen);
         ao += saturate(sin (h) - scaled_sin_t);
       } else {
         ao += saturate(-scaled_sin_t);
       }
     }
-    ao /= (double)SSAOSamples;
+    ao /= (sfloat)SSAOSamples;
 
-    double c[3];
-    c[0] = (double) (*(unsigned char *) &imageBuffer[index * 3 + 0]);
-    c[1] = (double) (*(unsigned char *) &imageBuffer[index * 3 + 1]);
-    c[2] = (double) (*(unsigned char *) &imageBuffer[index * 3 + 2]);
+    sfloat c[3];
+    c[0] = (sfloat) (*(unsigned char *) &imageBuffer[index * 3 + 0]);
+    c[1] = (sfloat) (*(unsigned char *) &imageBuffer[index * 3 + 1]);
+    c[2] = (sfloat) (*(unsigned char *) &imageBuffer[index * 3 + 2]);
     c[0] *= (1.0 - ao);
     c[1] *= (1.0 - ao);
     c[2] *= (1.0 - ao);
-    imageBuffer[index * 3 + 0] = (int) c[0];
-    imageBuffer[index * 3 + 1] = (int) c[1];
-    imageBuffer[index * 3 + 2] = (int) c[2];
+    imageBuffer[index * 3 + 0] = (int) spval(c[0]);
+    imageBuffer[index * 3 + 1] = (int) spval(c[1]);
+    imageBuffer[index * 3 + 2] = (int) spval(c[2]);
   }
 }
 
@@ -1211,7 +1212,7 @@ int Image::map_reset(int index, int narg, char **arg)
    set min/max bounds of dynamic color map index
 ------------------------------------------------------------------------- */
 
-int Image::map_minmax(int index, double mindynamic, double maxdynamic)
+int Image::map_minmax(int index, sfloat mindynamic, sfloat maxdynamic)
 {
   return maps[index]->minmax(mindynamic,maxdynamic);
 }
@@ -1220,7 +1221,7 @@ int Image::map_minmax(int index, double mindynamic, double maxdynamic)
    return 3-vector color corresponding to value from color map index
 ------------------------------------------------------------------------- */
 
-double *Image::map_value2color(int index, double value)
+sfloat *Image::map_value2color(int index, sfloat value)
 {
   return maps[index]->value2color(value);
 }
@@ -1231,7 +1232,7 @@ double *Image::map_value2color(int index, double value)
    return 1 if RGB values are invalid, else return 0
 ------------------------------------------------------------------------- */
 
-int Image::addcolor(char *name, double r, double g, double b)
+int Image::addcolor(char *name, sfloat r, sfloat g, sfloat b)
 {
   int icolor;
   for (icolor = 0; icolor < ncolors; icolor++)
@@ -1266,7 +1267,7 @@ int Image::addcolor(char *name, double r, double g, double b)
    return a pointer to the 3 floating point RGB values or NULL if didn't find
 ------------------------------------------------------------------------- */
 
-double *Image::color2rgb(const char *color, int index)
+sfloat *Image::color2rgb(const char *color, int index)
 {
   static const char *name[NCOLORS] = {
     "aliceblue",
@@ -1411,7 +1412,7 @@ double *Image::color2rgb(const char *color, int index)
     "yellowgreen"
   };
 
-  static double rgb[NCOLORS][3] = {
+  static sfloat rgb[NCOLORS][3] = {
     {240/255.0, 248/255.0, 255/255.0},
     {250/255.0, 235/255.0, 215/255.0},
     {0/255.0, 255/255.0, 255/255.0},
@@ -1585,7 +1586,7 @@ int Image::default_colors()
    this list is used by AtomEye and is taken from its Mendeleyev.c file
 ------------------------------------------------------------------------- */
 
-double *Image::element2color(char *element)
+sfloat *Image::element2color(char *element)
 {
   static const char *name[NELEMENTS] = {
     "H", "He", "Li", "Be", "B", "C", "N", "O", "F", "Ne",
@@ -1601,7 +1602,7 @@ double *Image::element2color(char *element)
     "Md", "No", "Lr", "Rf", "Db", "Sg", "Bh", "Hs", "Mt"
   };
 
-  static double rgb[NELEMENTS][3] = {
+  static sfloat rgb[NELEMENTS][3] = {
     {0.8, 0.8, 0.8},
     {0.6431372549, 0.6666666667, 0.6784313725},
     {0.7, 0.7, 0.7},
@@ -1724,7 +1725,7 @@ double *Image::element2color(char *element)
    this list is used by AtomEye and is taken from its Mendeleyev.c file
 ------------------------------------------------------------------------- */
 
-double Image::element2diam(char *element)
+sfloat Image::element2diam(char *element)
 {
   static const char *name[NELEMENTS] = {
     "H", "He", "Li", "Be", "B", "C", "N", "O", "F", "Ne",
@@ -1740,7 +1741,7 @@ double Image::element2diam(char *element)
     "Md", "No", "Lr", "Rf", "Db", "Sg", "Bh", "Hs", "Mt"
   };
 
-  static double diameter[NELEMENTS] = {
+  static sfloat diameter[NELEMENTS] = {
     0.35, 1.785, 1.45, 1.05, 0.85, 0.72, 0.65, 0.6, 0.5, 1.5662,
     1.8, 1.5, 1.4255, 1.07, 1, 1, 1, 1.8597, 2.2, 1.8,
     1.6, 1.4, 1.51995, 1.44225, 1.4, 1.43325, 1.35, 1.35, 1.278, 1.35,
@@ -1905,7 +1906,7 @@ int ColorMap::reset(int narg, char **arg)
    else return 0
 ------------------------------------------------------------------------- */
 
-int ColorMap::minmax(double mindynamic, double maxdynamic)
+int ColorMap::minmax(sfloat mindynamic, sfloat maxdynamic)
 {
   if (mlo == MINVALUE) locurrent = mindynamic;
   else locurrent = mlovalue;
@@ -1951,9 +1952,9 @@ int ColorMap::minmax(double mindynamic, double maxdynamic)
    return pointer to 3-vector
 ------------------------------------------------------------------------- */
 
-double *ColorMap::value2color(double value)
+sfloat *ColorMap::value2color(sfloat value)
 {
-  double lo;
+  sfloat lo;
 
   value = MAX(value,locurrent);
   value = MIN(value,hicurrent);
@@ -1969,7 +1970,7 @@ double *ColorMap::value2color(double value)
   if (mstyle == CONTINUOUS) {
     for (int i = 0; i < nentry-1; i++)
       if (value >= mentry[i].svalue && value <= mentry[i+1].svalue) {
-        double fraction = (value-mentry[i].svalue) /
+        sfloat fraction = (value-mentry[i].svalue) /
           (mentry[i+1].svalue-mentry[i].svalue);
         interpolate[0] = mentry[i].color[0] +
           fraction*(mentry[i+1].color[0]-mentry[i].color[0]);
@@ -1984,7 +1985,7 @@ double *ColorMap::value2color(double value)
       if (value >= mentry[i].lvalue && value <= mentry[i].hvalue)
         return mentry[i].color;
   } else {
-    int ibin = static_cast<int> ((value-lo) * mbinsizeinv);
+    int ibin = static_cast<int> (spval((value-lo) * mbinsizeinv));
     return mentry[ibin%nentry].color;
   }
 

@@ -1,3 +1,4 @@
+/* AD-CONVERTED: double->sfloat by tools/ad_convert.py (see sfloat.h) */
 /* ----------------------------------------------------------------------
    SPARTA - Stochastic PArallel Rarefied-gas Time-accurate Analyzer
    http://sparta.github.io
@@ -176,8 +177,8 @@ void FixEmitSurf::init()
 
   // mixture soundspeed, used by subsonic PONLY as default cell property
 
-  double avegamma = 0.0;
-  double avemass = 0.0;
+  sfloat avegamma = 0.0;
+  sfloat avemass = 0.0;
 
   for (int m = 0; m < nspecies; m++) {
     int ispecies = particle->mixture[imix]->species[m];
@@ -192,7 +193,7 @@ void FixEmitSurf::init()
   // magvstream = magnitude of mxiture vstream vector
   // norm_vstream = unit vector in stream direction
 
-  double *vstream = particle->mixture[imix]->vstream;
+  sfloat *vstream = particle->mixture[imix]->vstream;
   magvstream = MathExtra::len3(vstream);
 
   norm_vstream[0] = vstream[0];
@@ -271,10 +272,10 @@ void FixEmitSurf::init()
   // do this for owned custom surfs, grid_changed() will propagate to nlocal+nghost surfs
 
   if (fractions_custom_flag) {
-    double **fractions = surf->edarray[surf->ewhich[fractions_custom_index]];
+    sfloat **fractions = surf->edarray[surf->ewhich[fractions_custom_index]];
 
     int isp,nunset;
-    double sum,newfrac;
+    sfloat sum,newfrac;
 
     int nsown = surf->nown;
     for (int i = 0; i < nsown; i++) {
@@ -339,7 +340,7 @@ void FixEmitSurf::grid_changed()
       memory->create(cummulative_custom,nslocal,nspecies,"fix/emit/surf:cummulative_custom");
     }
 
-    double **fractions = surf->edarray_local[surf->ewhich[fractions_custom_index]];
+    sfloat **fractions = surf->edarray_local[surf->ewhich[fractions_custom_index]];
     int isp;
 
     for (int isurf = 0; isurf < nslocal; isurf++) {
@@ -355,12 +356,12 @@ void FixEmitSurf::grid_changed()
   // set per-task ntarget to fraction of its area / total area
 
   if (npmode != FLOW) {
-    double areasum_me = 0.0;
+    sfloat areasum_me = 0.0;
     for (int i = 0; i < ntask; i++)
       areasum_me += tasks[i].area;
 
-    double areasum;
-    MPI_Allreduce(&areasum_me,&areasum,1,MPI_DOUBLE,MPI_SUM,world);
+    sfloat areasum;
+    MPI_Allreduce(&areasum_me,&areasum,1,MPI_SFLOAT,MPI_SUM,world);
 
     for (int i = 0; i < ntask; i++)
       tasks[i].ntarget = tasks[i].area / areasum;
@@ -386,9 +387,9 @@ void FixEmitSurf::custom_surf_changed()
 void FixEmitSurf::create_task(int icell)
 {
   int i,m,isurf,isp,npoint,isplit,subcell,ispecies;
-  double indot,area,areaone,ntargetsp;
-  double *normal,*p1,*p2,*p3,*path;
-  double cpath[36],delta[3],e1[3],e2[3];
+  sfloat indot,area,areaone,ntargetsp;
+  sfloat *normal,*p1,*p2,*p3,*path;
+  sfloat cpath[36],delta[3],e1[3],e2[3];
 
   Grid::ChildCell *cells = grid->cells;
   Grid::ChildInfo *cinfo = grid->cinfo;
@@ -407,10 +408,10 @@ void FixEmitSurf::create_task(int icell)
   Surf::Line *lines = surf->lines;
   Surf::Tri *tris = surf->tris;
 
-  double nrho = particle->mixture[imix]->nrho;
-  double temp_thermal = particle->mixture[imix]->temp_thermal;
-  double *vstream = particle->mixture[imix]->vstream;
-  double *vscale = particle->mixture[imix]->vscale;
+  sfloat nrho = particle->mixture[imix]->nrho;
+  sfloat temp_thermal = particle->mixture[imix]->temp_thermal;
+  sfloat *vstream = particle->mixture[imix]->vstream;
+  sfloat *vscale = particle->mixture[imix]->vscale;
 
   if (nrho_custom_flag) nrho_custom = surf->edvec_local[surf->ewhich[nrho_custom_index]];
   if (temp_custom_flag) temp_custom = surf->edvec_local[surf->ewhich[temp_custom_index]];
@@ -418,10 +419,10 @@ void FixEmitSurf::create_task(int icell)
   if (speed_custom_flag) speed_custom = surf->edvec_local[surf->ewhich[speed_custom_index]];
   if (fractions_custom_flag) fractions_custom =
                                surf->edarray_local[surf->ewhich[fractions_custom_index]];
-  double temp_thermal_custom;
+  sfloat temp_thermal_custom;
 
-  double *lo = cells[icell].lo;
-  double *hi = cells[icell].hi;
+  sfloat *lo = cells[icell].lo;
+  sfloat *hi = cells[icell].hi;
   surfint *csurfs = cells[icell].csurfs;
   int nsurf = cells[icell].nsurf;
 
@@ -490,7 +491,7 @@ void FixEmitSurf::create_task(int icell)
 
       tasks[ntask].npoint = 2;
       delete [] tasks[ntask].path;
-      tasks[ntask].path = new double[6];
+      tasks[ntask].path = new sfloat[6];
       path = tasks[ntask].path;
       path[0] = cpath[0];
       path[1] = cpath[1];
@@ -503,7 +504,7 @@ void FixEmitSurf::create_task(int icell)
       // PI (y1+y2) sqrt( (y1-y2)^2 + (x1-x2)^2) )
 
       if (domain->axisymmetric) {
-        double sqrtarg = (path[1]-path[4])*(path[1]-path[4]) +
+        sfloat sqrtarg = (path[1]-path[4])*(path[1]-path[4]) +
           (path[0]-path[3])*(path[0]-path[3]);
         area = MY_PI * (path[1]+path[4]) * sqrt(sqrtarg);
       } else {
@@ -539,11 +540,11 @@ void FixEmitSurf::create_task(int icell)
 
       tasks[ntask].npoint = npoint;
       delete [] tasks[ntask].path;
-      tasks[ntask].path = new double[npoint*3];
+      tasks[ntask].path = new sfloat[npoint*3];
       path = tasks[ntask].path;
-      memcpy(path,cpath,npoint*3*sizeof(double));
+      memcpy(path,cpath,npoint*3*sizeof(sfloat));
       delete [] tasks[ntask].fracarea;
-      tasks[ntask].fracarea = new double[npoint-2];
+      tasks[ntask].fracarea = new sfloat[npoint-2];
 
       area = 0.0;
       p1 = &path[0];
@@ -646,14 +647,14 @@ void FixEmitSurf::perform_task()
 void FixEmitSurf::perform_task_onepass()
 {
   int i,m,n,pcell,isurf,ninsert,nactual,isp,ispecies,ntri,id;
-  double indot,scosine,rn,ntarget,vr,alpha,beta;
-  double beta_un,normalized_distbn_fn,theta,erot,evib;
-  double vnmag,vamag,vbmag;
-  double *normal,*p1,*p2,*p3,*atan,*btan,*vstream,*vscale;
-  double x[3],v[3],e1[3],e2[3];
+  sfloat indot,scosine,rn,ntarget,vr,alpha,beta;
+  sfloat beta_un,normalized_distbn_fn,theta,erot,evib;
+  sfloat vnmag,vamag,vbmag;
+  sfloat *normal,*p1,*p2,*p3,*atan,*btan,*vstream,*vscale;
+  sfloat x[3],v[3],e1[3],e2[3];
   Particle::OnePart *p;
 
-  double dt = update->dt;
+  sfloat dt = update->dt;
   int *species = particle->mixture[imix]->species;
 
   // if subsonic, re-compute particle inflow counts for each task
@@ -663,7 +664,7 @@ void FixEmitSurf::perform_task_onepass()
 
   // if npmode = VARIABLE, set npcurrent to variable evaluation
 
-  double npcurrent;
+  sfloat npcurrent;
   if (npmode == VARIABLE) {
     npcurrent = input->variable->compute_equal(npvar);
     if (npcurrent <= 0.0) error->all(FLERR,"Fix emit/surf Np <= 0.0");
@@ -678,7 +679,7 @@ void FixEmitSurf::perform_task_onepass()
   //       first stage: normal dimension (normal)
   //       second stage: parallel dimensions (tan1,tan2)
 
-  // double while loop until randomized particle velocity meets 2 criteria
+  // sfloat while loop until randomized particle velocity meets 2 criteria
   // inner do-while loop:
   //   v = vstream-component + vthermal is into simulation box
   //   see Bird 1994, p 425
@@ -720,7 +721,7 @@ void FixEmitSurf::perform_task_onepass()
       for (isp = 0; isp < nspecies; isp++) {
         ispecies = species[isp];
         ntarget = tasks[i].ntargetsp[isp]+random->uniform();
-        ninsert = static_cast<int> (ntarget);
+        ninsert = static_cast<int> (spval(ntarget));
         scosine = indot / vscale[isp];
 
         // loop over ninsert for each species
@@ -822,7 +823,7 @@ void FixEmitSurf::perform_task_onepass()
       if (npmode == FLOW) ntarget = tasks[i].ntarget;
       else if (npmode == CONSTANT) ntarget = np * tasks[i].ntarget;
       else if (npmode == VARIABLE) ntarget = npcurrent * tasks[i].ntarget;
-      ninsert = static_cast<int> (ntarget + random->uniform());
+      ninsert = static_cast<int> (spval(ntarget + random->uniform()));
 
       // loop over ninsert for all species
       // use cummulative fractions to assign species for each insertion
@@ -931,14 +932,14 @@ void FixEmitSurf::perform_task_onepass()
 void FixEmitSurf::perform_task_twopass()
 {
   int i,m,n,pcell,isurf,ninsert,nactual,isp,ispecies,ntri,id;
-  double indot,scosine,rn,ntarget,vr,alpha,beta;
-  double beta_un,normalized_distbn_fn,theta,erot,evib;
-  double vnmag,vamag,vbmag;
-  double *normal,*p1,*p2,*p3,*atan,*btan,*vstream,*vscale;
-  double x[3],v[3],e1[3],e2[3];
+  sfloat indot,scosine,rn,ntarget,vr,alpha,beta;
+  sfloat beta_un,normalized_distbn_fn,theta,erot,evib;
+  sfloat vnmag,vamag,vbmag;
+  sfloat *normal,*p1,*p2,*p3,*atan,*btan,*vstream,*vscale;
+  sfloat x[3],v[3],e1[3],e2[3];
   Particle::OnePart *p;
 
-  double dt = update->dt;
+  sfloat dt = update->dt;
   int *species = particle->mixture[imix]->species;
 
   // if subsonic, re-compute particle inflow counts for each task
@@ -948,7 +949,7 @@ void FixEmitSurf::perform_task_twopass()
 
   // if npmode = VARIABLE, set npcurrent to variable evaluation
 
-  double npcurrent;
+  sfloat npcurrent;
   if (npmode == VARIABLE) {
     npcurrent = input->variable->compute_equal(npvar);
     if (npcurrent <= 0.0) error->all(FLERR,"Fix emit/surf Np <= 0.0");
@@ -963,7 +964,7 @@ void FixEmitSurf::perform_task_twopass()
   //       first stage: normal dimension (normal)
   //       second stage: parallel dimensions (tan1,tan2)
 
-  // double while loop until randomized particle velocity meets 2 criteria
+  // sfloat while loop until randomized particle velocity meets 2 criteria
   // inner do-while loop:
   //   v = vstream-component + vthermal is into simulation box
   //   see Bird 1994, p 425
@@ -987,7 +988,7 @@ void FixEmitSurf::perform_task_twopass()
     if (perspecies) {
       for (isp = 0; isp < nspecies; isp++) {
         ntarget = tasks[i].ntargetsp[isp]+random->uniform();
-        ninsert = static_cast<int> (ntarget);
+        ninsert = static_cast<int> (spval(ntarget));
         ninsert_values[i][isp] = ninsert;
       }
     } else {
@@ -1000,7 +1001,7 @@ void FixEmitSurf::perform_task_twopass()
       if (npmode == FLOW) ntarget = tasks[i].ntarget;
       else if (npmode == CONSTANT) ntarget = np * tasks[i].ntarget;
       else if (npmode == VARIABLE) ntarget = npcurrent * tasks[i].ntarget;
-      ninsert = static_cast<int> (ntarget + random->uniform());
+      ninsert = static_cast<int> (spval(ntarget + random->uniform()));
       ninsert_values[i][0] = ninsert;
     }
   }
@@ -1243,8 +1244,8 @@ void FixEmitSurf::subsonic_inflow()
   // recompute mixture vscale, since depends on temp_thermal
 
   int isp,icell;
-  double mass,indot,area,nrho,temp_thermal,vscale,ntargetsp;
-  double *vstream,*normal;
+  sfloat mass,indot,area,nrho,temp_thermal,vscale,ntargetsp;
+  sfloat *vstream,*normal;
 
   Surf::Line *lines = surf->lines;
   Surf::Tri *tris = surf->tris;
@@ -1252,8 +1253,8 @@ void FixEmitSurf::subsonic_inflow()
   Particle::Species *species = particle->species;
   Grid::ChildInfo *cinfo = grid->cinfo;
   int *mspecies = particle->mixture[imix]->species;
-  double fnum = update->fnum;
-  double boltz = update->boltz;
+  sfloat fnum = update->fnum;
+  sfloat boltz = update->boltz;
 
   for (int i = 0; i < ntask; i++) {
     vstream = tasks[i].vstream;
@@ -1361,11 +1362,11 @@ void FixEmitSurf::subsonic_sort()
 void FixEmitSurf::subsonic_grid()
 {
   int m,ip,np,icell,ispecies;
-  double mass,masstot,gamma,ke;
-  double nrho_cell,massrho_cell,temp_thermal_cell,press_cell;
-  double mass_cell,gamma_cell,soundspeed_cell,vsmag;
-  double mv[4];
-  double *v,*vstream,*vscale,*normal;
+  sfloat mass,masstot,gamma,ke;
+  sfloat nrho_cell,massrho_cell,temp_thermal_cell,press_cell;
+  sfloat mass_cell,gamma_cell,soundspeed_cell,vsmag;
+  sfloat mv[4];
+  sfloat *v,*vstream,*vscale,*normal;
 
   Surf::Line *lines = surf->lines;
   Surf::Tri *tris = surf->tris;
@@ -1374,10 +1375,10 @@ void FixEmitSurf::subsonic_grid()
   Particle::OnePart *particles = particle->particles;
   int *next = particle->next;
   Particle::Species *species = particle->species;
-  double boltz = update->boltz;
+  sfloat boltz = update->boltz;
 
   int temp_exceed_flag = 0;
-  double tempmax = 0.0;
+  sfloat tempmax = 0.0;
 
   for (int i = 0; i < ntask; i++) {
     icell = tasks[i].pcell;
@@ -1501,7 +1502,7 @@ void FixEmitSurf::grow_task()
 
   if (perspecies) {
     for (int i = oldmax; i < ntaskmax; i++)
-      tasks[i].ntargetsp = new double[nspecies];
+      tasks[i].ntargetsp = new sfloat[nspecies];
   } else {
     for (int i = oldmax; i < ntaskmax; i++)
       tasks[i].ntargetsp = NULL;
@@ -1509,7 +1510,7 @@ void FixEmitSurf::grow_task()
 
   if (subsonic_style == PONLY || temp_custom_flag) {
     for (int i = oldmax; i < ntaskmax; i++)
-      tasks[i].vscale = new double[nspecies];
+      tasks[i].vscale = new sfloat[nspecies];
   } else {
     for (int i = oldmax; i < ntaskmax; i++)
       tasks[i].vscale = NULL;
@@ -1530,13 +1531,13 @@ void FixEmitSurf::realloc_nspecies()
   if (perspecies) {
     for (int i = 0; i < ntask; i++) {
       delete [] tasks[i].ntargetsp;
-      tasks[i].ntargetsp = new double[nspecies];
+      tasks[i].ntargetsp = new sfloat[nspecies];
     }
   }
   if (subsonic_style == PONLY || temp_custom_flag) {
     for (int i = 0; i < ntask; i++) {
       delete [] tasks[i].vscale;
-      tasks[i].vscale = new double[nspecies];
+      tasks[i].vscale = new sfloat[nspecies];
     }
   }
 }

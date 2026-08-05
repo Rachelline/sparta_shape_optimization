@@ -66,6 +66,64 @@ cmake -C /path/to/<NAME>.cmake /path/to/sparta/cmake
 Note: To point to a TPL installation, export <TPL>_ROOT=/path/to/tpl/install
 before running cmake.
 
+## Automatic differentiation (AD)
+
+* SPARTA_ENABLE_AD
+  * Enable forward-mode automatic differentiation: `sfloat` becomes
+    `Sacado::Fad::SFad<double, SPARTA_AD_NDIR>` instead of `double`.
+    Requires `SACADO_ROOT` (see below). Default: OFF.
+* SPARTA_AD_NDIR
+  * Compile-time number of simultaneous derivative directions `sfloat`
+    carries. Default: 4. This is an ABI-affecting parameter (it changes
+    `sfloat`'s size) — any code linked against a `libsparta*.a` built with
+    a given `SPARTA_AD_NDIR` must be compiled with the *same* value, or
+    it's undefined behavior, not a performance question. `ad_src/`'s own
+    `SPARTA_AD_NDIR` CMake cache var must match whatever value the SPARTA
+    library it links against was built with.
+* SACADO_ROOT (environment variable, not a `sparta_option`)
+  * Path to a Sacado (Trilinos) install. No Homebrew formula exists for
+    Sacado alone — see `ad_src/README.md`'s "Building" → "AD" section for
+    a from-source minimal-Trilinos recipe.
+
+**The one-Kokkos-version rule**: if `PKG_KOKKOS` is also enabled, Sacado's
+Kokkos and SPARTA's Kokkos must be the *exact same version*, or you get a
+silent C++ ODR violation (two definitions of `Kokkos::View` etc. —
+potentially wrong results, especially on GPU, not a build error). `sfloat`
+is header-only, so it binds to whichever Kokkos is on the include path at
+compile time. The build enforces `USE_EXTERNAL_KOKKOS=ON` pointing (via
+`Kokkos_ROOT`) at the *same* Kokkos Sacado was built against, and checks
+the version against SPARTA's own bundled Kokkos, failing the configure
+step with a specific error message (not a warning) on a real mismatch —
+see `cmake/common/process/sparta_build_options.cmake`'s "One-Kokkos guard"
+block if you need to change how this is enforced. AD without Kokkos
+doesn't have this concern.
+
+**C++ standard**: AD needs at least C++17 (Sacado's headers use it); this
+is bumped automatically when `SPARTA_ENABLE_AD` is set, only mattering for
+an AD-without-Kokkos build (Kokkos itself already forces a higher
+standard).
+
+Example configure, from `cmake/presets/mac.cmake`:
+
+```bash
+cmake -S cmake -B build_ad -C cmake/presets/mac.cmake \
+  -DSPARTA_MACHINE=ad -DSPARTA_ENABLE_AD=ON \
+  -DSACADO_ROOT=/path/to/sacado_install
+cmake --build build_ad
+```
+
+Verification: `tools/ad_verify/` (see its own README) validates the AD
+build's derivative correctness, both against closed-form analytic
+references and via statistical equivalence for the handful of gold-log
+regression tests known to sometimes diverge from a fixed-seed trajectory
+under AD (a real, semantic Sacado floating-point effect, not a bug — see
+`cmake/common/set/sparta_cmake_defaults.cmake`'s comment block for the
+traced mechanism).
+
+For the shape-optimization use case built on top of the AD build (and the
+runtime-toggleable gradient-bias correction it depends on), see
+`ad_src/README.md` and `docs/AD_GRADIENTS.md`.
+
 ## Other options
 * SPARTA_MACHINE
   * String to form the `spa_$SPARTA_MACHINE` binary file name.

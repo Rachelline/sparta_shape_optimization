@@ -1,3 +1,4 @@
+/* AD-CONVERTED: double->sfloat by tools/ad_convert.py (see sfloat.h) */
 /* ----------------------------------------------------------------------
    SPARTA - Stochastic PArallel Rarefied-gas Time-accurate Analyzer
    http://sparta.sandia.gov
@@ -33,7 +34,7 @@ class ComputeSurfCollisionTally : public Compute {
   void init();
   void compute_per_tally();
   void clear();
-  void surf_tally(double, int, int, int, Particle::OnePart *,
+  void surf_tally(sfloat, int, int, int, Particle::OnePart *,
                   Particle::OnePart *, Particle::OnePart *);
   int tallyinfo(surfint *&);
   int datatype(int);

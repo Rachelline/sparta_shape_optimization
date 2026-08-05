@@ -1,3 +1,4 @@
+/* AD-CONVERTED: double->sfloat by tools/ad_convert.py (see sfloat.h) */
 /* ----------------------------------------------------------------------
    SPARTA - Stochastic PArallel Rarefied-gas Time-accurate Analyzer
    http://sparta.github.io
@@ -29,7 +30,7 @@ class RegUnion : public Region {
  public:
   RegUnion(class SPARTA *, int, char **);
   ~RegUnion();
-  int inside(double *);
+  int inside(sfloat *);
 
  private:
   int nregion;

@@ -26,7 +26,7 @@ class PythonImpl : protected Pointers, public PythonInterface {
   PythonImpl(class SPARTA *);
   ~PythonImpl() override;
   void command(int, char **) override;
-  void invoke_function(int, char *, double *) override;
+  void invoke_function(int, char *, sfloat *) override;
   int find(const char *) override;
   int function_match(const char *, const char *, int) override;
   int wrapper_match(const char *, const char *, int, int *) override;

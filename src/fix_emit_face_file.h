@@ -1,3 +1,4 @@
+/* AD-CONVERTED: double->sfloat by tools/ad_convert.py (see sfloat.h) */
 /* ----------------------------------------------------------------------
    SPARTA - Stochastic PArallel Rarefied-gas Time-accurate Analyzer
    http://sparta.github.io
@@ -36,20 +37,20 @@ class FixEmitFaceFile : public FixEmit {
  private:
   int imix,iface,subsonic,subsonic_style,subsonic_warning;
   int npertask,nthresh;
-  double frac_user;
-  double tprefactor,soundspeed_mixture;
+  sfloat frac_user;
+  sfloat tprefactor,soundspeed_mixture;
 
-  double normal[3];             // inward normal from external boundary face
+  sfloat normal[3];             // inward normal from external boundary face
   int ndim;                     // dim (0,1,2) normal to face
   int pdim,qdim;                // 2 dims (0,1,2) parallel to face
 
   // copies of data from other classes
 
   int dimension,nspecies;
-  double fnum,dt;
-  double nrho_mix,temp_thermal_mix,temp_rot_mix,temp_vib_mix;
-  double *vstream_mix,*vscale_mix,*fraction_mix;
-  double *cummulative_mix,*fraction_user_mix;
+  sfloat fnum,dt;
+  sfloat nrho_mix,temp_thermal_mix,temp_rot_mix,temp_vib_mix;
+  sfloat *vstream_mix,*vscale_mix,*fraction_mix;
+  sfloat *cummulative_mix,*fraction_user_mix;
   int *fraction_flag_mix,*species2species_mix;
 
   Surf::Line *lines;
@@ -60,12 +61,12 @@ class FixEmitFaceFile : public FixEmit {
   struct Mesh {
     int ni,nj;                  // size of 2d grid, Nj = 1 for 1d grid
     int nvalues;                // # of values per grid point
-    double lo[2],hi[2];         // bounds of mesh, in 2d/3d box coords
+    sfloat lo[2],hi[2];         // bounds of mesh, in 2d/3d box coords
     int *which;                 // style of each value for which >= 0
                                 // if negative, which = -(speciesIndex + 1)
-    double *imesh;              // coordinate for each Ni
-    double *jmesh;              // coordinate for each Nj
-    double **values;            // 2d N,M values, where N = Ni*Nj
+    sfloat *imesh;              // coordinate for each Ni
+    sfloat *jmesh;              // coordinate for each Nj
+    sfloat **values;            // 2d N,M values, where N = Ni*Nj
                                 // I,J stored with J varying fastest in 1d N
   };
 
@@ -74,11 +75,11 @@ class FixEmitFaceFile : public FixEmit {
   // one insertion task for a cell and a face
 
   struct Task {
-    double lo[3];               // lower-left corner of overlap of cell/file
-    double hi[3];               // upper-right corner of overlap of cell/file
-    double area;                // area of face
-    double ntarget;             // # of mols to insert for all species
-    double *ntargetsp;          // # of mols to insert for each species,
+    sfloat lo[3];               // lower-left corner of overlap of cell/file
+    sfloat hi[3];               // upper-right corner of overlap of cell/file
+    sfloat area;                // area of face
+    sfloat ntarget;             // # of mols to insert for all species
+    sfloat *ntargetsp;          // # of mols to insert for each species,
                                 //   only defined for PERSPECIES
 
     int icell;                  // associated cell index, unsplit or split cell
@@ -87,13 +88,13 @@ class FixEmitFaceFile : public FixEmit {
 
     // interpolated file values or defaults from mixture params
 
-    double nrho;
-    double temp_thermal,temp_rot,temp_vib;
-    double press;
-    double vstream[3];
-    double *fraction;
-    double *cummulative;
-    double *vscale;
+    sfloat nrho;
+    sfloat temp_thermal,temp_rot,temp_vib;
+    sfloat press;
+    sfloat vstream[3];
+    sfloat *fraction;
+    sfloat *cummulative;
+    sfloat *vscale;
   };
 
                          // ntask = # of tasks is stored by parent class
@@ -108,7 +109,7 @@ class FixEmitFaceFile : public FixEmit {
   // per-species vectors for species fractions on mesh
 
   int *fflag;
-  double *fuser;
+  sfloat *fuser;
 
   // private methods
 
@@ -116,8 +117,8 @@ class FixEmitFaceFile : public FixEmit {
   void bcast_mesh();
   void check_mesh_values();
   int interpolate(int);
-  double linear_interpolation(double, int, int, int);
-  double bilinear_interpolation(double, double, int, int, int, int, int);
+  sfloat linear_interpolation(sfloat, int, int, int);
+  sfloat bilinear_interpolation(sfloat, sfloat, int, int, int, int, int);
 
   int split(int);
 

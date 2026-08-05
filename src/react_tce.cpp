@@ -1,3 +1,4 @@
+/* AD-CONVERTED: double->sfloat by tools/ad_convert.py (see sfloat.h) */
 /* ----------------------------------------------------------------------
    SPARTA - Stochastic PArallel Rarefied-gas Time-accurate Analyzer
    http://sparta.github.io
@@ -45,20 +46,20 @@ void ReactTCE::init()
 /* ---------------------------------------------------------------------- */
 
 int ReactTCE::attempt(Particle::OnePart *ip, Particle::OnePart *jp,
-                      double pre_etrans, double pre_erot, double pre_evib,
-                      double &post_etotal, int &kspecies)
+                      sfloat pre_etrans, sfloat pre_erot, sfloat pre_evib,
+                      sfloat &post_etotal, int &kspecies)
 {
-  double pre_etotal,ecc,e_excess,z;
+  sfloat pre_etotal,ecc,e_excess,z;
   int inmode,jnmode;
   OneReaction *r;
 
   Particle::Species *species = particle->species;
   int isp = ip->ispecies;
   int jsp = jp->ispecies;
-  double ievib = ip->evib;
-  double jevib = jp->evib;
+  sfloat ievib = ip->evib;
+  sfloat jevib = jp->evib;
 
-  double pre_ave_rotdof = (species[isp].rotdof + species[jsp].rotdof)/2.0;
+  sfloat pre_ave_rotdof = (species[isp].rotdof + species[jsp].rotdof)/2.0;
 
   int n = reactions[isp][jsp].n;
   if (n == 0) return 0;
@@ -66,14 +67,14 @@ int ReactTCE::attempt(Particle::OnePart *ip, Particle::OnePart *jp,
 
   // probablity to compare to reaction probability
 
-  double react_prob = 0.0;
-  double random_prob = random->uniform();
-  double zi = 0.0;
-  double zj = 0.0;
+  sfloat react_prob = 0.0;
+  sfloat random_prob = random->uniform();
+  sfloat zi = 0.0;
+  sfloat zj = 0.0;
   int avei = 0;
   int avej = 0;
-  double iTvib = 0.0;
-  double jTvib = 0.0;
+  sfloat iTvib = 0.0;
+  sfloat jTvib = 0.0;
 
   // loop over possible reactions for these 2 species
 
@@ -115,7 +116,7 @@ int ReactTCE::attempt(Particle::OnePart *ip, Particle::OnePart *jp,
             //Instantaneous z for diatomic molecules
             if (inmode == 1) {
                 avei = static_cast<int>
-                        (ievib / (update->boltz * species[isp].vibtemp[0]));
+                        (spval(ievib / (update->boltz * species[isp].vibtemp[0])));
                 if (avei > 0) zi = 2.0 * avei * log(1.0 / avei + 1.0);
                 else zi = 0.0;
             } else if (inmode > 1) {
@@ -129,7 +130,7 @@ int ReactTCE::attempt(Particle::OnePart *ip, Particle::OnePart *jp,
 
             if (jnmode == 1) {
                 avej = static_cast<int>
-                        (jevib / (update->boltz * species[jsp].vibtemp[0]));
+                        (spval(jevib / (update->boltz * species[jsp].vibtemp[0])));
                 if (avej > 0) zj = 2.0 * avej * log(1.0 / avej + 1.0);
                 else zj = 0.0;
             } else if (jnmode > 1) {
@@ -246,17 +247,17 @@ int ReactTCE::attempt(Particle::OnePart *ip, Particle::OnePart *jp,
 
 /* ---------------------------------------------------------------------- */
 
-double ReactTCE::bird_Evib(int nmode, double Tvib,
-                            double vibtemp[],
-                            double Evib)
+sfloat ReactTCE::bird_Evib(int nmode, sfloat Tvib,
+                            sfloat vibtemp[],
+                            sfloat Evib)
 {
   // Comutes f for Newton's search method outlined in newtonTvib()
 
-  double f = -Evib;
-  double kb = 1.38064852e-23;
+  sfloat f = -Evib;
+  sfloat kb = 1.38064852e-23;
 
   for (int i = 0; i < nmode; i++) {
-    const double vti = vibtemp[i];
+    const sfloat vti = vibtemp[i];
     f += (((kb*vti)/(exp(vti/Tvib)-1)));
   }
 
@@ -265,21 +266,21 @@ double ReactTCE::bird_Evib(int nmode, double Tvib,
 
 /* ---------------------------------------------------------------------- */
 
-double ReactTCE::bird_dEvib(int nmode, double Tvib, double vibtemp[])
+sfloat ReactTCE::bird_dEvib(int nmode, sfloat Tvib, sfloat vibtemp[])
 {
   // Comutes df for Newton's search method
 
-  double df = 0.0;
-  double kb = 1.38064852e-23;
+  sfloat df = 0.0;
+  sfloat kb = 1.38064852e-23;
 
   for (int i = 0; i < nmode; i++) {
-    const double vti = vibtemp[i];
-    const double vti2 = vti * vti;
-    const double Tvib2 = Tvib * Tvib;
-    const double k1 = vti/Tvib;
-    const double ek1 = exp(k1);
-    const double k2 = ek1 - 1.0;
-    const double k22 = k2 * k2;
+    const sfloat vti = vibtemp[i];
+    const sfloat vti2 = vti * vti;
+    const sfloat Tvib2 = Tvib * Tvib;
+    const sfloat k1 = vti/Tvib;
+    const sfloat ek1 = exp(k1);
+    const sfloat k2 = ek1 - 1.0;
+    const sfloat k22 = k2 * k2;
     df += (vti2*kb*ek1)/(Tvib2*k22);
   }
 
@@ -288,19 +289,19 @@ double ReactTCE::bird_dEvib(int nmode, double Tvib, double vibtemp[])
 
 /* ---------------------------------------------------------------------- */
 
-double ReactTCE::newtonTvib(int nmode, double Evib, double vibTemp[],
-               double Tvib0,
-               double tol,
+sfloat ReactTCE::newtonTvib(int nmode, sfloat Evib, sfloat vibTemp[],
+               sfloat Tvib0,
+               sfloat tol,
                int nmax)
 {
   // Function for converting vibrational energy to vibrational temperature
   // Computes Tvib assuming the vibrational energy levels occupy a simple harmonic oscillator (SHO) spacing
   // Search for Tvib begins at some initial value "Tvib0" until the search reaches a tolerance level "tol"
 
-  double f;
-  double df;
-  double Tvib, Tvib_prev;
-  double err;
+  sfloat f;
+  sfloat df;
+  sfloat Tvib, Tvib_prev;
+  sfloat err;
   int i;
 
   // Uses Newton's method to solve for a vibrational temperature given a

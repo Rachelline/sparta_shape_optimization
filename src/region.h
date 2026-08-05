@@ -1,3 +1,4 @@
+/* AD-CONVERTED: double->sfloat by tools/ad_convert.py (see sfloat.h) */
 /* ----------------------------------------------------------------------
    SPARTA - Stochastic PArallel Rarefied-gas Time-accurate Analyzer
    http://sparta.github.io
@@ -23,9 +24,9 @@ class Region : protected Pointers {
  public:
   char *id,*style;
   int interior;                     // 1 for interior, 0 for exterior
-  double extent_xlo,extent_xhi;     // bounding box on region
-  double extent_ylo,extent_yhi;
-  double extent_zlo,extent_zhi;
+  sfloat extent_xlo,extent_xhi;     // bounding box on region
+  sfloat extent_ylo,extent_yhi;
+  sfloat extent_zlo,extent_zhi;
   int bboxflag;                     // 1 if bounding box is computable
 
   int kokkos_flag;              // 0/1 if Kokkos region
@@ -38,11 +39,11 @@ class Region : protected Pointers {
 
   // called by other classes to check point versus region
 
-  int match(double *);
+  int match(sfloat *);
 
   // implemented by each region, not called by other classes
 
-  virtual int inside(double *) = 0;
+  virtual int inside(sfloat *) = 0;
 
  protected:
   void options(int, char **);

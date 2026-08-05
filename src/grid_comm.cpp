@@ -1,3 +1,4 @@
+/* AD-CONVERTED: double->sfloat by tools/ad_convert.py (see sfloat.h) */
 /* ----------------------------------------------------------------------
    SPARTA - Stochastic PArallel Rarefied-gas Time-accurate Analyzer
    http://sparta.github.io
@@ -124,10 +125,10 @@ int Grid::pack_one(int icell, char *buf,
 
     if (ownflag) {
       int *csubs = sinfo[isplit].csubs;
-      double *dptr = (double *) ptr;
+      sfloat *dptr = (sfloat *) ptr;
       if (memflag)
         for (int i = 0; i < nsplit; i++) dptr[i] = cinfo[csubs[i]].volume;
-      ptr += nsplit*sizeof(double);
+      ptr += nsplit*sizeof(sfloat);
     }
   }
 
@@ -353,10 +354,10 @@ int Grid::unpack_one(char *buf,
     ptr += nsplit*sizeof(int);
     ptr = ROUNDUP(ptr);
 
-    double *dptr;
+    sfloat *dptr;
     if (ownflag) {
-      dptr = (double *) ptr;
-      ptr += nsplit*sizeof(double);
+      dptr = (sfloat *) ptr;
+      ptr += nsplit*sizeof(sfloat);
     }
 
     int isub;

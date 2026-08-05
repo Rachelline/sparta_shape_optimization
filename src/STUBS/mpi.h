@@ -38,6 +38,7 @@ extern "C" {
 #define MPI_LONG 6
 #define MPI_LONG_LONG 7
 #define MPI_DOUBLE_INT 8
+#define MPI_5DOUBLE 103   /* SPARTA_AD: sfloat = 5 doubles (NDIR=4) */
 
 #define MPI_SUM 1
 #define MPI_MAX 2

@@ -1,3 +1,4 @@
+/* AD-CONVERTED: double->sfloat by tools/ad_convert.py (see sfloat.h) */
 /* ----------------------------------------------------------------------
    SPARTA - Stochastic PArallel Rarefied-gas Time-accurate Analyzer
    http://sparta.github.io
@@ -369,8 +370,8 @@ ComputeReduce::ComputeReduce(SPARTA *spa, int narg, char **arg) :
   } else {
     vector_flag = 1;
     size_vector = nvalues;
-    vector = new double[size_vector];
-    onevec = new double[size_vector];
+    vector = new sfloat[size_vector];
+    onevec = new sfloat[size_vector];
     indices = new int[size_vector];
     owner = new int[size_vector];
   }
@@ -480,24 +481,24 @@ void ComputeReduce::init()
 
 /* ---------------------------------------------------------------------- */
 
-double ComputeReduce::compute_scalar()
+sfloat ComputeReduce::compute_scalar()
 {
   invoked_scalar = update->ntimestep;
 
-  double one = compute_one(0,-1);
+  sfloat one = compute_one(0,-1);
 
   if (mode == SUM || mode == SUMSQ || mode == SUMAREA) {
-    MPI_Allreduce(&one,&scalar,1,MPI_DOUBLE,MPI_SUM,world);
+    MPI_Allreduce(&one,&scalar,1,MPI_SFLOAT,MPI_SUM,world);
   } else if (mode == MINN) {
-    MPI_Allreduce(&one,&scalar,1,MPI_DOUBLE,MPI_MIN,world);
+    MPI_Allreduce(&one,&scalar,1,MPI_SFLOAT,MPI_MIN,world);
   } else if (mode == MAXX) {
-    MPI_Allreduce(&one,&scalar,1,MPI_DOUBLE,MPI_MAX,world);
+    MPI_Allreduce(&one,&scalar,1,MPI_SFLOAT,MPI_MAX,world);
   } else if (mode == AVE || mode == AVESQ) {
-    MPI_Allreduce(&one,&scalar,1,MPI_DOUBLE,MPI_SUM,world);
+    MPI_Allreduce(&one,&scalar,1,MPI_SFLOAT,MPI_SUM,world);
     bigint n = count_included();
     if (n) scalar /= n;
   } else if (mode == AVEAREA) {
-    MPI_Allreduce(&one,&scalar,1,MPI_DOUBLE,MPI_SUM,world);
+    MPI_Allreduce(&one,&scalar,1,MPI_SFLOAT,MPI_SUM,world);
     if (area_total > 0.0) scalar /= area_total;
   }
 
@@ -518,12 +519,12 @@ void ComputeReduce::compute_vector()
 
   if (mode == SUM || mode == SUMSQ || mode == SUMAREA) {
     for (int m = 0; m < nvalues; m++)
-      MPI_Allreduce(&onevec[m],&vector[m],1,MPI_DOUBLE,MPI_SUM,world);
+      MPI_Allreduce(&onevec[m],&vector[m],1,MPI_SFLOAT,MPI_SUM,world);
 
   } else if (mode == MINN) {
     if (!replace) {
       for (int m = 0; m < nvalues; m++)
-        MPI_Allreduce(&onevec[m],&vector[m],1,MPI_DOUBLE,MPI_MIN,world);
+        MPI_Allreduce(&onevec[m],&vector[m],1,MPI_SFLOAT,MPI_MIN,world);
 
     } else {
       for (int m = 0; m < nvalues; m++)
@@ -538,14 +539,14 @@ void ComputeReduce::compute_vector()
         if (replace[m] >= 0) {
           if (me == owner[replace[m]])
             vector[m] = compute_one(m,indices[replace[m]]);
-          MPI_Bcast(&vector[m],1,MPI_DOUBLE,owner[replace[m]],world);
+          MPI_Bcast(&vector[m],1,MPI_SFLOAT,owner[replace[m]],world);
         }
     }
 
   } else if (mode == MAXX) {
     if (!replace) {
       for (int m = 0; m < nvalues; m++)
-        MPI_Allreduce(&onevec[m],&vector[m],1,MPI_DOUBLE,MPI_MAX,world);
+        MPI_Allreduce(&onevec[m],&vector[m],1,MPI_SFLOAT,MPI_MAX,world);
 
     } else {
       for (int m = 0; m < nvalues; m++)
@@ -560,20 +561,20 @@ void ComputeReduce::compute_vector()
         if (replace[m] >= 0) {
           if (me == owner[replace[m]])
             vector[m] = compute_one(m,indices[replace[m]]);
-          MPI_Bcast(&vector[m],1,MPI_DOUBLE,owner[replace[m]],world);
+          MPI_Bcast(&vector[m],1,MPI_SFLOAT,owner[replace[m]],world);
         }
     }
 
   } else if (mode == AVE || mode == AVESQ) {
     bigint n = count_included();
     for (int m = 0; m < nvalues; m++) {
-      MPI_Allreduce(&onevec[m],&vector[m],1,MPI_DOUBLE,MPI_SUM,world);
+      MPI_Allreduce(&onevec[m],&vector[m],1,MPI_SFLOAT,MPI_SUM,world);
       if (n) vector[m] /= n;
     }
 
   } else if (mode == AVEAREA) {
     for (int m = 0; m < nvalues; m++) {
-      MPI_Allreduce(&onevec[m],&vector[m],1,MPI_DOUBLE,MPI_SUM,world);
+      MPI_Allreduce(&onevec[m],&vector[m],1,MPI_SFLOAT,MPI_SUM,world);
       if (area_total > 0.0) vector[m] /= area_total;
     }
   }
@@ -587,7 +588,7 @@ void ComputeReduce::compute_vector()
    if flag >= 0: simply return vector[flag]
 ------------------------------------------------------------------------- */
 
-double ComputeReduce::compute_one(int m, int flag)
+sfloat ComputeReduce::compute_one(int m, int flag)
 {
   int i;
 
@@ -599,7 +600,7 @@ double ComputeReduce::compute_one(int m, int flag)
   int vidx = value2index[m];
   int aidx = argindex[m];
 
-  double one = 0.0;
+  sfloat one = 0.0;
   if (mode == MINN) one = BIG;
   else if (mode == MAXX) one = -BIG;
 
@@ -626,11 +627,11 @@ double ComputeReduce::compute_one(int m, int flag)
   } else if (which[m] == KE) {
     Particle::OnePart *particles = particle->particles;
     Particle::Species *species = particle->species;
-    double mvv2e = update->mvv2e;
+    sfloat mvv2e = update->mvv2e;
     int n = particle->nlocal;
     Particle::OnePart *p;
-    double *v;
-    double ke;
+    sfloat *v;
+    sfloat ke;
 
     if (flag < 0) {
       for (i = 0; i < n; i++) {
@@ -682,7 +683,7 @@ double ComputeReduce::compute_one(int m, int flag)
       }
 
       if (aidx == 0) {
-        double *cvec = c->vector_particle;
+        sfloat *cvec = c->vector_particle;
         Particle::OnePart *particles = particle->particles;
         int n = particle->nlocal;
         if (flag < 0) {
@@ -692,7 +693,7 @@ double ComputeReduce::compute_one(int m, int flag)
           }
         } else one = cvec[flag];
       } else {
-        double **carray = c->array_particle;
+        sfloat **carray = c->array_particle;
         Particle::OnePart *particles = particle->particles;
         int n = particle->nlocal;
         int aidxm1 = aidx - 1;
@@ -716,7 +717,7 @@ double ComputeReduce::compute_one(int m, int flag)
         c->post_process_isurf_grid();
 
       if (aidx == 0 || c->post_process_grid_flag) {
-        double *cvec = c->vector_grid;
+        sfloat *cvec = c->vector_grid;
         Grid::ChildInfo *cinfo = grid->cinfo;
         int n = grid->nlocal;
         if (flag < 0) {
@@ -726,7 +727,7 @@ double ComputeReduce::compute_one(int m, int flag)
           }
         } else one = cvec[flag];
       } else {
-        double **carray = c->array_grid;
+        sfloat **carray = c->array_grid;
         Grid::ChildInfo *cinfo = grid->cinfo;
         int n = grid->nlocal;
         int aidxm1 = aidx - 1;
@@ -747,7 +748,7 @@ double ComputeReduce::compute_one(int m, int flag)
       c->post_process_surf();
 
       if (aidx == 0) {
-        double *cvec = c->vector_surf;
+        sfloat *cvec = c->vector_surf;
         int n = surf->nown;
         if (flag < 0) {
           for (i = 0; i < n; i++) {
@@ -756,7 +757,7 @@ double ComputeReduce::compute_one(int m, int flag)
           }
         } else one = cvec[flag];
       } else {
-        double **carray = c->array_surf;
+        sfloat **carray = c->array_surf;
         int n = surf->nown;
         int aidxm1 = aidx - 1;
         if (flag < 0) {
@@ -778,7 +779,7 @@ double ComputeReduce::compute_one(int m, int flag)
         error->all(FLERR,"Fix used in compute reduce not "
                    "computed at compatible time");
       if (aidx == 0) {
-        double *fvec = fix->vector_particle;
+        sfloat *fvec = fix->vector_particle;
         Particle::OnePart *particles = particle->particles;
         int n = particle->nlocal;
         if (flag < 0) {
@@ -788,7 +789,7 @@ double ComputeReduce::compute_one(int m, int flag)
           }
         } else one = fvec[flag];
       } else {
-        double **farray = fix->array_particle;
+        sfloat **farray = fix->array_particle;
         Particle::OnePart *particles = particle->particles;
         int n = particle->nlocal;
         int aidxm1 = aidx - 1;
@@ -805,7 +806,7 @@ double ComputeReduce::compute_one(int m, int flag)
         error->all(FLERR,"Fix used in compute reduce not "
                    "computed at compatible time");
       if (aidx == 0) {
-        double *fvec = fix->vector_grid;
+        sfloat *fvec = fix->vector_grid;
         Grid::ChildInfo *cinfo = grid->cinfo;
         int n = grid->nlocal;
         if (flag < 0) {
@@ -815,7 +816,7 @@ double ComputeReduce::compute_one(int m, int flag)
           }
         } else one = fvec[flag];
       } else {
-        double **farray = fix->array_grid;
+        sfloat **farray = fix->array_grid;
         Grid::ChildInfo *cinfo = grid->cinfo;
         int n = grid->nlocal;
         int aidxm1 = aidx - 1;
@@ -832,7 +833,7 @@ double ComputeReduce::compute_one(int m, int flag)
         error->all(FLERR,"Fix used in compute reduce not "
                    "computed at compatible time");
       if (aidx == 0) {
-        double *fvec = fix->vector_surf;
+        sfloat *fvec = fix->vector_surf;
 	int n = surf->nown;
         if (flag < 0) {
           for (i = 0; i < n; i++) {
@@ -841,7 +842,7 @@ double ComputeReduce::compute_one(int m, int flag)
 	  }
         } else one = fvec[flag];
       } else {
-        double **farray = fix->array_surf;
+        sfloat **farray = fix->array_surf;
         int n = surf->nown;
         int aidxm1 = aidx - 1;
         if (flag < 0) {
@@ -921,7 +922,7 @@ double ComputeReduce::compute_one(int m, int flag)
 	    combine(one,cvec[i],i);
 	  }
 	} else if (particle->etype[vidx] == DOUBLE) {
-	  double *cvec = particle->edvec[particle->ewhich[vidx]];
+	  sfloat *cvec = particle->edvec[particle->ewhich[vidx]];
 	  for (i = 0; i < n; i++) {
             if (subsetID && s2g[particles[i].ispecies] < 0) continue;
 	    combine(one,cvec[i],i);
@@ -945,7 +946,7 @@ double ComputeReduce::compute_one(int m, int flag)
 	    combine(one,carray[i][aidxm1],i);
 	  }
 	} else if (particle->etype[vidx] == DOUBLE) {
-	  double **carray = particle->edarray[particle->ewhich[vidx]];
+	  sfloat **carray = particle->edarray[particle->ewhich[vidx]];
 	  for (i = 0; i < n; i++) {
             if (subsetID && s2g[particles[i].ispecies] < 0) continue;
 	    combine(one,carray[i][aidxm1],i);
@@ -973,7 +974,7 @@ double ComputeReduce::compute_one(int m, int flag)
 	    combine(one,cvec[i],i);
 	  }
 	} else if (grid->etype[vidx] == DOUBLE) {
-	  double *cvec = grid->edvec[grid->ewhich[vidx]];
+	  sfloat *cvec = grid->edvec[grid->ewhich[vidx]];
 	  for (i = 0; i < n; i++) {
             if (subsetID && !(cinfo[i].mask & gridgroupbit)) continue;
 	    combine(one,cvec[i],i);
@@ -997,7 +998,7 @@ double ComputeReduce::compute_one(int m, int flag)
 	    combine(one,carray[i][aidxm1],i);
 	  }
 	} else if (grid->etype[vidx] == DOUBLE) {
-	  double **carray = grid->edarray[grid->ewhich[vidx]];
+	  sfloat **carray = grid->edarray[grid->ewhich[vidx]];
 	  for (i = 0; i < n; i++) {
             if (subsetID && !(cinfo[i].mask & gridgroupbit)) continue;
 	    combine(one,carray[i][aidxm1],i);
@@ -1024,7 +1025,7 @@ double ComputeReduce::compute_one(int m, int flag)
 	    combine(one,areasurf[i]*cvec[i],i);
 	  }
 	} else if (surf->etype[vidx] == DOUBLE) {
-	  double *cvec = surf->edvec[surf->ewhich[vidx]];
+	  sfloat *cvec = surf->edvec[surf->ewhich[vidx]];
 	  for (i = 0; i < n; i++) {
 	    if (subsetID && !(smasks[i] & surfgroupbit)) continue;
 	    combine(one,areasurf[i]*cvec[i],i);
@@ -1047,7 +1048,7 @@ double ComputeReduce::compute_one(int m, int flag)
 	    combine(one,areasurf[i]*carray[i][aidxm1],i);
 	  }
 	} else if (surf->etype[vidx] == DOUBLE) {
-	  double **carray = surf->edarray[surf->ewhich[vidx]];
+	  sfloat **carray = surf->edarray[surf->ewhich[vidx]];
 	  for (i = 0; i < n; i++) {
 	    if (subsetID && !(smasks[i] & surfgroupbit)) continue;
 	    combine(one,areasurf[i]*carray[i][aidxm1],i);
@@ -1127,9 +1128,9 @@ bigint ComputeReduce::count_included()
 
 /* ---------------------------------------------------------------------- */
 
-double ComputeReduce::area_per_surf()
+sfloat ComputeReduce::area_per_surf()
 {
-  double area_mine,area_all,tmp;
+  sfloat area_mine,area_all,tmp;
 
   int dimension = domain->dimension;
   Surf::Line *lines = surf->lines;
@@ -1174,7 +1175,7 @@ double ComputeReduce::area_per_surf()
     area_mine += areasurf[i];
   }
 
-  MPI_Allreduce(&area_mine,&area_all,1,MPI_DOUBLE,MPI_SUM,world);
+  MPI_Allreduce(&area_mine,&area_all,1,MPI_SFLOAT,MPI_SUM,world);
   return area_all;
 }
 
@@ -1183,7 +1184,7 @@ double ComputeReduce::area_per_surf()
    for MIN/MAX, also update index with winner
 ------------------------------------------------------------------------- */
 
-void ComputeReduce::combine(double &one, double two, int i)
+void ComputeReduce::combine(sfloat &one, sfloat two, int i)
 {
   if (mode == SUM || mode == AVE) one += two;
   else if (mode == SUMSQ || mode == AVESQ) one += two*two;
@@ -1206,7 +1207,7 @@ void ComputeReduce::combine(double &one, double two, int i)
 
 bigint ComputeReduce::memory_usage()
 {
-  bigint bytes = maxparticle * sizeof(double);
-  bytes += maxgrid * sizeof(double);
+  bigint bytes = maxparticle * sizeof(sfloat);
+  bytes += maxgrid * sizeof(sfloat);
   return bytes;
 }

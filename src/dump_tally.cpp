@@ -1,3 +1,4 @@
+/* AD-CONVERTED: double->sfloat by tools/ad_convert.py (see sfloat.h) */
 /* ----------------------------------------------------------------------
    SPARTA - Stochastic PArallel Rarefied-gas Time-accurate Analyzer
    http://sparta.sandia.gov
@@ -198,12 +199,12 @@ void DumpTally::header_binary(bigint ndump)
   fwrite(&update->ntimestep,sizeof(bigint),1,fp);
   fwrite(&ndump,sizeof(bigint),1,fp);
   fwrite(domain->bflag,6*sizeof(int),1,fp);
-  fwrite(&boxxlo,sizeof(double),1,fp);
-  fwrite(&boxxhi,sizeof(double),1,fp);
-  fwrite(&boxylo,sizeof(double),1,fp);
-  fwrite(&boxyhi,sizeof(double),1,fp);
-  fwrite(&boxzlo,sizeof(double),1,fp);
-  fwrite(&boxzhi,sizeof(double),1,fp);
+  fwrite(&boxxlo,sizeof(sfloat),1,fp);
+  fwrite(&boxxhi,sizeof(sfloat),1,fp);
+  fwrite(&boxylo,sizeof(sfloat),1,fp);
+  fwrite(&boxyhi,sizeof(sfloat),1,fp);
+  fwrite(&boxzlo,sizeof(sfloat),1,fp);
+  fwrite(&boxzhi,sizeof(sfloat),1,fp);
   fwrite(&nfield,sizeof(int),1,fp);
   if (multiproc) fwrite(&nclusterprocs,sizeof(int),1,fp);
   else fwrite(&nprocs,sizeof(int),1,fp);
@@ -218,9 +219,9 @@ void DumpTally::header_item(bigint ndump)
   fprintf(fp,"ITEM: NUMBER OF TALLIES\n");
   fprintf(fp,BIGINT_FORMAT "\n",ndump);
   fprintf(fp,"ITEM: BOX BOUNDS %s\n",boundstr);
-  fprintf(fp,"%g %g\n",boxxlo,boxxhi);
-  fprintf(fp,"%g %g\n",boxylo,boxyhi);
-  fprintf(fp,"%g %g\n",boxzlo,boxzhi);
+  fprintf(fp,"%g %g\n",spval(boxxlo),spval(boxxhi));
+  fprintf(fp,"%g %g\n",spval(boxylo),spval(boxyhi));
+  fprintf(fp,"%g %g\n",spval(boxzlo),spval(boxzhi));
   fprintf(fp,"ITEM: TALLIES %s\n",columns);
 }
 
@@ -265,41 +266,41 @@ void DumpTally::pack()
 
 /* ---------------------------------------------------------------------- */
 
-void DumpTally::write_data(int n, double *mybuf)
+void DumpTally::write_data(int n, sfloat *mybuf)
 {
   (this->*write_choice)(n,mybuf);
 }
 
 /* ---------------------------------------------------------------------- */
 
-void DumpTally::write_binary(int n, double *mybuf)
+void DumpTally::write_binary(int n, sfloat *mybuf)
 {
   n *= size_one;
   fwrite(&n,sizeof(int),1,fp);
-  fwrite(mybuf,sizeof(double),n,fp);
+  fwrite(mybuf,sizeof(sfloat),n,fp);
 }
 
 /* ---------------------------------------------------------------------- */
 
-void DumpTally::write_string(int n, double *mybuf)
+void DumpTally::write_string(int n, sfloat *mybuf)
 {
   fwrite(mybuf,sizeof(char),n,fp);
 }
 
 /* ---------------------------------------------------------------------- */
 
-void DumpTally::write_text(int n, double *mybuf)
+void DumpTally::write_text(int n, sfloat *mybuf)
 {
   int i,j;
 
   int m = 0;
   for (i = 0; i < n; i++) {
     for (j = 0; j < size_one; j++) {
-      if (vtype[j] == DOUBLE) fprintf(fp,vformat[j],mybuf[m]);
-      else if (vtype[j] == INT) fprintf(fp,vformat[j],(int) ubuf(mybuf[m]).i);
-      else if (vtype[j] == BIGINT) fprintf(fp,vformat[j],(bigint) ubuf(mybuf[m]).i);
-      else if (vtype[j] == UINT) fprintf(fp,vformat[j],(uint32_t) ubuf(mybuf[m]).i);
-      else if (vtype[j] == BIGUINT) fprintf(fp,vformat[j],(uint64_t) ubuf(mybuf[m]).i);
+      if (vtype[j] == DOUBLE) fprintf(fp,vformat[j],spval(mybuf[m]));
+      else if (vtype[j] == INT) fprintf(fp,vformat[j],(int) ubuf(spval(mybuf[m])).i);
+      else if (vtype[j] == BIGINT) fprintf(fp,vformat[j],(bigint) ubuf(spval(mybuf[m])).i);
+      else if (vtype[j] == UINT) fprintf(fp,vformat[j],(uint32_t) ubuf(spval(mybuf[m])).i);
+      else if (vtype[j] == BIGUINT) fprintf(fp,vformat[j],(uint64_t) ubuf(spval(mybuf[m])).i);
       m++;
     }
     fprintf(fp,"\n");
@@ -399,14 +400,14 @@ void DumpTally::pack_compute(int n)
   Compute *c = compute[field2index[n]];
 
   if (index == 0) {
-    double *vector = c->vector_tally;
+    sfloat *vector = c->vector_tally;
     for (int i = 0; i < ntally; i++) {
       buf[n] = vector[i];
       n += size_one;
     }
   } else {
     index--;
-    double **array = c->array_tally;
+    sfloat **array = c->array_tally;
     for (int i = 0; i < ntally; i++) {
       buf[n] = array[i][index];
       n += size_one;

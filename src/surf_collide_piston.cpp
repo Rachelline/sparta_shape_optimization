@@ -1,3 +1,4 @@
+/* AD-CONVERTED: double->sfloat by tools/ad_convert.py (see sfloat.h) */
 /* ----------------------------------------------------------------------
    SPARTA - Stochastic PArallel Rarefied-gas Time-accurate Analyzer
    http://sparta.github.io
@@ -92,8 +93,8 @@ void SurfCollidePiston::init()
 ------------------------------------------------------------------------- */
 
 Particle::OnePart *SurfCollidePiston::
-collide(Particle::OnePart *&ip, double &dtremain,
-        int isurf, double *norm, int isr, int &reaction)
+collide(Particle::OnePart *&ip, sfloat &dtremain,
+        int isurf, sfloat *norm, int isr, int &reaction)
 {
   nsingle++;
 
@@ -137,11 +138,11 @@ collide(Particle::OnePart *&ip, double &dtremain,
   // vorig = initial velocity component
   // vwall = user-specified wall velocity (always >= 0)
 
-  double *x = ip->x;
-  double *v = ip->v;
-  double xwall = x[dim];
-  double xorig = xwall - v[dim]*(dt - dtremain);
-  double vorig = v[dim];
+  sfloat *x = ip->x;
+  sfloat *v = ip->v;
+  sfloat xwall = x[dim];
+  sfloat xorig = xwall - v[dim]*(dt - dtremain);
+  sfloat vorig = v[dim];
 
   // piston reflection: see eqs 12.30 and 12.31 in Bird 1994, p 288
   // uprime = post-collision velocity component
@@ -150,7 +151,7 @@ collide(Particle::OnePart *&ip, double &dtremain,
   // formula for dtremain works for both which = 0/1
   //   since numerator and denominator are always same sign
 
-  double uprime,xprime;
+  sfloat uprime,xprime;
 
   if (which == 0) {
     uprime = -2.0*vwall - vorig;

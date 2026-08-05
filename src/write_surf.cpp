@@ -1,3 +1,4 @@
+/* AD-CONVERTED: double->sfloat by tools/ad_convert.py (see sfloat.h) */
 /* ----------------------------------------------------------------------
    SPARTA - Stochastic PArallel Rarefied-gas Time-accurate Analyzer
    http://sparta.github.io
@@ -180,13 +181,13 @@ void WriteSurf::command(int narg, char **arg)
   // write file(s)
 
   MPI_Barrier(world);
-  double time1 = MPI_Wtime();
+  sfloat time1 = MPI_Wtime();
 
   write_file(file);
   delete [] file;
 
   MPI_Barrier(world);
-  double time2 = MPI_Wtime();
+  sfloat time2 = MPI_Wtime();
 
   // clean up
 
@@ -199,16 +200,16 @@ void WriteSurf::command(int narg, char **arg)
 
   if (!statflag) return;
 
-  double time_total = time2-time1;
+  sfloat time_total = time2-time1;
 
   if (me == 0) {
     if (screen) {
       fprintf(screen,"  surf elements = " BIGINT_FORMAT "\n",surf->nsurf);
-      fprintf(screen,"  CPU time = %g secs\n",time_total);
+      fprintf(screen,"  CPU time = %g secs\n",spval(time_total));
     }
     if (logfile) {
       fprintf(logfile,"  surf elements = " BIGINT_FORMAT "\n",surf->nsurf);
-      fprintf(logfile,"  CPU time = %g secs\n",time_total);
+      fprintf(logfile,"  CPU time = %g secs\n",spval(time_total));
     }
   }
 }
@@ -268,9 +269,9 @@ void WriteSurf::write_file_all_points(char *file)
     bigint m = 0;
     for (int i = istart; i < istop; i++) {
       fprintf(fp,BIGINT_FORMAT " %20.15g %20.15g\n",
-              m+1,lines[i].p1[0],lines[i].p1[1]);
+              m+1,spval(lines[i].p1[0]),spval(lines[i].p1[1]));
       fprintf(fp,BIGINT_FORMAT " %20.15g %20.15g\n",
-              m+2,lines[i].p2[0],lines[i].p2[1]);
+              m+2,spval(lines[i].p2[0]),spval(lines[i].p2[1]));
       m += 2;
     }
   } else {
@@ -278,11 +279,11 @@ void WriteSurf::write_file_all_points(char *file)
     bigint m = 0;
     for (int i = istart; i < istop; i++) {
       fprintf(fp,BIGINT_FORMAT " %20.15g %20.15g %20.15g\n",
-              m+1,tris[i].p1[0],tris[i].p1[1],tris[i].p1[2]);
+              m+1,spval(tris[i].p1[0]),spval(tris[i].p1[1]),spval(tris[i].p1[2]));
       fprintf(fp,BIGINT_FORMAT " %20.15g %20.15g %20.15g\n",
-              m+2,tris[i].p2[0],tris[i].p2[1],tris[i].p2[2]);
+              m+2,spval(tris[i].p2[0]),spval(tris[i].p2[1]),spval(tris[i].p2[2]));
       fprintf(fp,BIGINT_FORMAT " %20.15g %20.15g %20.15g\n",
-              m+3,tris[i].p3[0],tris[i].p3[1],tris[i].p3[2]);
+              m+3,spval(tris[i].p3[0]),spval(tris[i].p3[1]),spval(tris[i].p3[2]));
       m += 3;
     }
   }
@@ -387,8 +388,8 @@ void WriteSurf::write_file_all_nopoints(char *file)
       for (int i = istart; i < istop; i++) {
 	fprintf(fp,SURFINT_FORMAT " %d %20.15g %20.15g %20.15g %20.15g",
 		lines[i].id,lines[i].type,
-		lines[i].p1[0],lines[i].p1[1],
-		lines[i].p2[0],lines[i].p2[1]);
+		spval(lines[i].p1[0]),spval(lines[i].p1[1]),
+		spval(lines[i].p2[0]),spval(lines[i].p2[1]));
 	if (ncustom) write_custom_all(i);
 	fprintf(fp,"\n");
       }
@@ -397,8 +398,8 @@ void WriteSurf::write_file_all_nopoints(char *file)
       for (int i = istart; i < istop; i++) {
 	fprintf(fp,SURFINT_FORMAT " %20.15g %20.15g %20.15g %20.15g",
 		lines[i].id,
-		lines[i].p1[0],lines[i].p1[1],
-		lines[i].p2[0],lines[i].p2[1]);
+		spval(lines[i].p1[0]),spval(lines[i].p1[1]),
+		spval(lines[i].p2[0]),spval(lines[i].p2[1]));
 	if (ncustom) write_custom_all(i);
 	fprintf(fp,"\n");
       }
@@ -415,9 +416,9 @@ void WriteSurf::write_file_all_nopoints(char *file)
 	fprintf(fp,SURFINT_FORMAT " %d %20.15g %20.15g %20.15g "
 		"%20.15g %20.15g %20.15g %20.15g %20.15g %20.15g",
 		tris[i].id,tris[i].type,
-		tris[i].p1[0],tris[i].p1[1],tris[i].p1[2],
-		tris[i].p2[0],tris[i].p2[1],tris[i].p2[2],
-		tris[i].p3[0],tris[i].p3[1],tris[i].p3[2]);
+		spval(tris[i].p1[0]),spval(tris[i].p1[1]),spval(tris[i].p1[2]),
+		spval(tris[i].p2[0]),spval(tris[i].p2[1]),spval(tris[i].p2[2]),
+		spval(tris[i].p3[0]),spval(tris[i].p3[1]),spval(tris[i].p3[2]));
 	if (ncustom) write_custom_all(i);
 	fprintf(fp,"\n");
       }
@@ -426,9 +427,9 @@ void WriteSurf::write_file_all_nopoints(char *file)
 	fprintf(fp,SURFINT_FORMAT " %20.15g %20.15g %20.15g "
 		"%20.15g %20.15g %20.15g %20.15g %20.15g %20.15g",
 		tris[i].id,
-		tris[i].p1[0],tris[i].p1[1],tris[i].p1[2],
-		tris[i].p2[0],tris[i].p2[1],tris[i].p2[2],
-		tris[i].p3[0],tris[i].p3[1],tris[i].p3[2]);
+		spval(tris[i].p1[0]),spval(tris[i].p1[1]),spval(tris[i].p1[2]),
+		spval(tris[i].p2[0]),spval(tris[i].p2[1]),spval(tris[i].p2[2]),
+		spval(tris[i].p3[0]),spval(tris[i].p3[1]),spval(tris[i].p3[2]));
 	if (ncustom) write_custom_all(i);
 	fprintf(fp,"\n");
       }
@@ -513,7 +514,7 @@ void WriteSurf::write_file_distributed_points(char *file)
 
   // pbuf = local buf for my explicit or implicit points
 
-  double *pbuf;
+  sfloat *pbuf;
   memory->create(pbuf,max_size_point*dim,"writesurf:pbuf");
 
   // pack my points into buf
@@ -555,10 +556,10 @@ void WriteSurf::write_file_distributed_points(char *file)
     bigint index = 0;
     for (int iproc = 0; iproc < nclusterprocs; iproc++) {
       if (iproc) {
-        MPI_Irecv(pbuf,max_size_point*dim,MPI_DOUBLE,me+iproc,0,world,&request);
+        MPI_Irecv(pbuf,max_size_point*dim,MPI_SFLOAT,me+iproc,0,world,&request);
         MPI_Send(&tmp,0,MPI_INT,me+iproc,0,world);
         MPI_Wait(&request,&status);
-        MPI_Get_count(&status,MPI_DOUBLE,&recv_size);
+        MPI_Get_count(&status,MPI_SFLOAT,&recv_size);
       } else recv_size = npoint*dim;
 
       ncount = recv_size/dim;
@@ -568,14 +569,14 @@ void WriteSurf::write_file_distributed_points(char *file)
         for (int i = 0; i < ncount; i++) {
           index++;
           fprintf(fp,BIGINT_FORMAT " %20.15g %20.15g\n",
-                  index,pbuf[m],pbuf[m+1]);
+                  index,spval(pbuf[m]),spval(pbuf[m+1]));
           m += 2;
 	}
       } else {
         for (int i = 0; i < ncount; i++) {
           index++;
           fprintf(fp,BIGINT_FORMAT " %20.15g %20.15g %20.15g\n",
-                  index,pbuf[m],pbuf[m+1],pbuf[m+2]);
+                  index,spval(pbuf[m]),spval(pbuf[m+1]),spval(pbuf[m+2]));
           m += 3;
         }
       }
@@ -583,7 +584,7 @@ void WriteSurf::write_file_distributed_points(char *file)
 
   } else {
     MPI_Recv(&tmp,0,MPI_INT,fileproc,0,world,&status);
-    MPI_Rsend(pbuf,npoint*dim,MPI_DOUBLE,fileproc,0,world);
+    MPI_Rsend(pbuf,npoint*dim,MPI_SFLOAT,fileproc,0,world);
   }
 
   memory->sfree(pbuf);
@@ -630,7 +631,7 @@ void WriteSurf::write_file_distributed_points(char *file)
 
   // pack my custom data into cvalues
 
-  double **cvalues = NULL;
+  sfloat **cvalues = NULL;
 
   if (ncustom) {
     memory->create(cvalues,nmine,nvalues_custom,"write_surf:cvalues");
@@ -653,7 +654,7 @@ void WriteSurf::write_file_distributed_points(char *file)
         MPI_Wait(&request,&status);
         MPI_Get_count(&status,MPI_CHAR,&recv_size);
         if (ncustom) {
-          MPI_Irecv(&cvalues[0][0],max_size_surf*nvalues_custom,MPI_DOUBLE,
+          MPI_Irecv(&cvalues[0][0],max_size_surf*nvalues_custom,MPI_SFLOAT,
                     me+iproc,0,world,&request);
           MPI_Send(&tmp,0,MPI_INT,me+iproc,0,world);
           MPI_Wait(&request,&status);
@@ -709,10 +710,10 @@ void WriteSurf::write_file_distributed_points(char *file)
     if (ncustom) {
       MPI_Recv(&tmp,0,MPI_INT,fileproc,0,world,&status);
       if (nmine)
-        MPI_Rsend(&cvalues[0][0],nmine*nvalues_custom,MPI_DOUBLE,
+        MPI_Rsend(&cvalues[0][0],nmine*nvalues_custom,MPI_SFLOAT,
                   fileproc,0,world);
       else
-        MPI_Rsend(NULL,nmine*nvalues_custom,MPI_DOUBLE,
+        MPI_Rsend(NULL,nmine*nvalues_custom,MPI_SFLOAT,
                   fileproc,0,world);
     }
   }
@@ -809,7 +810,7 @@ void WriteSurf::write_file_distributed_nopoints(char *file)
 
   // pack my custom data into cvalues
 
-  double **cvalues = NULL;
+  sfloat **cvalues = NULL;
 
   if (ncustom) {
     memory->create(cvalues,nmine,nvalues_custom,"write_surf:cvalues");
@@ -835,7 +836,7 @@ void WriteSurf::write_file_distributed_nopoints(char *file)
         MPI_Wait(&request,&status);
         MPI_Get_count(&status,MPI_CHAR,&recv_size);
         if (ncustom) {
-          MPI_Irecv(&cvalues[0][0],max_size*nvalues_custom,MPI_DOUBLE,
+          MPI_Irecv(&cvalues[0][0],max_size*nvalues_custom,MPI_SFLOAT,
                     me+iproc,0,world,&request);
           MPI_Send(&tmp,0,MPI_INT,me+iproc,0,world);
           MPI_Wait(&request,&status);
@@ -853,8 +854,8 @@ void WriteSurf::write_file_distributed_nopoints(char *file)
               id = static_cast<surfint> (offset + i + 1);
 	    fprintf(fp,SURFINT_FORMAT " %d %20.15g %20.15g %20.15g %20.15g",
 		    id,lines[i].type,
-		    lines[i].p1[0],lines[i].p1[1],
-		    lines[i].p2[0],lines[i].p2[1]);
+		    spval(lines[i].p1[0]),spval(lines[i].p1[1]),
+		    spval(lines[i].p2[0]),spval(lines[i].p2[1]));
             if (ncustom) write_custom_distributed(i,cvalues);
             fprintf(fp,"\n");
 	  }
@@ -865,8 +866,8 @@ void WriteSurf::write_file_distributed_nopoints(char *file)
               id = static_cast<surfint> (offset + i + 1);
 	    fprintf(fp,SURFINT_FORMAT " %20.15g %20.15g %20.15g %20.15g",
 		    id,
-		    lines[i].p1[0],lines[i].p1[1],
-		    lines[i].p2[0],lines[i].p2[1]);
+		    spval(lines[i].p1[0]),spval(lines[i].p1[1]),
+		    spval(lines[i].p2[0]),spval(lines[i].p2[1]));
             if (ncustom) write_custom_distributed(i,cvalues);
             fprintf(fp,"\n");
 	  }
@@ -882,9 +883,9 @@ void WriteSurf::write_file_distributed_nopoints(char *file)
 	    fprintf(fp,SURFINT_FORMAT " %d %20.15g %20.15g %20.15g "
 		    "%20.15g %20.15g %20.15g %20.15g %20.15g %20.15g",
 		    id,tris[i].type,
-		    tris[i].p1[0],tris[i].p1[1],tris[i].p1[2],
-		    tris[i].p2[0],tris[i].p2[1],tris[i].p2[2],
-		    tris[i].p3[0],tris[i].p3[1],tris[i].p3[2]);
+		    spval(tris[i].p1[0]),spval(tris[i].p1[1]),spval(tris[i].p1[2]),
+		    spval(tris[i].p2[0]),spval(tris[i].p2[1]),spval(tris[i].p2[2]),
+		    spval(tris[i].p3[0]),spval(tris[i].p3[1]),spval(tris[i].p3[2]));
             if (ncustom) write_custom_distributed(i,cvalues);
             fprintf(fp,"\n");
 	  }
@@ -896,9 +897,9 @@ void WriteSurf::write_file_distributed_nopoints(char *file)
 	    fprintf(fp,SURFINT_FORMAT " %20.15g %20.15g %20.15g "
 		    "%20.15g %20.15g %20.15g %20.15g %20.15g %20.15g",
 		    id,
-		    tris[i].p1[0],tris[i].p1[1],tris[i].p1[2],
-		    tris[i].p2[0],tris[i].p2[1],tris[i].p2[2],
-		    tris[i].p3[0],tris[i].p3[1],tris[i].p3[2]);
+		    spval(tris[i].p1[0]),spval(tris[i].p1[1]),spval(tris[i].p1[2]),
+		    spval(tris[i].p2[0]),spval(tris[i].p2[1]),spval(tris[i].p2[2]),
+		    spval(tris[i].p3[0]),spval(tris[i].p3[1]),spval(tris[i].p3[2]));
             if (ncustom) write_custom_distributed(i,cvalues);
             fprintf(fp,"\n");
 	  }
@@ -912,10 +913,10 @@ void WriteSurf::write_file_distributed_nopoints(char *file)
         if (ncustom) {
       MPI_Recv(&tmp,0,MPI_INT,fileproc,0,world,&status);
       if (nmine)
-        MPI_Rsend(&cvalues[0][0],nmine*nvalues_custom,MPI_DOUBLE,
+        MPI_Rsend(&cvalues[0][0],nmine*nvalues_custom,MPI_SFLOAT,
                   fileproc,0,world);
       else
-        MPI_Rsend(NULL,nmine*nvalues_custom,MPI_DOUBLE,
+        MPI_Rsend(NULL,nmine*nvalues_custom,MPI_SFLOAT,
                   fileproc,0,world);
     }
   }
@@ -1040,7 +1041,7 @@ void WriteSurf::write_header(int nmine)
    pack cvalues with my owned custom data
 ---------------------------------------------------------------------- */
 
-void WriteSurf::pack_custom(int nmine, double **cvalues)
+void WriteSurf::pack_custom(int nmine, sfloat **cvalues)
 {
   int m = 0;
 
@@ -1061,12 +1062,12 @@ void WriteSurf::pack_custom(int nmine, double **cvalues)
       }
     } else {
       if (size_custom[ic] == 0) {
-	double *dvector = surf->edvec[surf->ewhich[index_custom[ic]]];
+	sfloat *dvector = surf->edvec[surf->ewhich[index_custom[ic]]];
         for (int i = 0; i < nmine; i++)
           cvalues[i][m] = dvector[i];
         m++;
       } else {
-	double **darray = surf->edarray[surf->ewhich[index_custom[ic]]];
+	sfloat **darray = surf->edarray[surf->ewhich[index_custom[ic]]];
 	for (int j = 0; j < size_custom[ic]; j++) {
           for (int i = 0; i < nmine; i++)
             cvalues[i][m] = darray[i][j];
@@ -1096,12 +1097,12 @@ void WriteSurf::write_custom_all(int i)
       }
     } else {
       if (size_custom[ic] == 0) {
-	double *dvector = surf->edvec_local[surf->ewhich[index_custom[ic]]];
-	fprintf(fp," %g",dvector[i]);
+	sfloat *dvector = surf->edvec_local[surf->ewhich[index_custom[ic]]];
+	fprintf(fp," %g",spval(dvector[i]));
       } else {
-	double **darray = surf->edarray_local[surf->ewhich[index_custom[ic]]];
+	sfloat **darray = surf->edarray_local[surf->ewhich[index_custom[ic]]];
 	for (int j = 0; j < size_custom[ic]; j++)
-	  fprintf(fp," %g",darray[i][j]);
+	  fprintf(fp," %g",spval(darray[i][j]));
       }
     }
   }
@@ -1112,23 +1113,23 @@ void WriteSurf::write_custom_all(int i)
    called for distributed surfs
 ---------------------------------------------------------------------- */
 
-void WriteSurf::write_custom_distributed(int i, double **cvalues)
+void WriteSurf::write_custom_distributed(int i, sfloat **cvalues)
 {
   int m = 0;
   for (int ic = 0; ic < ncustom; ic++) {
     if (type_custom[ic] == 0) {
       if (size_custom[ic] == 0) {
-	fprintf(fp," %d",(int) ubuf(cvalues[i][m++]).i);
+	fprintf(fp," %d",(int) ubuf(spval(cvalues[i][m++])).i);
       } else {
 	for (int j = 0; j < size_custom[ic]; j++)
-	  fprintf(fp," %d",(int) ubuf(cvalues[i][m++]).i);
+	  fprintf(fp," %d",(int) ubuf(spval(cvalues[i][m++])).i);
       }
     } else {
       if (size_custom[ic] == 0) {
-	fprintf(fp," %g",cvalues[i][m++]);
+	fprintf(fp," %g",spval(cvalues[i][m++]));
       } else {
 	for (int j = 0; j < size_custom[ic]; j++)
-	  fprintf(fp," %g",cvalues[i][m++]);
+	  fprintf(fp," %g",spval(cvalues[i][m++]));
       }
     }
   }

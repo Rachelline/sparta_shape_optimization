@@ -1,3 +1,4 @@
+/* AD-CONVERTED: double->sfloat by tools/ad_convert.py (see sfloat.h) */
 /* ----------------------------------------------------------------------
    SPARTA - Stochastic PArallel Rarefied-gas Time-accurate Analyzer
    http://sparta.github.io
@@ -118,7 +119,7 @@ void ReadGrid::read(char *filename, int external)
   // read file, create parent cells and then child cells
 
   MPI_Barrier(world);
-  double time1 = MPI_Wtime();
+  sfloat time1 = MPI_Wtime();
 
   me = comm->me;
   nprocs = comm->nprocs;
@@ -160,7 +161,7 @@ void ReadGrid::read(char *filename, int external)
   // invoke grid methods to complete grid setup
 
   MPI_Barrier(world);
-  double time2 = MPI_Wtime();
+  sfloat time2 = MPI_Wtime();
 
   grid->set_maxlevel();
   grid->setup_owned();
@@ -170,25 +171,25 @@ void ReadGrid::read(char *filename, int external)
   comm->reset_neighbors();
 
   MPI_Barrier(world);
-  double time3 = MPI_Wtime();
+  sfloat time3 = MPI_Wtime();
 
   // stats
 
   if (external) return;
 
-  double time_total = time3-time1;
+  sfloat time_total = time3-time1;
 
   if (comm->me == 0) {
     if (screen) {
       fprintf(screen,"  grid cells = " BIGINT_FORMAT "\n",grid->ncell);
-      fprintf(screen,"  CPU time = %g secs\n",time_total);
+      fprintf(screen,"  CPU time = %g secs\n",spval(time_total));
       fprintf(screen,"  read/setup percent = %g %g\n",
               100.0*(time2-time1)/time_total,100.0*(time3-time2)/time_total);
     }
 
     if (logfile) {
       fprintf(logfile,"  grid cells = " BIGINT_FORMAT "\n",grid->ncell);
-      fprintf(logfile,"  CPU time = %g secs\n",time_total);
+      fprintf(logfile,"  CPU time = %g secs\n",spval(time_total));
       fprintf(logfile,"  read/setup percent = %g %g\n",
               100.0*(time2-time1)/time_total,100.0*(time3-time2)/time_total);
     }
@@ -256,18 +257,18 @@ void ReadGrid::create_cells(int n, char *buf)
   int level;
   cellint id;
   char *next,*idptr;
-  double lo[3],hi[3];
+  sfloat lo[3],hi[3];
 
   // nwords_required = # of words per line
 
   int nwords_required = 1 + nvalues_custom;
-  double *custom = new double[nvalues_custom];
+  sfloat *custom = new sfloat[nvalues_custom];
 
   // create one child cell for each line
   // assign to procs in round-robin fasion
 
-  double *boxlo = domain->boxlo;
-  double *boxhi = domain->boxhi;
+  sfloat *boxlo = domain->boxlo;
+  sfloat *boxhi = domain->boxhi;
 
   int i,ic,iv,icvalue;
 
@@ -328,7 +329,7 @@ void ReadGrid::create_cells(int n, char *buf)
    grow cvalues as needed
 ------------------------------------------------------------------------- */
 
-void ReadGrid::add_custom(double *custom)
+void ReadGrid::add_custom(sfloat *custom)
 {
   if (nclocal == ncmax) {
     ncmax += DELTA_CUSTOM;
@@ -362,24 +363,24 @@ void ReadGrid::create_custom()
       if (size_custom[ic] == 0) {
 	int *ivector = grid->eivec[grid->ewhich[index]];
 	for (i = 0; i < nlocal; i++)
-	  ivector[i] = static_cast<int> (cvalues[i][icvalue]);
+	  ivector[i] = static_cast<int> (spval(cvalues[i][icvalue]));
 	icvalue++;
       } else {
 	int **iarray = grid->eiarray[grid->ewhich[index]];
 	for (i = 0; i < nlocal; i++)
 	  for (j = 0; j < size_custom[ic]; j++)
-	    iarray[i][j] = static_cast<int> (cvalues[i][icvalue+j]);
+	    iarray[i][j] = static_cast<int> (spval(cvalues[i][icvalue+j]));
 	icvalue += size_custom[ic];
       }
 
     } else if (type_custom[ic] == DOUBLE) {
       if (size_custom[ic] == 0) {
-	double *dvector = grid->edvec[grid->ewhich[index]];
+	sfloat *dvector = grid->edvec[grid->ewhich[index]];
 	for (i = 0; i < nlocal; i++)
 	  dvector[i] = cvalues[i][icvalue];
 	icvalue++;
       } else {
-	double **darray = grid->edarray[grid->ewhich[index]];
+	sfloat **darray = grid->edarray[grid->ewhich[index]];
 	for (i = 0; i < nlocal; i++)
 	  for (j = 0; j < size_custom[ic]; j++)
 	    darray[i][j] = cvalues[i][icvalue+j];

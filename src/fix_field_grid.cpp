@@ -1,3 +1,4 @@
+/* AD-CONVERTED: double->sfloat by tools/ad_convert.py (see sfloat.h) */
 /* ----------------------------------------------------------------------
    SPARTA - Stochastic PArallel Rarefied-gas Time-accurate Analyzer
    http://sparta.github.io
@@ -128,7 +129,7 @@ void FixFieldGrid::init()
   }
 
   bigint nbytes = (bigint) grid->nlocal * size_per_grid_cols;
-  if (nbytes) memset(&array_grid[0][0],0,nbytes*sizeof(double));
+  if (nbytes) memset(&array_grid[0][0],0,nbytes*sizeof(sfloat));
 }
 
 /* ---------------------------------------------------------------------- */

@@ -1,3 +1,4 @@
+/* AD-CONVERTED: double->sfloat by tools/ad_convert.py (see sfloat.h) */
 /* ----------------------------------------------------------------------
    SPARTA - Stochastic PArallel Rarefied-gas Time-accurate Analyzer
    http://sparta.github.io
@@ -30,36 +31,36 @@ class SurfCollideImpulsive : public SurfCollide {
   SurfCollideImpulsive(class SPARTA *, int, char **);
   ~SurfCollideImpulsive();
   void init();
-  Particle::OnePart *collide(Particle::OnePart *&, double &,
-                             int, double *, int, int &);
-  void wrapper(Particle::OnePart *, double *, int *, double*);
-  void flags_and_coeffs(int *, double *);
+  Particle::OnePart *collide(Particle::OnePart *&, sfloat &,
+                             int, sfloat *, int, int &);
+  void wrapper(Particle::OnePart *, sfloat *, int *, sfloat*);
+  void flags_and_coeffs(int *, sfloat *);
 
  private:
-  double eng_ratio,eff_mass;      // energy ratio and effective mass
+  sfloat eng_ratio,eff_mass;      // energy ratio and effective mass
                                   // of the surface for soft-sphere model
-  double u0_a, u0_b;              // u0 values for the direct case
+  sfloat u0_a, u0_b;              // u0 values for the direct case
                                   // within impulsive model
-  double v_f_avg;
-  double var_alpha,var_alpha_sq;     // alpha value related to variance
+  sfloat v_f_avg;
+  sfloat var_alpha,var_alpha_sq;     // alpha value related to variance
                                      // from Rettner's expression
-  double theta_peak,cos_theta_pow;   // cosine power law varaition for theta
-  double cos_phi_pow;                // cosine power law varaition for phi
-  double step_size,cos_theta_pow_2;  // step_size and double cosine power
-  double rot_frac,vib_frac;          // rot and vib energy fraction
+  sfloat theta_peak,cos_theta_pow;   // cosine power law varaition for theta
+  sfloat cos_phi_pow;                // cosine power law varaition for phi
+  sfloat step_size,cos_theta_pow_2;  // step_size and sfloat cosine power
+  sfloat rot_frac,vib_frac;          // rot and vib energy fraction
 
-  double vx,vy,vz;                 // translational velocity of surface
-  double wx,wy,wz;                 // angular velocity of surface
-  double px,py,pz;                 // point to rotate surface around
+  sfloat vx,vy,vz;                 // translational velocity of surface
+  sfloat wx,wy,wz;                 // angular velocity of surface
+  sfloat px,py,pz;                 // point to rotate surface around
 
   int softsphere_flag;             // flag for direct or soft sphere model
   int step_flag,double_flag;       // optional model flags
   int intenergy_flag;
 
-  double vstream[3];
+  sfloat vstream[3];
   class RanKnuth *random;     // RNG for particle reflection
 
-  void impulsive(Particle::OnePart *, double *);
+  void impulsive(Particle::OnePart *, sfloat *);
 };
 
 }

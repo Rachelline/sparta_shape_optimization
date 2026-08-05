@@ -1,3 +1,4 @@
+/* AD-CONVERTED: double->sfloat by tools/ad_convert.py (see sfloat.h) */
 /* ----------------------------------------------------------------------
    SPARTA - Stochastic PArallel Rarefied-gas Time-accurate Analyzer
    http://sparta.github.io
@@ -39,8 +40,8 @@ React::React(SPARTA *sparta, int, char **arg) : Pointers(sparta)
   partialEnergy = 1;
 
   random = new RanKnuth(update->ranmaster->uniform());
-  double seed = update->ranmaster->uniform();
-  random->reset(seed,comm->me,100);
+  sfloat seed = update->ranmaster->uniform();
+  random->reset(spval(seed),comm->me,100);
 
   copy = copymode = 0;
   uncopy = 1;

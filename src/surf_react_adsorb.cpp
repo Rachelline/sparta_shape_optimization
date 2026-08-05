@@ -1,3 +1,4 @@
+/* AD-CONVERTED: double->sfloat by tools/ad_convert.py (see sfloat.h) */
 /* ----------------------------------------------------------------------
    SPARTA - Stochastic PArallel Rarefied-gas Time-accurate Analyzer
    http://sparta.github.io
@@ -117,7 +118,7 @@ SurfReactAdsorb::SurfReactAdsorb(SPARTA *sparta, int narg, char **arg) :
 
   if (strcmp(arg[iarg],"nsync") != 0)
     error->all(FLERR,"Illegal surf_react adsorb command");
-  nsync = input->numeric(FLERR,arg[iarg+1]);
+  nsync = spval(input->numeric(FLERR,arg[iarg+1]));
   if (nsync < 1) error->all(FLERR,"Illegal surf_react adsorb command");
 
   if (strcmp(arg[iarg+2],"face") == 0) mode = FACE;
@@ -199,8 +200,8 @@ SurfReactAdsorb::SurfReactAdsorb(SPARTA *sparta, int narg, char **arg) :
   // initialize RN generator
 
   random = new RanKnuth(update->ranmaster->uniform());
-  double seed = update->ranmaster->uniform();
-  random->reset(seed,me,100);
+  sfloat seed = update->ranmaster->uniform();
+  random->reset(spval(seed),me,100);
 
   // create and initialize per-face or custom per-surf attributes
 
@@ -558,7 +559,7 @@ void SurfReactAdsorb::init()
 	m++;
       }
     } else {
-      double tmp;
+      sfloat tmp;
       int m = 0;
       for (int isurf = me; isurf < nslocal; isurf += nprocs) {
 	isr = tris[isurf].isr;
@@ -579,7 +580,7 @@ void SurfReactAdsorb::init()
 	weight[isurf] = 1.0;
       }
     } else {
-      double tmp;
+      sfloat tmp;
       for (int isurf = 0; isurf < nsown; isurf++) {
 	isr = mytris[isurf].isr;
 	if (surf->sr[isr] != this) continue;
@@ -627,7 +628,7 @@ void SurfReactAdsorb::init()
    if create, add particle and return ptr JP
 ------------------------------------------------------------------------- */
 
-int SurfReactAdsorb::react(Particle::OnePart *&ip, int isurf, double *norm,
+int SurfReactAdsorb::react(Particle::OnePart *&ip, int isurf, sfloat *norm,
                            Particle::OnePart *&jp, int &velreset)
 {
   // just return if GS model not defined
@@ -651,18 +652,18 @@ int SurfReactAdsorb::react(Particle::OnePart *&ip, int isurf, double *norm,
   int n = reactions_gs[ip->ispecies].n;
   if (n == 0) return 0;
 
-  double fnum = update->fnum;
-  long int maxstick = ceil(max_cover*area[isurf] / (fnum*weight[isurf]));
-  double factor = fnum * weight[isurf] / area[isurf];
-  double ms_inv = factor / max_cover;
+  sfloat fnum = update->fnum;
+  long int maxstick = spval(ceil(max_cover*area[isurf] / (fnum*weight[isurf])));
+  sfloat factor = fnum * weight[isurf] / area[isurf];
+  sfloat ms_inv = factor / max_cover;
 
   // loop over possible reactions for this species
 
   Particle::Species *species = particle->species;
 
   OneReaction_GS *r;
-  double sum_prob = 0.0;
-  double scatter_prob = 0.0, correction = 1.0;
+  sfloat sum_prob = 0.0;
+  sfloat scatter_prob = 0.0, correction = 1.0;
   //int check_ads = 0, ads_index = -1;
 
   int coeff_val = 1;
@@ -698,12 +699,12 @@ int SurfReactAdsorb::react(Particle::OnePart *&ip, int isurf, double *norm,
       {
         //check_ads = 1;
         //ads_index = i;
-        double surf_cover = total_state[isurf] * ms_inv;
-        double S_theta = 0.0;
+        sfloat surf_cover = total_state[isurf] * ms_inv;
+        sfloat S_theta = 0.0;
 
         if (r->kisliuk_flag)
         {
-          double K_ads = r->kisliuk_coeff[0] * pow(twall,r->kisliuk_coeff[1]) *
+          sfloat K_ads = r->kisliuk_coeff[0] * pow(twall,r->kisliuk_coeff[1]) *
           exp(-r->kisliuk_coeff[2]/twall);
           if (surf_cover < 1)
             S_theta = pow((1 - surf_cover) /
@@ -722,11 +723,11 @@ int SurfReactAdsorb::react(Particle::OnePart *&ip, int isurf, double *norm,
 
     case DA:
       {
-        double surf_cover = total_state[isurf] * ms_inv;
-        double S_theta = 0.0;
+        sfloat surf_cover = total_state[isurf] * ms_inv;
+        sfloat S_theta = 0.0;
 
         if (r->kisliuk_flag) {
-          double K_ads = r->kisliuk_coeff[0] * pow(twall,r->kisliuk_coeff[1]) *
+          sfloat K_ads = r->kisliuk_coeff[0] * pow(twall,r->kisliuk_coeff[1]) *
             exp(-r->kisliuk_coeff[2]/twall);
           if (surf_cover < 1)
             S_theta = pow((1 - surf_cover) /
@@ -740,9 +741,9 @@ int SurfReactAdsorb::react(Particle::OnePart *&ip, int isurf, double *norm,
 
         /*
         if (r->state_products[1][0] == 's') {
-          double K_ads2 = r->coeff[6] * pow(twall,r->coeff[7]) *
+          sfloat K_ads2 = r->coeff[6] * pow(twall,r->coeff[7]) *
             exp(-r->coeff[8]/twall);
-          double S_ratio2 = (1 - surf_cover) /
+          sfloat S_ratio2 = (1 - surf_cover) /
                (1 - surf_cover + K_ads*surf_cover);
           prob_value[i] *= (S_ratio2);
         }
@@ -753,11 +754,11 @@ int SurfReactAdsorb::react(Particle::OnePart *&ip, int isurf, double *norm,
 
     case LH1:
       {
-        double surf_cover = total_state[isurf] * ms_inv;
-        double S_theta = 0.0;
+        sfloat surf_cover = total_state[isurf] * ms_inv;
+        sfloat S_theta = 0.0;
 
         if (r->kisliuk_flag) {
-          double K_ads = r->kisliuk_coeff[0] * pow(twall,r->kisliuk_coeff[1]) *
+          sfloat K_ads = r->kisliuk_coeff[0] * pow(twall,r->kisliuk_coeff[1]) *
             exp(-r->kisliuk_coeff[2]/twall);
           if (surf_cover < 1)
             S_theta = pow((1 - surf_cover) /
@@ -773,11 +774,11 @@ int SurfReactAdsorb::react(Particle::OnePart *&ip, int isurf, double *norm,
 
     case LH3:
       {
-        double surf_cover = total_state[isurf] * ms_inv;
-        double S_theta = 0.0;
+        sfloat surf_cover = total_state[isurf] * ms_inv;
+        sfloat S_theta = 0.0;
 
         if (r->kisliuk_flag) {
-          double K_ads = r->kisliuk_coeff[0] * pow(twall,r->kisliuk_coeff[1]) *
+          sfloat K_ads = r->kisliuk_coeff[0] * pow(twall,r->kisliuk_coeff[1]) *
             exp(-r->kisliuk_coeff[2]/twall);
           if (surf_cover < 1)
             S_theta = pow((1 - surf_cover) /
@@ -793,11 +794,11 @@ int SurfReactAdsorb::react(Particle::OnePart *&ip, int isurf, double *norm,
 
     case CD:
       {
-        double surf_cover = total_state[isurf] * ms_inv;
-        double S_theta = 0.0;
+        sfloat surf_cover = total_state[isurf] * ms_inv;
+        sfloat S_theta = 0.0;
 
         if (r->kisliuk_flag) {
-          double K_ads = r->kisliuk_coeff[0] * pow(twall,r->kisliuk_coeff[1]) *
+          sfloat K_ads = r->kisliuk_coeff[0] * pow(twall,r->kisliuk_coeff[1]) *
             exp(-r->kisliuk_coeff[2]/twall);
           if (surf_cover < 1)
             S_theta = pow((1 - surf_cover) /
@@ -813,7 +814,7 @@ int SurfReactAdsorb::react(Particle::OnePart *&ip, int isurf, double *norm,
 
     case ER:
       {
-        double dot = MathExtra::dot3(ip->v,norm);
+        sfloat dot = MathExtra::dot3(ip->v,norm);
         dot = 2.0;
 
         if (r->nreactant == 1) {
@@ -830,11 +831,11 @@ int SurfReactAdsorb::react(Particle::OnePart *&ip, int isurf, double *norm,
       {
         prob_value[i] = r->k_react;
         if (r->energy_flag) {
-          double *v = ip->v;
-          double dot = MathExtra::dot3(v,norm);
-          double vmag_sq = MathExtra::lensq3(v);
-          double E_i = 0.5 * species[ip->ispecies].mass * vmag_sq;
-          double cos_theta = abs(dot) / sqrt(vmag_sq);
+          sfloat *v = ip->v;
+          sfloat dot = MathExtra::dot3(v,norm);
+          sfloat vmag_sq = MathExtra::lensq3(v);
+          sfloat E_i = 0.5 * species[ip->ispecies].mass * vmag_sq;
+          sfloat cos_theta = abs(dot) / sqrt(vmag_sq);
           prob_value[i] *= pow(E_i,r->energy_coeff[0]) *
           pow(cos_theta,r->energy_coeff[1]);
         }
@@ -844,11 +845,11 @@ int SurfReactAdsorb::react(Particle::OnePart *&ip, int isurf, double *norm,
     /*
     case CI2:
       {
-        double *v = ip->v;
-        double dot = MathExtra::dot3(v,norm);
-        double vmag_sq = MathExtra::lensq3(v);
-        double E_i = 0.5 * species[ip->ispecies].mass * vmag_sq;
-        double cos_theta = dot/sqrt(vmag_sq);
+        sfloat *v = ip->v;
+        sfloat dot = MathExtra::dot3(v,norm);
+        sfloat vmag_sq = MathExtra::lensq3(v);
+        sfloat E_i = 0.5 * species[ip->ispecies].mass * vmag_sq;
+        sfloat cos_theta = dot/sqrt(vmag_sq);
         prob_value[i] = r->k_react * pow(E_i,r->coeff[3]) *
           pow(cos_theta,r->coeff[4]);
         break;
@@ -891,8 +892,8 @@ int SurfReactAdsorb::react(Particle::OnePart *&ip, int isurf, double *norm,
 
   // probablity to compare to reaction probability
 
-  double react_prob = scatter_prob;
-  double random_prob = random->uniform();
+  sfloat react_prob = scatter_prob;
+  sfloat random_prob = random->uniform();
 
   if (react_prob > random_prob) return 0;
   else {
@@ -958,11 +959,11 @@ int SurfReactAdsorb::react(Particle::OnePart *&ip, int isurf, double *norm,
 
       case DISSOCIATION:
         {
-          double x[3],v[3];
+          sfloat x[3],v[3];
           ip->ispecies = r->products[0];
           int id = MAXSMALLINT*random->uniform();
-          memcpy(x,ip->x,3*sizeof(double));
-          memcpy(v,ip->v,3*sizeof(double));
+          memcpy(x,ip->x,3*sizeof(sfloat));
+          memcpy(v,ip->v,3*sizeof(sfloat));
           Particle::OnePart *particles = particle->particles;
 
           int jp_species;
@@ -1013,9 +1014,9 @@ int SurfReactAdsorb::react(Particle::OnePart *&ip, int isurf, double *norm,
                       wrapper(ip,norm,r->cmodel_ip_flags,r->cmodel_ip_coeffs);
 
                   if (r->stoich_products[j] == 2) {
-                    double x[3],v[3];
-                    memcpy(x,ip->x,3*sizeof(double));
-                    memcpy(v,ip->v,3*sizeof(double));
+                    sfloat x[3],v[3];
+                    memcpy(x,ip->x,3*sizeof(sfloat));
+                    memcpy(v,ip->v,3*sizeof(sfloat));
 
                     int id = MAXSMALLINT*random->uniform();
                     Particle::OnePart *particles = particle->particles;
@@ -1032,9 +1033,9 @@ int SurfReactAdsorb::react(Particle::OnePart *&ip, int isurf, double *norm,
                   }
 
                 } else {
-                    double x[3],v[3];
-                    memcpy(x,ip->x,3*sizeof(double));
-                    memcpy(v,ip->v,3*sizeof(double));
+                    sfloat x[3],v[3];
+                    memcpy(x,ip->x,3*sizeof(sfloat));
+                    memcpy(v,ip->v,3*sizeof(sfloat));
 
                     int id = MAXSMALLINT*random->uniform();
                     Particle::OnePart *particles = particle->particles;
@@ -1105,9 +1106,9 @@ int SurfReactAdsorb::react(Particle::OnePart *&ip, int isurf, double *norm,
               wrapper(ip,norm,r->cmodel_ip_flags,r->cmodel_ip_coeffs);
 
           if (r->nprod_g_tot == 2) {
-            double x[3],v[3];
-            memcpy(x,ip->x,3*sizeof(double));
-            memcpy(v,ip->v,3*sizeof(double));
+            sfloat x[3],v[3];
+            memcpy(x,ip->x,3*sizeof(sfloat));
+            memcpy(v,ip->v,3*sizeof(sfloat));
 
             int id = MAXSMALLINT*random->uniform();
             Particle::OnePart *particles = particle->particles;
@@ -1354,12 +1355,12 @@ void SurfReactAdsorb::PS_chemistry()
   // NOTE: does this need logic for handling split cells ?
 
   Grid::ChildCell *cells = grid->cells;
-  double *boxlo = domain->boxlo;
-  double *boxhi = domain->boxhi;
+  sfloat *boxlo = domain->boxlo;
+  sfloat *boxhi = domain->boxhi;
   int dimension = domain->dimension;
 
   int icell;
-  double *x;
+  sfloat *x;
   AddParticle *p;
 
   for (int i = 0; i < nall; i++) {
@@ -1491,7 +1492,7 @@ void SurfReactAdsorb::update_state_surf()
   for (i = 0; i < nsown; i++) {
     total_state[i] = 0;
     for (j = 0; j < nspecies_surf; j++) {
-      species_state[i][j] += outcollate[i][j];
+      species_state[i][j] += spval(outcollate[i][j]);
       species_state[i][j] = MAX(0,species_state[i][j]);
       total_state[i] += species_state[i][j];
     }
@@ -1602,7 +1603,7 @@ void SurfReactAdsorb::init_reactions_gs()
 
   // check that summed reaction probabilities for each species <= 1.0
 
-//  double sum;
+//  sfloat sum;
 //  for (int i = 0; i < nspecies; i++) {
 //    sum = 0.0;
 //    for (int j = 0; j < reactions_gs[i].n; j++)
@@ -1668,7 +1669,7 @@ void SurfReactAdsorb::readfile_gs(char *fname)
         r->products = new int[MAXPRODUCT_GS];
         r->reactants_ad_index = new int[MAXREACTANT_GS];
         r->products_ad_index = new int[MAXPRODUCT_GS];
-        r->coeff = new double[MAXCOEFF_GS];
+        r->coeff = new sfloat[MAXCOEFF_GS];
         r->cmodel_ip = NOMODEL;
         r->cmodel_ip_flags = NULL;
         r->cmodel_ip_coeffs = NULL;
@@ -2193,7 +2194,7 @@ void SurfReactAdsorb::readfile_gs(char *fname)
 
       int model,nflags,ncoeffs;
       int *flags = NULL;
-      double *coeffs = NULL;
+      sfloat *coeffs = NULL;
       SurfCollide *sc;
 
       if (strcmp(words[1],"none") == 0) {
@@ -2239,7 +2240,7 @@ void SurfReactAdsorb::readfile_gs(char *fname)
       // use parsing from SurfCollide instance to fill flags, coeffs
 
       if (nflags) flags = new int[nflags];
-      if (ncoeffs) coeffs = new double[ncoeffs];
+      if (ncoeffs) coeffs = new sfloat[ncoeffs];
       if (model != NOMODEL) sc->flags_and_coeffs(flags,coeffs);
 
       // if first SurfCollide instance of a particular style, save in cmodels
@@ -2439,7 +2440,7 @@ void SurfReactAdsorb::readfile_ps(char *fname)
         r->products = new int[MAXPRODUCT_PS];
         r->reactants_ad_index = new int[MAXREACTANT_PS];
         r->products_ad_index = new int[MAXPRODUCT_PS];
-        r->coeff = new double[MAXCOEFF_PS];
+        r->coeff = new sfloat[MAXCOEFF_PS];
         r->cmodel_ip = NOMODEL;
         r->cmodel_ip_flags = NULL;
         r->cmodel_ip_coeffs = NULL;
@@ -2782,7 +2783,7 @@ void SurfReactAdsorb::readfile_ps(char *fname)
 
       int model,nflags,ncoeffs;
       int *flags = NULL;
-      double *coeffs = NULL;
+      sfloat *coeffs = NULL;
       SurfCollide *sc;
 
       if (strcmp(words[1],"none") == 0) {
@@ -2827,7 +2828,7 @@ void SurfReactAdsorb::readfile_ps(char *fname)
       // use parsing from SurfCollide instance to fill flags, coeffs
 
       if (nflags) flags = new int[nflags];
-      if (ncoeffs) coeffs = new double[ncoeffs];
+      if (ncoeffs) coeffs = new sfloat[ncoeffs];
       if (model != NOMODEL) sc->flags_and_coeffs(flags,coeffs);
 
       // if first SurfCollide instance of a particular style, save in cmodels
@@ -2875,13 +2876,13 @@ void SurfReactAdsorb::readfile_ps(char *fname)
    invoked once per Nsync steps
 ------------------------------------------------------------------------- */
 
-void SurfReactAdsorb::PS_react(int isurf, int isc, double *norm)
+void SurfReactAdsorb::PS_react(int isurf, int isc, sfloat *norm)
 {
   if (nactive_ps == 0) return;
 
-  double fnum = update->fnum;
-  double factor = fnum * weight[isurf] / area[isurf];
-  double ms_inv = factor/max_cover;
+  sfloat fnum = update->fnum;
+  sfloat factor = fnum * weight[isurf] / area[isurf];
+  sfloat ms_inv = factor/max_cover;
 
   int pid;
   Particle::OnePart *p;
@@ -2915,7 +2916,7 @@ void SurfReactAdsorb::PS_react(int isurf, int isc, double *norm)
         nu_react[i] = r->k_react;
 
         if (r->type == SB) {
-          double surf_cover = total_state[isurf] * ms_inv;
+          sfloat surf_cover = total_state[isurf] * ms_inv;
           nu_react[i] *= pow((1-surf_cover),r->stoich_reactants[0]);
         } else {
           int factor_pow = -1;
@@ -2944,7 +2945,7 @@ void SurfReactAdsorb::PS_react(int isurf, int isc, double *norm)
         */
 
         //nu_tau[i] = MAX(floor(nu_react[i] * tau[isurf][react_num]),0);
-        nu_tau[i] = MAX(floor(nu_react[i] * tau[isurf][i]),0);
+        nu_tau[i] = spval(MAX(floor(nu_react[i] * tau[isurf][i]),0));
         sum_nu_tau += nu_tau[i];
       }
     }
@@ -2952,9 +2953,9 @@ void SurfReactAdsorb::PS_react(int isurf, int isc, double *norm)
 
     if (sum_nu_tau == 0) break;
 
-    double sum_inv = 1.0/sum_nu_tau;
-    double random_prob = random->uniform();
-    double react_prob = 0.0;
+    sfloat sum_inv = 1.0/sum_nu_tau;
+    sfloat random_prob = random->uniform();
+    sfloat react_prob = 0.0;
     int check_break = 0;
 
     int m,ireaction;
@@ -2982,7 +2983,7 @@ void SurfReactAdsorb::PS_react(int isurf, int isc, double *norm)
 
         // update tau
 
-        double t = -log(random->uniform())/nu_react[i];
+        sfloat t = -log(random->uniform())/nu_react[i];
         //tau[isurf][react_num] -= t;
         tau[isurf][i] -= t;
 
@@ -3028,7 +3029,7 @@ void SurfReactAdsorb::PS_react(int isurf, int isc, double *norm)
 
         case DS:
           {
-            double x[3],v[3];
+            sfloat x[3],v[3];
 
             pid = MAXSMALLINT*random->uniform();
             random_point(isurf,x);
@@ -3053,7 +3054,7 @@ void SurfReactAdsorb::PS_react(int isurf, int isc, double *norm)
 
         case LH2:
           {
-            double x[3],v[3];
+            sfloat x[3],v[3];
 
             pid = MAXSMALLINT*random->uniform();
             random_point(isurf,x);
@@ -3083,7 +3084,7 @@ void SurfReactAdsorb::PS_react(int isurf, int isc, double *norm)
 
         case SB:
           {
-            double x[3],v[3];
+            sfloat x[3],v[3];
 
             pid = MAXSMALLINT*random->uniform();
             random_point(isurf,x);
@@ -3127,8 +3128,8 @@ void SurfReactAdsorb::add_particle_mine(Particle::OnePart *p)
 
   mypart[npart].id = p->id;
   mypart[npart].ispecies = p->ispecies;
-  memcpy(mypart[npart].x,p->x,3*sizeof(double));
-  memcpy(mypart[npart].v,p->v,3*sizeof(double));
+  memcpy(mypart[npart].x,p->x,3*sizeof(sfloat));
+  memcpy(mypart[npart].v,p->v,3*sizeof(sfloat));
   mypart[npart].erot = p->erot;
   mypart[npart].evib = p->evib;
   mypart[npart].dtremain = p->dtremain;
@@ -3138,30 +3139,30 @@ void SurfReactAdsorb::add_particle_mine(Particle::OnePart *p)
 /* ---------------------------------------------------------------------- */
 
 /*
-void SurfReactAdsorb::energy_barrier_scatter(Particle::OnePart *p, double *norm,
-                                             double barrier_cos_pow,
-                                             double sigma1, double sigma2)
+void SurfReactAdsorb::energy_barrier_scatter(Particle::OnePart *p, sfloat *norm,
+                                             sfloat barrier_cos_pow,
+                                             sfloat sigma1, sfloat sigma2)
 {
   Particle::Species *species = particle->species;
-  double tangent1[3],tangent2[3];
+  sfloat tangent1[3],tangent2[3];
   int ispecies = p->ispecies;
 
-  double *v = p->v;
-  double mass = species[ispecies].mass;
-  double E_i = 0.5 * mass * MathExtra::lensq3(v);
+  sfloat *v = p->v;
+  sfloat mass = species[ispecies].mass;
+  sfloat E_i = 0.5 * mass * MathExtra::lensq3(v);
 
-  double E_t = update->boltz*(twall+sigma2) + sigma1*E_i;
-  double E_n = E_t + update->boltz*twall*0.5*(barrier_cos_pow-1);
-  double vrm_n = sqrt(2.0*E_n / mass);
-  double vrm_t = sqrt(2.0*E_t / mass);
-  double vperp = vrm_n * sqrt(-log(random->uniform()));
+  sfloat E_t = update->boltz*(twall+sigma2) + sigma1*E_i;
+  sfloat E_n = E_t + update->boltz*twall*0.5*(barrier_cos_pow-1);
+  sfloat vrm_n = sqrt(2.0*E_n / mass);
+  sfloat vrm_t = sqrt(2.0*E_t / mass);
+  sfloat vperp = vrm_n * sqrt(-log(random->uniform()));
 
-  double theta = MY_2PI * random->uniform();
-  double vtangent = vrm_t * sqrt(-log(random->uniform()));
-  double vtan1 = vtangent * sin(theta);
-  double vtan2 = vtangent * cos(theta);
+  sfloat theta = MY_2PI * random->uniform();
+  sfloat vtangent = vrm_t * sqrt(-log(random->uniform()));
+  sfloat vtan1 = vtangent * sin(theta);
+  sfloat vtan2 = vtangent * cos(theta);
 
-  double dot = MathExtra::dot3(v,norm);
+  sfloat dot = MathExtra::dot3(v,norm);
 
   tangent1[0] = v[0] - dot*norm[0];
   tangent1[1] = v[1] - dot*norm[1];
@@ -3189,18 +3190,18 @@ void SurfReactAdsorb::energy_barrier_scatter(Particle::OnePart *p, double *norm,
 /* ---------------------------------------------------------------------- */
 
 /*
-void SurfReactAdsorb::non_thermal_scatter(Particle::OnePart *p, double *norm,
-                                          double NT_alpha, double NT_u0_a,
-                                          double NT_u0_b, double NT_barrier)
+void SurfReactAdsorb::non_thermal_scatter(Particle::OnePart *p, sfloat *norm,
+                                          sfloat NT_alpha, sfloat NT_u0_a,
+                                          sfloat NT_u0_b, sfloat NT_barrier)
 {
   Particle::Species *species = particle->species;
-  double tangent1[3],tangent2[3];
+  sfloat tangent1[3],tangent2[3];
   int ispecies = p->ispecies;
 
-  double *v = p->v;
-  double mass = species[ispecies].mass;
+  sfloat *v = p->v;
+  sfloat mass = species[ispecies].mass;
 
-  double dot = MathExtra::dot3(v,norm);
+  sfloat dot = MathExtra::dot3(v,norm);
 
   tangent1[0] = v[0] - dot*norm[0];
   tangent1[1] = v[1] - dot*norm[1];
@@ -3216,30 +3217,30 @@ void SurfReactAdsorb::non_thermal_scatter(Particle::OnePart *p, double *norm,
   MathExtra::norm3(tangent1);
   MathExtra::cross3(norm,tangent1,tangent2);
 
-  double NT_u0 = NT_u0_a*twall + NT_u0_b;
-  double NT_alpha_sq = NT_alpha * NT_alpha;
+  sfloat NT_u0 = NT_u0_a*twall + NT_u0_b;
+  sfloat NT_alpha_sq = NT_alpha * NT_alpha;
 
-  double vrm_n = sqrt(2.0*update->boltz * (twall + NT_barrier) / mass);
-  double vrm_t = sqrt(2.0*update->boltz * twall / mass);
+  sfloat vrm_n = sqrt(2.0*update->boltz * (twall + NT_barrier) / mass);
+  sfloat vrm_t = sqrt(2.0*update->boltz * twall / mass);
 
-  double NT_vf_max = 0.5 * (NT_u0 + sqrt(NT_u0*NT_u0 + 6*NT_alpha_sq));
-  double NT_f_max = NT_vf_max*NT_vf_max*NT_vf_max *
+  sfloat NT_vf_max = 0.5 * (NT_u0 + sqrt(NT_u0*NT_u0 + 6*NT_alpha_sq));
+  sfloat NT_f_max = NT_vf_max*NT_vf_max*NT_vf_max *
     exp(-(NT_vf_max - NT_u0)*(NT_vf_max - NT_u0)/(NT_alpha_sq));
 
-  double P = 0, NT_vf_mag;
+  sfloat P = 0, NT_vf_mag;
   while (random->uniform() > P) {
     NT_vf_mag = NT_vf_max + 3 * NT_alpha * ( 2 * random->uniform() - 1 );
     P = NT_vf_mag*NT_vf_mag*NT_vf_mag/(NT_f_max) *
       exp(-(NT_vf_mag - NT_u0)*(NT_vf_mag - NT_u0)/(NT_alpha_sq));
   }
 
-  double NT_phi = MY_2PI * random->uniform();
-  double NT_theta = atan2(vrm_t * sqrt(-log(random->uniform())),vrm_n *
+  sfloat NT_phi = MY_2PI * random->uniform();
+  sfloat NT_theta = atan2(vrm_t * sqrt(-log(random->uniform())),vrm_n *
                           sqrt(-log(random->uniform())));
 
-  double vperp = NT_vf_mag * cos(NT_theta);
-  double vtan1 = NT_vf_mag * sin(NT_theta) * cos(NT_phi);
-  double vtan2 = NT_vf_mag * sin(NT_theta) * sin(NT_phi);
+  sfloat vperp = NT_vf_mag * cos(NT_theta);
+  sfloat vtan1 = NT_vf_mag * sin(NT_theta) * cos(NT_phi);
+  sfloat vtan2 = NT_vf_mag * sin(NT_theta) * sin(NT_phi);
 
   v[0] = vperp*norm[0] + vtan1*tangent1[0] + vtan2*tangent2[0];
   v[1] = vperp*norm[1] + vtan1*tangent1[1] + vtan2*tangent2[1];
@@ -3253,8 +3254,8 @@ void SurfReactAdsorb::non_thermal_scatter(Particle::OnePart *p, double *norm,
 /* ---------------------------------------------------------------------- */
 
 /*
-void SurfReactAdsorb::cll(Particle::OnePart *p, double *norm, double acc_n,
-                          double acc_t, double eccen)
+void SurfReactAdsorb::cll(Particle::OnePart *p, sfloat *norm, sfloat acc_n,
+                          sfloat acc_t, sfloat eccen)
 {
   // cll reflection
   // vrm = most probable speed of species, eqns (4.1) and (4.7)
@@ -3266,12 +3267,12 @@ void SurfReactAdsorb::cll(Particle::OnePart *p, double *norm, double acc_n,
   // tangent12 are both unit vectors
 
   Particle::Species *species = particle->species;
-  double tangent1[3],tangent2[3];
+  sfloat tangent1[3],tangent2[3];
   int ispecies = p->ispecies;
 
-  double *v = p->v;
-  double dot = MathExtra::dot3(v,norm);
-  double tan = sqrt(MathExtra::lensq3(v) - dot*dot);
+  sfloat *v = p->v;
+  sfloat dot = MathExtra::dot3(v,norm);
+  sfloat tan = sqrt(MathExtra::lensq3(v) - dot*dot);
 
   tangent1[0] = v[0] - dot*norm[0];
   tangent1[1] = v[1] - dot*norm[1];
@@ -3287,39 +3288,39 @@ void SurfReactAdsorb::cll(Particle::OnePart *p, double *norm, double acc_n,
   MathExtra::norm3(tangent1);
   MathExtra::cross3(norm,tangent1,tangent2);
 
-  double tan1 = MathExtra::dot3(v,tangent1);
-  double vrm = sqrt(2.0*update->boltz * twall / species[ispecies].mass);
+  sfloat tan1 = MathExtra::dot3(v,tangent1);
+  sfloat vrm = sqrt(2.0*update->boltz * twall / species[ispecies].mass);
 
   // CLL model normal velocity
 
-  double r_1 = sqrt(-acc_n*log(random->uniform()));
-  double theta_1 = MY_2PI * random->uniform();
-  double dot_norm = fabs(dot/vrm) * sqrt(1-acc_n);
-  double vperp = vrm * sqrt( r_1*r_1 + dot_norm*dot_norm +
+  sfloat r_1 = sqrt(-acc_n*log(random->uniform()));
+  sfloat theta_1 = MY_2PI * random->uniform();
+  sfloat dot_norm = fabs(dot/vrm) * sqrt(1-acc_n);
+  sfloat vperp = vrm * sqrt( r_1*r_1 + dot_norm*dot_norm +
                              2*r_1*dot_norm*cos(theta_1) );
 
   // CLL model tangential velocities
 
-  double r_2 = sqrt(-acc_t*log(random->uniform()));
-  double theta_2 = MY_2PI * random->uniform();
-  double vtangent = fabs(tan/vrm) * sqrt(1-acc_t);
-  double vtan1 = vrm * (vtangent + r_2*cos(theta_2));
-  double vtan2 = vrm * r_2 * sin(theta_2);
+  sfloat r_2 = sqrt(-acc_t*log(random->uniform()));
+  sfloat theta_2 = MY_2PI * random->uniform();
+  sfloat vtangent = fabs(tan/vrm) * sqrt(1-acc_t);
+  sfloat vtan1 = vrm * (vtangent + r_2*cos(theta_2));
+  sfloat vtan2 = vrm * r_2 * sin(theta_2);
 
   int pflag = 0;
   if (eccen >= 0 && eccen < 1) pflag = 1;
 
   if (pflag) {
-    double tan2 = MathExtra::dot3(v,tangent2);
-    double theta_i, phi_i, psi_i, theta_f, phi_f, psi_f, cos_beta;
+    sfloat tan2 = MathExtra::dot3(v,tangent2);
+    sfloat theta_i, phi_i, psi_i, theta_f, phi_f, psi_f, cos_beta;
 
     theta_i = acos(dot/sqrt(MathExtra::lensq3(v)));
     psi_i = acos(dot*dot/MathExtra::lensq3(v));
     phi_i = atan2(tan2,tan1);
 
-    double v_mag = sqrt(vperp*vperp + vtan1*vtan1 + vtan2*vtan2);
+    sfloat v_mag = sqrt(vperp*vperp + vtan1*vtan1 + vtan2*vtan2);
 
-    double P = 0;
+    sfloat P = 0;
     while (random->uniform() > P) {
       phi_f = MY_2PI*random->uniform();
       psi_f = acos(1-random->uniform());
@@ -3351,13 +3352,13 @@ void SurfReactAdsorb::cll(Particle::OnePart *p, double *norm, double acc_n,
    return X
 ------------------------------------------------------------------------- */
 
-void SurfReactAdsorb::random_point(int isurf, double *x)
+void SurfReactAdsorb::random_point(int isurf, sfloat *x)
 {
   if (mode == FACE) {
-    double *lo = domain->boxlo;
-    double *hi = domain->boxhi;
-    double rand1 = random->uniform();
-    double rand2 = random->uniform();
+    sfloat *lo = domain->boxlo;
+    sfloat *hi = domain->boxhi;
+    sfloat rand1 = random->uniform();
+    sfloat rand2 = random->uniform();
 
     switch (isurf) {
     case XLO:
@@ -3412,8 +3413,8 @@ void SurfReactAdsorb::random_point(int isurf, double *x)
   } else if (mode == SURF) {
     if (domain->dimension == 2) {
       Surf::Line *lines = surf->lines;
-      double *p1,*p2;
-      double rand = random->uniform();
+      sfloat *p1,*p2;
+      sfloat rand = random->uniform();
 
       p1 = lines[isurf].p1;
       p2 = lines[isurf].p2;
@@ -3428,12 +3429,12 @@ void SurfReactAdsorb::random_point(int isurf, double *x)
       // x[i] = p1[i] + r1*(p2[i]-p1[i]) + r2*(p3[i]-p1[i])
 
       Surf::Tri *tris = surf->tris;
-      double *p1,*p2,*p3;
-      double rand1 = sqrt(random->uniform());
-      double rand2 = random->uniform();
-      double factor1 = 1-rand1;
-      double factor2 = rand1*(1-rand2);
-      double factor3 = rand1*rand2;
+      sfloat *p1,*p2,*p3;
+      sfloat rand1 = sqrt(random->uniform());
+      sfloat rand2 = random->uniform();
+      sfloat factor1 = 1-rand1;
+      sfloat factor2 = rand1*(1-rand2);
+      sfloat factor3 = rand1*rand2;
 
       p1 = tris[isurf].p1;
       p2 = tris[isurf].p2;
@@ -3450,20 +3451,20 @@ void SurfReactAdsorb::random_point(int isurf, double *x)
 
   case GRID: {
     Grid::ChildCell *cells = grid->cells;
-    double rand1 = random->uniform();
-    double rand2 = random->uniform();
-    double *lo = cells[ielem].lo;
-    double *hi = cells[ielem].hi;
+    sfloat rand1 = random->uniform();
+    sfloat rand2 = random->uniform();
+    sfloat *lo = cells[ielem].lo;
+    sfloat *hi = cells[ielem].hi;
 
-    double d_beam = 1.5e-3;
-    double theta_beam = 45 * MY_PI /180;
+    sfloat d_beam = 1.5e-3;
+    sfloat theta_beam = 45 * MY_PI /180;
 
-    double rand_r = sqrt(random->uniform());
-    double rand_angle = MY_2PI * random->uniform();
+    sfloat rand_r = sqrt(random->uniform());
+    sfloat rand_angle = MY_2PI * random->uniform();
 
-    double x_strike = 0.0;
-    double y_strike = 0.0;
-    double z_strike = 0.0;
+    sfloat x_strike = 0.0;
+    sfloat y_strike = 0.0;
+    sfloat z_strike = 0.0;
 
     x[0] = x_strike ;
     x[1] = y_strike + 0.5 * d_beam / cos(theta_beam) * rand_r * cos(rand_angle);
@@ -3473,8 +3474,8 @@ void SurfReactAdsorb::random_point(int isurf, double *x)
 
   case LINE: {
     Surf::Line *lines = surf->lines;
-    double *p1,*p2;
-    double rand = random->uniform();
+    sfloat *p1,*p2;
+    sfloat rand = random->uniform();
 
     p1 = lines[ielem].p1;
     p2 = lines[ielem].p2;
@@ -3487,12 +3488,12 @@ void SurfReactAdsorb::random_point(int isurf, double *x)
 
   case TRI: {
     Surf::Tri *tris = surf->tris;
-    double *p1,*p2,*p3;
-    double rand1 = sqrt(random->uniform());
-    double rand2 = random->uniform();
-    double factor1 = 1-rand1;
-    double factor2 = rand1*(1-rand2);
-    double factor3 = rand1*rand2;
+    sfloat *p1,*p2,*p3;
+    sfloat rand1 = sqrt(random->uniform());
+    sfloat rand2 = random->uniform();
+    sfloat factor1 = 1-rand1;
+    sfloat factor2 = rand1*(1-rand2);
+    sfloat factor3 = rand1*rand2;
 
     p1 = tris[ielem].p1;
     p2 = tris[ielem].p2;
@@ -3511,7 +3512,7 @@ void SurfReactAdsorb::random_point(int isurf, double *x)
 /* ---------------------------------------------------------------------- */
 
 /*
-int SurfReactAdsorb::find_cell(int isurf, double *x)
+int SurfReactAdsorb::find_cell(int isurf, sfloat *x)
 {
   int value = -1;
   switch(element) {
@@ -3561,9 +3562,9 @@ int SurfReactAdsorb::find_cell(int isurf, double *x)
 
 /* ---------------------------------------------------------------------- */
 
-double SurfReactAdsorb::stoich_pow(int base, int pow)
+sfloat SurfReactAdsorb::stoich_pow(int base, int pow)
 {
-  double value = 0.0;
+  sfloat value = 0.0;
   switch (pow) {
 
   case 0: {
@@ -3572,7 +3573,7 @@ double SurfReactAdsorb::stoich_pow(int base, int pow)
   }
 
   case 1: {
-    if (base >= pow) value = double(base);
+    if (base >= pow) value = sfloat(base);
     break;
   }
 

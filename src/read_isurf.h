@@ -1,3 +1,4 @@
+/* AD-CONVERTED: double->sfloat by tools/ad_convert.py (see sfloat.h) */
 /* ----------------------------------------------------------------------
    SPARTA - Stochastic PArallel Rarefied-gas Time-accurate Analyzer
    http://sparta.github.io
@@ -45,13 +46,13 @@ class ReadISurf : protected Pointers {
   int me,nprocs,dim;
   int ggroup,sgrouparg,pushflag,precision,readflag;
   int nx,ny,nz;
-  double thresh;
-  double corner[3],xyzsize[3];
+  sfloat thresh;
+  sfloat corner[3],xyzsize[3];
   char *typefile;
 
   class FixAblate *ablate;
 
-  double **cvalues;        // array of corner point values
+  sfloat **cvalues;        // array of corner point values
   int *tvalues;            // vector of per grid cell surf types
 
   // hash for assigning grid corner points to grid cells
@@ -73,20 +74,20 @@ class ReadISurf : protected Pointers {
 
   struct RecvDatum {
     int icell,icorner;
-    double cvalue;
+    sfloat cvalue;
   };
 
   bigint offset_rvous;
   int nvalues_rvous;
   uint8_t *ibuf_rvous;
-  double *dbuf_rvous;
+  sfloat *dbuf_rvous;
   int precision_rvous;
 
   void process_args(int, char **);
 
   void create_hash(int);
   void read_corners_serial(char *);
-  void assign_corners(int, bigint, uint8_t *, double *);
+  void assign_corners(int, bigint, uint8_t *, sfloat *);
   void read_types_serial(char *);
   void assign_types(int, bigint, uint8_t *);
 

@@ -1,3 +1,4 @@
+/* AD-CONVERTED: double->sfloat by tools/ad_convert.py (see sfloat.h) */
 /* ----------------------------------------------------------------------
    SPARTA - Stochastic PArallel Rarefied-gas Time-accurate Analyzer
    http://sparta.github.io
@@ -188,18 +189,18 @@ void FixDtReset::end_of_step()
     }
 
     if (step_index == 0)
-      memcpy(gridstep,cstep->vector_grid,nglocal*sizeof(double));
+      memcpy(gridstep,cstep->vector_grid,nglocal*sizeof(sfloat));
     else {
       int index = step_index-1;
-      double **array = cstep->array_grid;
+      sfloat **array = cstep->array_grid;
       for (int i = 0; i < nglocal; i++)
         gridstep[i] = array[i][index];
     }
   } else if (step_which == FIX) {
     if (step_index == 0) {
-      memcpy(gridstep,fstep->vector_grid,nglocal*sizeof(double));
+      memcpy(gridstep,fstep->vector_grid,nglocal*sizeof(sfloat));
     } else {
-      double **array = fstep->array_grid;
+      sfloat **array = fstep->array_grid;
       int index = step_index-1;
       for (int i = 0; i < nglocal; i++)
         gridstep[i] = array[i][index];
@@ -209,9 +210,9 @@ void FixDtReset::end_of_step()
   // set dtmin,dtmax,dtave
   // skip cells whose timestep is zero (e.g. no particles)
 
-  double dtmin_me = BIG;
-  double dtmax_me = 0.0;
-  double dtsum_me = 0.0;
+  sfloat dtmin_me = BIG;
+  sfloat dtmax_me = 0.0;
+  sfloat dtsum_me = 0.0;
   int count = 0;
 
   for (int i = 0; i < nglocal; i++) {
@@ -227,14 +228,14 @@ void FixDtReset::end_of_step()
   MPI_Allreduce(&bcount_me,&bcount,1,MPI_SPARTA_BIGINT,MPI_SUM,world);
   if (bcount == 0) return;  // done if no cell computed a timestep
 
-  double min_max_data_me[2];
-  double min_max_data[2];
+  sfloat min_max_data_me[2];
+  sfloat min_max_data[2];
   min_max_data_me[0] = dtmin_me;
   min_max_data_me[1] = 1./dtmax_me;
-  MPI_Allreduce(&min_max_data_me,&min_max_data,2,MPI_DOUBLE,MPI_MIN,world);
+  MPI_Allreduce(&min_max_data_me,&min_max_data,2,MPI_SFLOAT,MPI_MIN,world);
   dtmin = min_max_data[0];
   dtmax = 1./min_max_data[1];
-  MPI_Allreduce(&dtsum_me,&dtave,1,MPI_DOUBLE,MPI_SUM,world);
+  MPI_Allreduce(&dtsum_me,&dtave,1,MPI_SFLOAT,MPI_SUM,world);
   dtave /= bcount;
 
   // calculate new global timestep
@@ -255,7 +256,7 @@ void FixDtReset::end_of_step()
    return optimal calculated timestep
 ------------------------------------------------------------------------- */
 
-double FixDtReset::compute_scalar()
+sfloat FixDtReset::compute_scalar()
 {
   return dtnew;
 }
@@ -264,7 +265,7 @@ double FixDtReset::compute_scalar()
    return min/max/avg per grid cell timesteps calaculated by compute
 ------------------------------------------------------------------------- */
 
-double FixDtReset::compute_vector(int index)
+sfloat FixDtReset::compute_vector(int index)
 {
   if (index == 0) return dtmin;
   else if (index == 1) return dtmax;

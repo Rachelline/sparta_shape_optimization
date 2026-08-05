@@ -1,3 +1,4 @@
+/* AD-CONVERTED: double->sfloat by tools/ad_convert.py (see sfloat.h) */
 /* ----------------------------------------------------------------------
    SPARTA - Stochastic PArallel Rarefied-gas Time-accurate Analyzer
    http://sparta.github.io
@@ -53,7 +54,7 @@ class DumpSurf : public Dump {
   int nvariable;             // # of Variables used by dump
   char **id_variable;        // their names
   int *variable;             // list of indices for the Variables
-  double **vbuf;             // local storage for variable evaluation
+  sfloat **vbuf;             // local storage for variable evaluation
   int maxsurf;               // max length of per-surf variable vectors
 
   int ncustom;               // # of surf Custom attributes used by dump
@@ -67,7 +68,7 @@ class DumpSurf : public Dump {
   int nchoose;               // # of surf elements output by this proc
   int *cglobal;              // indices of global elements for nchoose
   int *clocal;               // indices of local owned elements for nchoose
-  double *buflocal;          // buffer for per-surf element values
+  sfloat *buflocal;          // buffer for per-surf element values
 
   int distributed,implicit;  // Surf settings
 
@@ -79,7 +80,7 @@ class DumpSurf : public Dump {
   void write_header(bigint);
   int count();
   void pack();
-  void write_data(int, double *);
+  void write_data(int, sfloat *);
 
   int parse_fields(int, char **);
   int add_custom(char *);
@@ -92,11 +93,11 @@ class DumpSurf : public Dump {
   void header_binary(bigint);
   void header_item(bigint);
 
-  typedef void (DumpSurf::*FnPtrData)(int, double *);
+  typedef void (DumpSurf::*FnPtrData)(int, sfloat *);
   FnPtrData write_choice;              // ptr to write data functions
-  void write_binary(int, double *);
-  void write_string(int, double *);
-  void write_text(int, double *);
+  void write_binary(int, sfloat *);
+  void write_string(int, sfloat *);
+  void write_text(int, sfloat *);
 
   // customize by adding a method prototype
 

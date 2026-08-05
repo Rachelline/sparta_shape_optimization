@@ -1,3 +1,4 @@
+/* AD-CONVERTED: double->sfloat by tools/ad_convert.py (see sfloat.h) */
 /* ----------------------------------------------------------------------
    SPARTA - Stochastic PArallel Rarefied-gas Time-accurate Analyzer
    http://sparta.github.io
@@ -483,7 +484,7 @@ void WriteRestart::write_less_memory(char *file)
 
   int my_npasses;
   if (particle->nlocal == 0) my_npasses = 2;
-  else my_npasses = ceil((double)particle->nlocal/step_size)+1;
+  else my_npasses = spval(ceil((sfloat)particle->nlocal/step_size)+1);
 
   // write grid + particle data into file(s)
   // filewriter = 1 = this proc writes to file
@@ -628,7 +629,7 @@ void WriteRestart::header()
   write_double(TEMP_THERMAL,update->temp_thermal);
 
   write_double(DT,update->dt);
-  double time = update->time +
+  sfloat time = update->time +
     (update->ntimestep - update->time_last_update) * update->dt;
   write_double(TIME,time);
 
@@ -780,13 +781,13 @@ void WriteRestart::write_bigint(int flag, bigint value)
 }
 
 /* ----------------------------------------------------------------------
-   write a flag and a double into restart file
+   write a flag and a sfloat into restart file
 ------------------------------------------------------------------------- */
 
-void WriteRestart::write_double(int flag, double value)
+void WriteRestart::write_double(int flag, sfloat value)
 {
   fwrite(&flag,sizeof(int),1,fp);
-  fwrite(&value,sizeof(double),1,fp);
+  fwrite(&value,sizeof(sfloat),1,fp);
 }
 
 /* ----------------------------------------------------------------------
@@ -816,11 +817,11 @@ void WriteRestart::write_int_vec(int flag, int n, int *vec)
    write a flag and vector of N doubles into restart file
 ------------------------------------------------------------------------- */
 
-void WriteRestart::write_double_vec(int flag, int n, double *vec)
+void WriteRestart::write_double_vec(int flag, int n, sfloat *vec)
 {
   fwrite(&flag,sizeof(int),1,fp);
   fwrite(&n,sizeof(int),1,fp);
-  fwrite(vec,sizeof(double),n,fp);
+  fwrite(vec,sizeof(sfloat),n,fp);
 }
 
 /* ----------------------------------------------------------------------

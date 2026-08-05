@@ -1,3 +1,4 @@
+/* AD-CONVERTED: double->sfloat by tools/ad_convert.py (see sfloat.h) */
 /* ----------------------------------------------------------------------
    SPARTA - Stochastic PArallel Rarefied-gas Time-accurate Analyzer
    http://sparta.github.io
@@ -24,7 +25,7 @@ enum{UNKNOWN,OUTSIDE,INSIDE,OVERLAP};           // several files
 /* ---------------------------------------------------------------------- */
 
 MarchingSquares::MarchingSquares(SPARTA *sparta, int ggroup_caller,
-                                 double thresh_caller) :
+                                 sfloat thresh_caller) :
   Pointers(sparta)
 {
   ggroup = ggroup_caller;
@@ -48,18 +49,18 @@ MarchingSquares::MarchingSquares(SPARTA *sparta, int ggroup_caller,
      based on ave value at cell center
 ------------------------------------------------------------------------- */
 
-void MarchingSquares::invoke(double **cvalues, double ***mvalues, int *svalues)
+void MarchingSquares::invoke(sfloat **cvalues, sfloat ***mvalues, int *svalues)
 {
   int i,ipt,isurf,nsurf,which;
-  double v00,v01,v10,v11;
-  double i0, i1, i2, i3;
+  sfloat v00,v01,v10,v11;
+  sfloat i0, i1, i2, i3;
   int bit0,bit1,bit2,bit3;
-  double ave;
-  double *lo,*hi;
+  sfloat ave;
+  sfloat *lo,*hi;
   surfint surfID;
   surfint *ptr;
 
-  double pt[4][3];
+  sfloat pt[4][3];
   pt[0][2] = pt[1][2] = pt[2][2] = pt[3][2] = 0.0;
 
   Grid::ChildCell *cells = grid->cells;
@@ -314,10 +315,10 @@ void MarchingSquares::invoke(double **cvalues, double ***mvalues, int *svalues)
    value = interpolated coordinate for thresh value
 ------------------------------------------------------------------------- */
 
-double MarchingSquares::interpolate(double v0, double v1, double lo, double hi)
+sfloat MarchingSquares::interpolate(sfloat v0, sfloat v1, sfloat lo, sfloat hi)
 {
-  double value = lo + (hi-lo)*(thresh-v0)/(v1-v0);
-  double ibuffer = (hi-lo)*mindist;
+  sfloat value = lo + (hi-lo)*(thresh-v0)/(v1-v0);
+  sfloat ibuffer = (hi-lo)*mindist;
   value = MAX(value,lo+ibuffer);
   value = MIN(value,hi-ibuffer);
   return value;

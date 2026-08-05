@@ -1,3 +1,4 @@
+/* AD-CONVERTED: double->sfloat by tools/ad_convert.py (see sfloat.h) */
 /* ----------------------------------------------------------------------
    SPARTA - Stochastic PArallel Rarefied-gas Time-accurate Analyzer
    http://sparta.github.io
@@ -39,7 +40,7 @@ int Grid::find_custom(char *name)
 /* ----------------------------------------------------------------------
    add a custom attribute with name
    assumes name does not already exist, else error
-   type = 0/1 for int/double
+   type = 0/1 for int/sfloat
    size = 0 for vector, size > 0 for array with size columns
    return index of its location;
 ------------------------------------------------------------------------- */
@@ -96,14 +97,14 @@ int Grid::add_custom(char *name, int type, int size)
   } else if (type == DOUBLE) {
     if (size == 0) {
       ewhich[index] = ncustom_dvec++;
-      edvec = (double **)
-        memory->srealloc(edvec,ncustom_dvec*sizeof(double *),"grid:edvec");
+      edvec = (sfloat **)
+        memory->srealloc(edvec,ncustom_dvec*sizeof(sfloat *),"grid:edvec");
       memory->grow(icustom_dvec,ncustom_dvec,"grid:icustom_dvec");
       icustom_dvec[ncustom_dvec-1] = index;
     } else {
       ewhich[index] = ncustom_darray++;
-      edarray = (double ***)
-        memory->srealloc(edarray,ncustom_darray*sizeof(double **),
+      edarray = (sfloat ***)
+        memory->srealloc(edarray,ncustom_darray*sizeof(sfloat **),
                          "grid:edarray");
       memory->grow(icustom_darray,ncustom_darray,"grid:icustom_darray");
       icustom_darray[ncustom_darray-1] = index;
@@ -139,12 +140,12 @@ void Grid::allocate_custom(int index)
 
   } else {
     if (esize[index] == 0) {
-      double *dvector = memory->create(edvec[ewhich[index]],n,"grid:edvec");
-      if (dvector) memset(dvector,0,n*sizeof(double));
+      sfloat *dvector = memory->create(edvec[ewhich[index]],n,"grid:edvec");
+      if (dvector) memset(dvector,0,n*sizeof(sfloat));
     } else {
-      double **darray = memory->create(edarray[ewhich[index]],
+      sfloat **darray = memory->create(edarray[ewhich[index]],
                                        n,edcol[ewhich[index]],"grid:eiarray");
-      if (darray) memset(&darray[0][0],0,n*edcol[ewhich[index]]*sizeof(double));
+      if (darray) memset(&darray[0][0],0,n*edcol[ewhich[index]]*sizeof(sfloat));
     }
   }
 }
@@ -171,14 +172,14 @@ void Grid::reallocate_custom(int nold, int nnew)
 
     } else {
       if (esize[ic] == 0) {
-        double *dvector = memory->grow(edvec[ewhich[ic]],nnew,"grid:edvec");
-        if (nnew > nold) memset(&dvector[nold],0,(nnew-nold)*sizeof(double));
+        sfloat *dvector = memory->grow(edvec[ewhich[ic]],nnew,"grid:edvec");
+        if (nnew > nold) memset(&dvector[nold],0,(nnew-nold)*sizeof(sfloat));
       } else {
-        double **darray = memory->grow(edarray[ewhich[ic]],
+        sfloat **darray = memory->grow(edarray[ewhich[ic]],
                                        nnew,edcol[ewhich[ic]],"grid:edarray");
         if (nnew - nold)
           memset(&darray[nold][0],0,
-                 (nnew-nold)*edcol[ewhich[ic]]*sizeof(double));
+                 (nnew-nold)*edcol[ewhich[ic]]*sizeof(sfloat));
       }
     }
   }
@@ -273,13 +274,13 @@ void Grid::copy_custom(int icell, int jcell)
 
   if (ncustom_dvec) {
     for (i = 0; i < ncustom_dvec; i++) {
-      double *dvector = edvec[i];
+      sfloat *dvector = edvec[i];
       dvector[jcell] = dvector[icell];
     }
   }
   if (ncustom_darray) {
     for (i = 0; i < ncustom_darray; i++) {
-      double **darray = edarray[i];
+      sfloat **darray = edarray[i];
       size = esize[icustom_darray[i]];
       for (j = 0; j < size; j++)
         darray[jcell][j] = darray[icell][j];
@@ -400,10 +401,10 @@ int Grid::sizeof_custom()
 
   n = IROUNDUP(n);
 
-  n += ncustom_dvec*sizeof(double);
+  n += ncustom_dvec*sizeof(sfloat);
   if (ncustom_darray)
     for (int i = 0; i < ncustom_darray; i++)
-      n += edcol[i]*sizeof(double);
+      n += edcol[i]*sizeof(sfloat);
 
   return n;
 }
@@ -436,14 +437,14 @@ int Grid::pack_custom(int icell, char *buf, int memflag)
 
   if (ncustom_dvec) {
     for (i = 0; i < ncustom_dvec; i++) {
-      if (memflag) memcpy(ptr,&edvec[i][icell],sizeof(double));
-      ptr += sizeof(double);
+      if (memflag) memcpy(ptr,&edvec[i][icell],sizeof(sfloat));
+      ptr += sizeof(sfloat);
     }
   }
   if (ncustom_darray) {
     for (i = 0; i < ncustom_darray; i++) {
-      if (memflag) memcpy(ptr,edarray[i][icell],edcol[i]*sizeof(double));
-      ptr += edcol[i]*sizeof(double);
+      if (memflag) memcpy(ptr,edarray[i][icell],edcol[i]*sizeof(sfloat));
+      ptr += edcol[i]*sizeof(sfloat);
     }
   }
 
@@ -477,14 +478,14 @@ int Grid::unpack_custom(char *buf, int icell)
 
   if (ncustom_dvec) {
     for (i = 0; i < ncustom_dvec; i++) {
-      memcpy(&edvec[i][icell],ptr,sizeof(double));
-      ptr += sizeof(double);
+      memcpy(&edvec[i][icell],ptr,sizeof(sfloat));
+      ptr += sizeof(sfloat);
     }
   }
   if (ncustom_darray) {
     for (i = 0; i < ncustom_darray; i++) {
-      memcpy(edarray[i][icell],ptr,edcol[i]*sizeof(double));
-      ptr += edcol[i]*sizeof(double);
+      memcpy(edarray[i][icell],ptr,edcol[i]*sizeof(sfloat));
+      ptr += edcol[i]*sizeof(sfloat);
     }
   }
 

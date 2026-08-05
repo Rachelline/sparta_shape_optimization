@@ -1,3 +1,4 @@
+/* AD-CONVERTED: double->sfloat by tools/ad_convert.py (see sfloat.h) */
 /* ----------------------------------------------------------------------
    SPARTA - Stochastic PArallel Rarefied-gas Time-accurate Analyzer
    http://sparta.github.io
@@ -268,12 +269,12 @@ void DumpGrid::header_binary(bigint ndump)
   fwrite(&update->ntimestep,sizeof(bigint),1,fp);
   fwrite(&ndump,sizeof(bigint),1,fp);
   fwrite(domain->bflag,6*sizeof(int),1,fp);
-  fwrite(&boxxlo,sizeof(double),1,fp);
-  fwrite(&boxxhi,sizeof(double),1,fp);
-  fwrite(&boxylo,sizeof(double),1,fp);
-  fwrite(&boxyhi,sizeof(double),1,fp);
-  fwrite(&boxzlo,sizeof(double),1,fp);
-  fwrite(&boxzhi,sizeof(double),1,fp);
+  fwrite(&boxxlo,sizeof(sfloat),1,fp);
+  fwrite(&boxxhi,sizeof(sfloat),1,fp);
+  fwrite(&boxylo,sizeof(sfloat),1,fp);
+  fwrite(&boxyhi,sizeof(sfloat),1,fp);
+  fwrite(&boxzlo,sizeof(sfloat),1,fp);
+  fwrite(&boxzhi,sizeof(sfloat),1,fp);
   fwrite(&nfield,sizeof(int),1,fp);
   if (multiproc) fwrite(&nclusterprocs,sizeof(int),1,fp);
   else fwrite(&nprocs,sizeof(int),1,fp);
@@ -288,9 +289,9 @@ void DumpGrid::header_item(bigint ndump)
   fprintf(fp,"ITEM: NUMBER OF CELLS\n");
   fprintf(fp,BIGINT_FORMAT "\n",ndump);
   fprintf(fp,"ITEM: BOX BOUNDS %s\n",boundstr);
-  fprintf(fp,"%g %g\n",boxxlo,boxxhi);
-  fprintf(fp,"%g %g\n",boxylo,boxyhi);
-  fprintf(fp,"%g %g\n",boxzlo,boxzhi);
+  fprintf(fp,"%g %g\n",spval(boxxlo),spval(boxxhi));
+  fprintf(fp,"%g %g\n",spval(boxylo),spval(boxyhi));
+  fprintf(fp,"%g %g\n",spval(boxzlo),spval(boxzhi));
   fprintf(fp,"ITEM: CELLS %s\n",columns);
 }
 
@@ -339,30 +340,30 @@ void DumpGrid::pack()
 
 /* ---------------------------------------------------------------------- */
 
-void DumpGrid::write_data(int n, double *mybuf)
+void DumpGrid::write_data(int n, sfloat *mybuf)
 {
   (this->*write_choice)(n,mybuf);
 }
 
 /* ---------------------------------------------------------------------- */
 
-void DumpGrid::write_binary(int n, double *mybuf)
+void DumpGrid::write_binary(int n, sfloat *mybuf)
 {
   n *= size_one;
   fwrite(&n,sizeof(int),1,fp);
-  fwrite(mybuf,sizeof(double),n,fp);
+  fwrite(mybuf,sizeof(sfloat),n,fp);
 }
 
 /* ---------------------------------------------------------------------- */
 
-void DumpGrid::write_string(int n, double *mybuf)
+void DumpGrid::write_string(int n, sfloat *mybuf)
 {
   fwrite(mybuf,sizeof(char),n,fp);
 }
 
 /* ---------------------------------------------------------------------- */
 
-void DumpGrid::write_text(int n, double *mybuf)
+void DumpGrid::write_text(int n, sfloat *mybuf)
 {
   int i,j;
   char str[32];
@@ -370,16 +371,16 @@ void DumpGrid::write_text(int n, double *mybuf)
   int m = 0;
   for (i = 0; i < n; i++) {
     for (j = 0; j < size_one; j++) {
-      if (vtype[j] == DOUBLE) fprintf(fp,vformat[j],mybuf[m]);
-      else if (vtype[j] == INT) fprintf(fp,vformat[j],(int) ubuf(mybuf[m]).i);
-      else if (vtype[j] == BIGINT) fprintf(fp,vformat[j],(bigint) ubuf(mybuf[m]).i);
-      else if (vtype[j] == UINT) fprintf(fp,vformat[j],(uint32_t) ubuf(mybuf[m]).i);
-      else if (vtype[j] == BIGUINT) fprintf(fp,vformat[j],(uint64_t) ubuf(mybuf[m]).i);
+      if (vtype[j] == DOUBLE) fprintf(fp,vformat[j],spval(mybuf[m]));
+      else if (vtype[j] == INT) fprintf(fp,vformat[j],(int) ubuf(spval(mybuf[m])).i);
+      else if (vtype[j] == BIGINT) fprintf(fp,vformat[j],(bigint) ubuf(spval(mybuf[m])).i);
+      else if (vtype[j] == UINT) fprintf(fp,vformat[j],(uint32_t) ubuf(spval(mybuf[m])).i);
+      else if (vtype[j] == BIGUINT) fprintf(fp,vformat[j],(uint64_t) ubuf(spval(mybuf[m])).i);
       else if (vtype[j] == STRING) {
         if (sizeof(cellint) == sizeof(smallint))
-          grid->id_num2str((uint32_t) ubuf(mybuf[m]).i,str);
+          grid->id_num2str((uint32_t) ubuf(spval(mybuf[m])).i,str);
         else
-          grid->id_num2str((uint64_t) ubuf(mybuf[m]).i,str);
+          grid->id_num2str((uint64_t) ubuf(spval(mybuf[m])).i,str);
         fprintf(fp,vformat[j],str);
       }
       m++;
@@ -677,7 +678,7 @@ int DumpGrid::add_variable(char *id)
   delete [] variable;
   variable = new int[nvariable+1];
   delete [] vbuf;
-  vbuf = new double*[nvariable+1];
+  vbuf = new sfloat*[nvariable+1];
   for (int i = 0; i <= nvariable; i++) vbuf[i] = NULL;
 
   int n = strlen(id) + 1;
@@ -742,14 +743,14 @@ void DumpGrid::pack_compute(int n)
     c->post_process_isurf_grid();
 
   if (index == 0 || c->post_process_grid_flag) {
-    double *vector = c->vector_grid;
+    sfloat *vector = c->vector_grid;
     for (int i = 0; i < ncpart; i++) {
       buf[n] = vector[cpart[i]];
       n += size_one;
     }
   } else {
     index--;
-    double **array = c->array_grid;
+    sfloat **array = c->array_grid;
     for (int i = 0; i < ncpart; i++) {
       buf[n] = array[cpart[i]][index];
       n += size_one;
@@ -761,8 +762,8 @@ void DumpGrid::pack_compute(int n)
 
 void DumpGrid::pack_fix(int n)
 {
-  double *vector = fix[field2index[n]]->vector_grid;
-  double **array = fix[field2index[n]]->array_grid;
+  sfloat *vector = fix[field2index[n]]->vector_grid;
+  sfloat **array = fix[field2index[n]]->array_grid;
   int index = argindex[n];
 
   if (index == 0) {
@@ -783,7 +784,7 @@ void DumpGrid::pack_fix(int n)
 
 void DumpGrid::pack_variable(int n)
 {
-  double *vector = vbuf[field2index[n]];
+  sfloat *vector = vbuf[field2index[n]];
 
   for (int i = 0; i < ncpart; i++) {
     buf[n] = vector[cpart[i]];
@@ -805,7 +806,7 @@ void DumpGrid::pack_custom(int n)
       for (int i = 0; i < ncpart; i++) {
         // store bit-punned (ubuf), NOT numeric: write_text/write_binary decode
         // INT columns via ubuf(buf[m]).i. Numeric storage made every INT
-        // custom attribute print as 0 (low 32 bits of IEEE-754 double).
+        // custom attribute print as 0 (low 32 bits of IEEE-754 sfloat).
         buf[n] = ubuf(vector[cpart[i]]).d;
         n += size_one;
       }
@@ -820,14 +821,14 @@ void DumpGrid::pack_custom(int n)
     }
   } else {
     if (grid->esize[index] == 0) {
-      double *vector = grid->edvec[grid->ewhich[index]];
+      sfloat *vector = grid->edvec[grid->ewhich[index]];
       for (int i = 0; i < ncpart; i++) {
         buf[n] = vector[cpart[i]];
         n += size_one;
       }
     } else {
       int icol = argindex[n]-1;
-      double **array = grid->edarray[grid->ewhich[index]];
+      sfloat **array = grid->edarray[grid->ewhich[index]];
       for (int i = 0; i < ncpart; i++) {
         buf[n] = array[cpart[i]][icol];
         n += size_one;

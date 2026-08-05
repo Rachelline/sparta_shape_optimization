@@ -1,3 +1,4 @@
+/* AD-CONVERTED: double->sfloat by tools/ad_convert.py (see sfloat.h) */
 /* ----------------------------------------------------------------------
    SPARTA - Stochastic PArallel Rarefied-gas Time-accurate Analyzer
    http://sparta.github.io
@@ -42,20 +43,20 @@ class Output : protected Pointers {
 
   int restart_flag;            // 1 if any restart files are written
   int restart_flag_single;     // 1 if single restart files are written
-  int restart_flag_double;     // 1 if double restart files are written
+  int restart_flag_double;     // 1 if sfloat restart files are written
   bigint next_restart;         // next timestep to write any restart file
   bigint next_restart_single;  // next timestep to write a single restart file
-  bigint next_restart_double;  // next timestep to write a double restart file
+  bigint next_restart_double;  // next timestep to write a sfloat restart file
   int restart_every_single;    // single restart file write freq, 0 if var
-  int restart_every_double;    // double restart file write freq, 0 if var
+  int restart_every_double;    // sfloat restart file write freq, 0 if var
   bigint last_restart;         // last timestep any restart file was output
   int restart_toggle;          // 0 if use restart2a as prefix, 1 if restart2b
   char *var_restart_single;    // variable name for single restart freq
-  char *var_restart_double;    // variable name for double restart freq
+  char *var_restart_double;    // variable name for sfloat restart freq
   int ivar_restart_single;     // index of var_restart_single
   int ivar_restart_double;     // index of var_restart_double
   char *restart1;              // name single restart file
-  char *restart2a,*restart2b;  // names of double restart files
+  char *restart2a,*restart2b;  // names of sfloat restart files
   class WriteRestart *restart; // class for writing restart files
 
   Output(class SPARTA *);

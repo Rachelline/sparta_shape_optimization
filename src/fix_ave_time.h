@@ -1,3 +1,4 @@
+/* AD-CONVERTED: double->sfloat by tools/ad_convert.py (see sfloat.h) */
 /* ----------------------------------------------------------------------
    SPARTA - Stochastic PArallel Rarefied-gas Time-accurate Analyzer
    http://sparta.github.io
@@ -34,9 +35,9 @@ class FixAveTime : public Fix {
   void init();
   void setup();
   void end_of_step();
-  double compute_scalar();
-  double compute_vector(int);
-  double compute_array(int,int);
+  sfloat compute_scalar();
+  sfloat compute_vector(int);
+  sfloat compute_array(int,int);
 
  private:
   int me,nvalues,maxvalues;
@@ -53,14 +54,14 @@ class FixAveTime : public Fix {
   char *title1,*title2,*title3;
 
   int norm,iwindow,window_limit;
-  double *vector;
-  double *vector_total;
-  double **vector_list;
-  double *column;
-  double **array;
-  double **array_total;
-  double ***array_list;
-  double **norms;
+  sfloat *vector;
+  sfloat *vector_total;
+  sfloat **vector_list;
+  sfloat *column;
+  sfloat **array;
+  sfloat **array_total;
+  sfloat ***array_list;
+  sfloat **norms;
 
   void invoke_scalar(bigint);
   void invoke_vector(bigint);

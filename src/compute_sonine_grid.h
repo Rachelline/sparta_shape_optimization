@@ -1,3 +1,4 @@
+/* AD-CONVERTED: double->sfloat by tools/ad_convert.py (see sfloat.h) */
 /* ----------------------------------------------------------------------
    SPARTA - Stochastic PArallel Rarefied-gas Time-accurate Analyzer
    http://sparta.github.io
@@ -31,8 +32,8 @@ class ComputeSonineGrid : public Compute {
   ~ComputeSonineGrid();
   void init();
   void compute_per_grid();
-  int query_tally_grid(int, double **&, int *&);
-  void post_process_grid(int, int, double **, int *, double *, int);
+  int query_tally_grid(int, sfloat **&, int *&);
+  void post_process_grid(int, int, sfloat **, int *, sfloat *, int);
   void reallocate();
   bigint memory_usage();
 
@@ -53,9 +54,9 @@ class ComputeSonineGrid : public Compute {
 
   int nmap;                  // # of tally quantities every output value uses
   int **map;                 // which tally columns each output value uses
-  double **tally;            // array of tally quantities, cells by ntotal
+  sfloat **tally;            // array of tally quantities, cells by ntotal
 
-  double ***vcom;            // COM velocity and mass per group and per cell
+  sfloat ***vcom;            // COM velocity and mass per group and per cell
 };
 
 }
